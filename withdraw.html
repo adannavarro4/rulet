@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retirar Fondos - Rulet</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            color: var(--dark-color);
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+        
+        .user-balance {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 8px;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent-color);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        #message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Retirar Fondos</h1>
+        
+        <div class="user-balance" id="balanceDisplay">
+            Saldo disponible: 0 Bs
+        </div>
+        
+        <form id="withdrawForm">
+            <div class="form-group">
+                <label for="cedula">Número de Cédula:</label>
+                <input type="text" id="cedula" name="cedula" required pattern="[0-9]+" title="Solo números permitidos" />
+            </div>
+            
+            <div class="form-group">
+                <label for="telefono">Número de Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" required pattern="[0-9]+" title="Solo números permitidos" />
+            </div>
+            
+            <div class="form-group">
+                <label for="banco">Banco:</label>
+                <select id="banco" name="banco" required>
+                    <option value="">Seleccione un banco</option>
+                    <option value="0102">Banco de Venezuela</option>
+                    <option value="0104">Venezolano de Crédito</option>
+                    <option value="0105">Mercantil</option>
+                    <option value="0108">Provincial</option>
+                    <option value="0114">Bancaribe</option>
+                    <option value="0115">Bicentenario</option>
+                    <option value="0116">Banco del Tesoro</option>
+                    <option value="0128">Banco Plaza</option>
+                    <option value="0134">Banesco</option>
+                    <option value="0137">Banco Sofitasa</option>
+                    <option value="0138">Banco Plaza</option>
+                    <option value="0146">Banco de la Gente Emprendedora</option>
+                    <option value="0151">BFC Banco Fondo Común</option>
+                    <option value="0156">100% Banco</option>
+                    <option value="0157">DelSur</option>
+                    <option value="0163">Banco del Pueblo Soberano</option>
+                    <option value="0166">Banco Agrícola de Venezuela</option>
+                    <option value="0168">Bancrecer</option>
+                    <option value="0169">Mi Banco</option>
+                    <option value="0171">Banco Activo</option>
+                    <option value="0172">Bancamiga</option>
+                    <option value="0173">Banco Internacional de Desarrollo</option>
+                    <option value="0174">Banplus</option>
+                    <option value="0175">Banco Bicentenario del Pueblo</option>
+                    <option value="0177">Banco de la Fuerza Armada Nacional Bolivariana</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="monto">Monto a Retirar (Bs):</label>
+                <input type="number" id="monto" name="monto" min="150" required />
+                <small>Mínimo 150 Bs</small>
+            </div>
+            
+            <div class="btn-group">
+                <button type="submit" class="btn-primary">Solicitar Retiro</button>
+                <button type="button" class="btn-secondary" onclick="location.href='dashboard.html'">Cancelar</button>
+            </div>
+        </form>
+        
+        <div id="message"></div>
+    </div>
+    
+    <script>
+        // Mostrar saldo del usuario
+        const username = localStorage.getItem("loggedInUser");
+        if (!username) {
+            window.location.href = "login.html";
+        }
+        
+        let users = JSON.parse(localStorage.getItem("users") || "{}");
+        let user = users[username];
+        
+        document.getElementById("balanceDisplay").textContent = `Saldo disponible: ${user.balance} Bs`;
+        
+        // Validar formulario de retiro
+        document.getElementById("withdrawForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const cedula = document.getElementById("cedula").value.trim();
+            const telefono = document.getElementById("telefono").value.trim();
+            const banco = document.getElementById("banco").value;
+            const monto = parseFloat(document.getElementById("monto").value);
+            const message = document.getElementById("message");
+            
+            // Validaciones
+            if (!cedula || !telefono || !banco || !monto) {
+                showMessage("Por favor complete todos los campos.", "error");
+                return;
+            }
+            
+            if (monto < 150) {
+                showMessage("El monto mínimo para retirar es de 150 Bs.", "error");
+                return;
+            }
+            
+            if (monto > user.balance) {
+                showMessage("No tiene suficiente saldo para realizar este retiro.", "error");
+                return;
+            }
+            
+            // Procesar retiro
+            user.balance -= monto;
+            users[username] = user;
+            localStorage.setItem("users", JSON.stringify(users));
+            
+            // Mostrar mensaje de éxito
+            showMessage(`Retiro exitoso por ${monto} Bs. Se ha enviado a su cuenta bancaria.`, "success");
+            
+            // Actualizar saldo mostrado
+            document.getElementById("balanceDisplay").textContent = `Saldo disponible: ${user.balance} Bs`;
+            
+            // Limpiar formulario
+            document.getElementById("withdrawForm").reset();
+            
+            // Opcional: guardar historial de retiros
+            saveWithdrawalHistory(username, cedula, telefono, banco, monto);
+        });
+        
+        function showMessage(text, type) {
+            const message = document.getElementById("message");
+            message.textContent = text;
+            message.className = type;
+            message.style.display = "block";
+            
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                message.style.display = "none";
+            }, 5000);
+        }
+        
+        function saveWithdrawalHistory(username, cedula, telefono, banco, monto) {
+            let withdrawals = JSON.parse(localStorage.getItem("withdrawals") || []);
+            const withdrawal = {
+                username,
+                cedula,
+                telefono,
+                banco,
+                monto,
+                fecha: new Date().toISOString()
+            };
+            withdrawals.push(withdrawal);
+            localStorage.setItem("withdrawals", JSON.stringify(withdrawals));
+        }
+    </script>
+</body>
+</html>

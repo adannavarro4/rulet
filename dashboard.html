@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Usuario - Rulet</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            font-size: 2.5rem;
+        }
+        
+        .user-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            color: var(--dark-color);
+        }
+        
+        .user-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .info-item h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .balance {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .wins {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .losses {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .total {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        @media (max-width: 600px) {
+            .user-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+
+        /* Nuevos estilos para el sistema de soporte */
+        .support-icon {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-size: 24px;
+        }
+        
+        .support-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .support-modal {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1001;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+        
+        .support-modal h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .support-modal select,
+        .support-modal input,
+        .support-modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        .support-modal textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .support-modal button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .support-modal button:hover {
+            background-color: #2980b9;
+        }
+        
+        .support-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .support-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .support-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Panel del Usuario</h1>
+        <div class="user-card">
+            <div class="user-info" id="userInfo">
+                <!-- Se llenará con JavaScript -->
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="location.href='wheel.html'">Ir a la Ruleta</button>
+                <button class="btn-primary" onclick="location.href='recharge.html'">Recargar Saldo</button>
+                <button class="btn-primary" onclick="location.href='withdraw.html'">Retirar</button>
+                <button class="btn-secondary" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Icono flotante de soporte -->
+    <div class="support-icon" onclick="toggleSupportModal()">
+        <i>?</i>
+    </div>
+    
+    <!-- Modal de soporte -->
+    <div class="support-modal" id="supportModal">
+        <h3>Soporte al Cliente</h3>
+        <form id="supportForm">
+            <select id="supportCategory" required>
+                <option value="">Selecciona una categoría</option>
+                <option value="deposit">Problemas con depósitos</option>
+                <option value="withdrawal">Problemas con retiros</option>
+                <option value="game">Problemas con el juego</option>
+                <option value="account">Problemas con la cuenta</option>
+                <option value="other">Otro problema</option>
+            </select>
+            <input type="text" id="supportSubject" placeholder="Asunto" required>
+            <textarea id="supportMessage" placeholder="Describe tu problema en detalle..." required></textarea>
+            <button type="submit">Enviar Ticket</button>
+        </form>
+        <div id="supportMessageDiv" class="support-message"></div>
+    </div>
+
+    <script>
+        // Obtener usuario logueado
+        const username = localStorage.getItem("loggedInUser");
+        if (!username) {
+            window.location.href = "login.html";
+        }
+        
+        // Obtener datos del usuario
+        const users = JSON.parse(localStorage.getItem("users")) || {};
+        const currentUser = users[username];
+        
+        // Calcula el total neto (Ganancias - Pérdidas)
+        let total = currentUser.wins - currentUser.losses;
+        
+        document.getElementById("userInfo").innerHTML = `
+            <div class="info-item">
+                <h3>Usuario</h3>
+                <p>${username}</p>
+            </div>
+            <div class="info-item balance">
+                <h3>Saldo</h3>
+                <p>${currentUser.balance} Bs</p>
+            </div>
+            <div class="info-item wins">
+                <h3>Ganancias</h3>
+                <p>${currentUser.wins} Bs</p>
+            </div>
+            <div class="info-item losses">
+                <h3>Pérdidas</h3>
+                <p>${currentUser.losses} Bs</p>
+            </div>
+            <div class="info-item total">
+                <h3>Total</h3>
+                <p>${total} Bs</p>
+            </div>
+        `;
+        
+        function logout() {
+            localStorage.removeItem("loggedInUser");
+            window.location.href = "index.html";
+        }
+
+        // Mostrar/ocultar modal de soporte
+        function toggleSupportModal() {
+            const modal = document.getElementById('supportModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // Enviar ticket de soporte
+        document.getElementById('supportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = localStorage.getItem("loggedInUser");
+            const category = document.getElementById('supportCategory').value;
+            const subject = document.getElementById('supportSubject').value.trim();
+            const message = document.getElementById('supportMessage').value.trim();
+            const messageDiv = document.getElementById('supportMessageDiv');
+            
+            if (!category || !subject || !message) {
+                messageDiv.textContent = 'Por favor completa todos los campos.';
+                messageDiv.className = 'support-message support-error';
+                messageDiv.style.display = 'block';
+                return;
+            }
+            
+            // Crear nuevo ticket
+            const newTicket = {
+                id: Date.now().toString(),
+                username: username,
+                category: category,
+                subject: subject,
+                message: message,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                replies: []
+            };
+            
+            // Guardar en localStorage
+            let tickets = JSON.parse(localStorage.getItem('supportTickets') || '[]');
+            tickets.push(newTicket);
+            localStorage.setItem('supportTickets', JSON.stringify(tickets));
+            
+            // Mostrar mensaje de éxito
+            messageDiv.textContent = 'Tu ticket ha sido enviado. Nos pondremos en contacto contigo pronto.';
+            messageDiv.className = 'support-message support-success';
+            messageDiv.style.display = 'block';
+            
+            // Limpiar formulario después de 2 segundos
+            setTimeout(() => {
+                document.getElementById('supportForm').reset();
+                messageDiv.style.display = 'none';
+                toggleSupportModal();
+            }, 3000);
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('supportModal');
+            const icon = document.querySelector('.support-icon');
+            
+            if (modal.style.display === 'block' && 
+                !modal.contains(e.target) && 
+                !icon.contains(e.target)) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

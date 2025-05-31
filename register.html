@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro - Rulet</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            color: var(--dark-color);
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ddd;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+        
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step.active {
+            background: var(--secondary-color);
+        }
+        
+        .step.completed {
+            background: var(--success-color);
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        
+        .password-strength {
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .strength-meter {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s;
+        }
+        
+        .weak { background: var(--danger-color); width: 33%; }
+        .medium { background: #ffcc00; width: 66%; }
+        .strong { background: var(--success-color); width: 100%; }
+        
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent-color);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .login-link a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            color: var(--dark-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-title {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .close-modal {
+            float: right;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--dark-color);
+        }
+        
+        .close-modal:hover {
+            color: var(--accent-color);
+        }
+        
+        .recovery-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .recovery-option {
+            padding: 10px;
+            background-color: var(--light-color);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+        
+        .recovery-option:hover {
+            background-color: #d6eaf8;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .form-navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registro en Rulet</h1>
+        
+        <div class="progress-steps">
+            <div class="step active" id="step1">1</div>
+            <div class="step" id="step2">2</div>
+            <div class="step" id="step3">3</div>
+        </div>
+        
+        <form id="registerForm">
+            <!-- Sección 1: Información básica -->
+            <div class="form-section active" id="section1">
+                <div class="form-group">
+                    <label for="username">Nombre de usuario:</label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Mínimo 4 caracteres (letras y números)" 
+                           pattern="[a-zA-Z0-9]{4,}" 
+                           title="Solo letras y números, mínimo 4 caracteres" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Correo electrónico:</label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="ejemplo@correo.com" />
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn-primary" onclick="nextSection(1)">Siguiente</button>
+                </div>
+            </div>
+            
+            <!-- Sección 2: Contraseña -->
+            <div class="form-section" id="section2">
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Mínimo 8 caracteres" 
+                           minlength="8"
+                           oninput="checkPasswordStrength(this.value)" />
+                    <div class="password-strength">
+                        <div class="strength-meter" id="passwordStrength"></div>
+                    </div>
+                    <small id="passwordTips" style="display:none; color:#666;">
+                        Usa mayúsculas, números y caracteres especiales para mayor seguridad
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar contraseña:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required />
+                    <small id="passwordMatch" style="display:none; color:var(--danger-color);">
+                        Las contraseñas no coinciden
+                    </small>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn-secondary" onclick="prevSection(2)">Atrás</button>
+                    <button type="button" class="btn-primary" onclick="nextSection(2)">Siguiente</button>
+                </div>
+            </div>
+            
+            <!-- Sección 3: Información personal -->
+            <div class="form-section" id="section3">
+                <div class="form-group">
+                    <label for="fullName">Nombre completo:</label>
+                    <input type="text" id="fullName" name="fullName" required />
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Teléfono (opcional):</label>
+                    <input type="tel" id="phone" name="phone" 
+                           placeholder="Ej: 04121234567" />
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn-secondary" onclick="prevSection(3)">Atrás</button>
+                    <button type="submit" class="btn-primary">Completar Registro</button>
+                </div>
+            </div>
+        </form>
+        
+        <div id="message"></div>
+        
+        <div class="login-link">
+            ¿Ya tienes una cuenta? <a href="login.html">Inicia sesión aquí</a> | 
+            <a href="#" onclick="showRecoveryModal()">¿Olvidaste tu usuario o contraseña?</a>
+        </div>
+    </div>
+    
+    <!-- Modal de recuperación -->
+    <div class="modal" id="recoveryModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="hideRecoveryModal()">&times;</span>
+            <h3 class="modal-title">Recuperar acceso</h3>
+            
+            <div id="recoveryInitial">
+                <p>Selecciona qué necesitas recuperar:</p>
+                <div class="recovery-options">
+                    <div class="recovery-option" onclick="showRecoveryForm('username')">
+                        Recuperar nombre de usuario
+                    </div>
+                    <div class="recovery-option" onclick="showRecoveryForm('password')">
+                        Recuperar contraseña
+                    </div>
+                </div>
+            </div>
+            
+            <div id="recoveryForm" style="display: none;">
+                <div class="form-group">
+                    <label id="recoveryLabel">Correo electrónico:</label>
+                    <input type="email" id="recoveryEmail" placeholder="Ingresa tu correo electrónico">
+                </div>
+                <button class="btn-primary" onclick="processRecovery()">Enviar</button>
+                <button class="btn-secondary" onclick="backToRecoveryOptions()">Atrás</button>
+                <div id="recoveryMessage" style="margin-top: 15px; display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables para el formulario multi-paso
+        let currentSection = 1;
+        const totalSections = 3;
+        let recoveryType = ''; // 'username' o 'password'
+        
+        // Mostrar modal de recuperación
+        function showRecoveryModal() {
+            document.getElementById('recoveryModal').style.display = 'flex';
+            document.getElementById('recoveryInitial').style.display = 'block';
+            document.getElementById('recoveryForm').style.display = 'none';
+            document.getElementById('recoveryMessage').style.display = 'none';
+            recoveryType = '';
+        }
+        
+        // Ocultar modal de recuperación
+        function hideRecoveryModal() {
+            document.getElementById('recoveryModal').style.display = 'none';
+        }
+        
+        // Mostrar formulario de recuperación específico
+        function showRecoveryForm(type) {
+            recoveryType = type;
+            document.getElementById('recoveryInitial').style.display = 'none';
+            document.getElementById('recoveryForm').style.display = 'block';
+            
+            if (type === 'username') {
+                document.getElementById('recoveryLabel').textContent = 'Correo electrónico:';
+                document.getElementById('recoveryEmail').placeholder = 'Ingresa tu correo electrónico';
+            } else {
+                document.getElementById('recoveryLabel').textContent = 'Correo electrónico o nombre de usuario:';
+                document.getElementById('recoveryEmail').placeholder = 'Ingresa tu correo o nombre de usuario';
+            }
+        }
+        
+        // Volver a las opciones de recuperación
+        function backToRecoveryOptions() {
+            document.getElementById('recoveryInitial').style.display = 'block';
+            document.getElementById('recoveryForm').style.display = 'none';
+            document.getElementById('recoveryMessage').style.display = 'none';
+            recoveryType = '';
+        }
+        
+        // Procesar la solicitud de recuperación
+        function processRecovery() {
+            const recoveryEmail = document.getElementById('recoveryEmail').value.trim();
+            const recoveryMessage = document.getElementById('recoveryMessage');
+            
+            if (!recoveryEmail) {
+                recoveryMessage.textContent = 'Por favor ingresa el dato solicitado';
+                recoveryMessage.style.display = 'block';
+                recoveryMessage.style.color = 'var(--danger-color)';
+                return;
+            }
+            
+            // Obtener usuarios del localStorage
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            let foundUser = null;
+            
+            if (recoveryType === 'username') {
+                // Buscar por email
+                for (const username in users) {
+                    if (users[username].email === recoveryEmail) {
+                        foundUser = { username, ...users[username] };
+                        break;
+                    }
+                }
+                
+                if (foundUser) {
+                    recoveryMessage.innerHTML = `Tu nombre de usuario es: <strong>${foundUser.username}</strong>`;
+                    recoveryMessage.style.color = 'var(--success-color)';
+                    recoveryMessage.style.display = 'block';
+                    
+                    // Simular envío de email (en un caso real se enviaría un email)
+                    console.log(`Email enviado a ${foundUser.email} con el nombre de usuario: ${foundUser.username}`);
+                } else {
+                    recoveryMessage.textContent = 'No se encontró una cuenta con ese correo electrónico';
+                    recoveryMessage.style.color = 'var(--danger-color)';
+                    recoveryMessage.style.display = 'block';
+                }
+            } else {
+                // Recuperación de contraseña
+                // Buscar por email o username
+                for (const username in users) {
+                    if (users[username].email === recoveryEmail || username === recoveryEmail) {
+                        foundUser = { username, ...users[username] };
+                        break;
+                    }
+                }
+                
+                if (foundUser) {
+                    // Generar contraseña temporal (en un caso real sería más seguro)
+                    const tempPassword = generateTempPassword();
+                    
+                    // Actualizar la contraseña en el almacenamiento (simulado)
+                    users[foundUser.username].password = tempPassword;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    recoveryMessage.innerHTML = `Se ha enviado una contraseña temporal a tu correo electrónico registrado.`;
+                    recoveryMessage.style.color = 'var(--success-color)';
+                    recoveryMessage.style.display = 'block';
+                    
+                    // Simular envío de email (en un caso real se enviaría un email)
+                    console.log(`Email enviado a ${foundUser.email} con la contraseña temporal: ${tempPassword}`);
+                } else {
+                    recoveryMessage.textContent = 'No se encontró una cuenta con ese correo o nombre de usuario';
+                    recoveryMessage.style.color = 'var(--danger-color)';
+                    recoveryMessage.style.display = 'block';
+                }
+            }
+        }
+        
+        // Generar contraseña temporal
+        function generateTempPassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 10; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Función para avanzar a la siguiente sección
+        function nextSection(sectionNum) {
+            // Validar campos antes de avanzar
+            if (sectionNum === 1) {
+                const username = document.getElementById("username").value.trim();
+                const email = document.getElementById("email").value.trim();
+                
+                if (!username || !email) {
+                    showMessage("Por favor complete todos los campos", "error");
+                    return;
+                }
+                
+                if (username.length < 4) {
+                    showMessage("El nombre de usuario debe tener al menos 4 caracteres", "error");
+                    return;
+                }
+                
+                if (!validateEmail(email)) {
+                    showMessage("Por favor ingrese un correo electrónico válido", "error");
+                    return;
+                }
+                
+                // Verificar si el usuario ya existe
+                if (checkUserExists(username)) {
+                    showMessage("El nombre de usuario ya está en uso", "error");
+                    return;
+                }
+            }
+            
+            if (sectionNum === 2) {
+                const password = document.getElementById("password").value;
+                const confirmPassword = document.getElementById("confirmPassword").value;
+                
+                if (!password || !confirmPassword) {
+                    showMessage("Por favor complete todos los campos", "error");
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    showMessage("La contraseña debe tener al menos 8 caracteres", "error");
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    document.getElementById("passwordMatch").style.display = "block";
+                    return;
+                } else {
+                    document.getElementById("passwordMatch").style.display = "none";
+                }
+            }
+            
+            // Cambiar a la siguiente sección
+            document.getElementById(`section${currentSection}`).classList.remove("active");
+            document.getElementById(`step${currentSection}`).classList.remove("active");
+            document.getElementById(`step${currentSection}`).classList.add("completed");
+            
+            currentSection++;
+            
+            document.getElementById(`section${currentSection}`).classList.add("active");
+            document.getElementById(`step${currentSection}`).classList.add("active");
+        }
+        
+        // Función para retroceder a la sección anterior
+        function prevSection(sectionNum) {
+            document.getElementById(`section${currentSection}`).classList.remove("active");
+            document.getElementById(`step${currentSection}`).classList.remove("active");
+            
+            currentSection--;
+            
+            document.getElementById(`section${currentSection}`).classList.add("active");
+            document.getElementById(`step${currentSection}`).classList.add("active");
+        }
+        
+        // Validar email
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // Verificar si el usuario ya existe
+        function checkUserExists(username) {
+            let users = JSON.parse(localStorage.getItem("users") || "{}");
+            return users.hasOwnProperty(username);
+        }
+        
+        // Mostrar fortaleza de la contraseña
+        function checkPasswordStrength(password) {
+            const strengthMeter = document.getElementById("passwordStrength");
+            const tips = document.getElementById("passwordTips");
+            
+            // Reset
+            strengthMeter.className = "strength-meter";
+            tips.style.display = "none";
+            
+            if (!password) return;
+            
+            // Mostrar tips
+            tips.style.display = "block";
+            
+            // Calcular fortaleza
+            let strength = 0;
+            
+            // Longitud
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            
+            // Caracteres mezclados
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            
+            // Números
+            if (/\d/.test(password)) strength++;
+            
+            // Caracteres especiales
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            // Actualizar visualización
+            if (strength <= 2) {
+                strengthMeter.className = "strength-meter weak";
+            } else if (strength <= 4) {
+                strengthMeter.className = "strength-meter medium";
+            } else {
+                strengthMeter.className = "strength-meter strong";
+            }
+        }
+        
+        // Manejar envío del formulario
+        document.getElementById("registerForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const fullName = document.getElementById("fullName").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const message = document.getElementById("message");
+            
+            // Validación final
+            if (!fullName) {
+                showMessage("Por favor ingrese su nombre completo", "error");
+                return;
+            }
+            
+            // Obtener usuarios del localStorage o inicializar objeto vacío
+            let users = JSON.parse(localStorage.getItem("users")) || {};
+            
+            // Verificar si el usuario ya existe (por si acaso)
+            if (users[username]) {
+                showMessage("El usuario ya existe", "error");
+                return;
+            }
+            
+            // Verificar si el correo ya está registrado
+            if (checkEmailExists(email)) {
+                showMessage("El correo electrónico ya está registrado", "error");
+                return;
+            }
+            
+            // Crear nuevo usuario
+            users[username] = {
+                email: email,
+                password: password,
+                fullName: fullName,
+                phone: phone || null,
+                balance: 0,      // Saldo inicial 0 (sin saldo hasta recargar)
+                wins: 0,         // Ganancias acumuladas
+                losses: 0,       // Pérdidas acumuladas
+                createdAt: new Date().toISOString(),
+                lastLogin: null
+            };
+            
+            // Guardar en localStorage
+            localStorage.setItem("users", JSON.stringify(users));
+            
+            // Mostrar mensaje de éxito
+            showMessage("¡Registro exitoso! Serás redirigido para iniciar sesión...", "success");
+            
+            // Redirigir después de 2 segundos
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 2000);
+        });
+        
+        // Verificar si el correo ya existe
+        function checkEmailExists(email) {
+            let users = JSON.parse(localStorage.getItem("users") || "{}");
+            return Object.values(users).some(user => user.email === email);
+        }
+        
+        // Mostrar mensajes
+        function showMessage(text, type) {
+            const message = document.getElementById("message");
+            message.textContent = text;
+            message.className = type;
+            message.style.display = "block";
+            
+            // Desplazarse al mensaje
+            message.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                message.style.display = "none";
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
