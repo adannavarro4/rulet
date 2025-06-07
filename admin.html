@@ -254,7 +254,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 100;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
@@ -377,6 +377,20 @@
             background-color: #f2dede;
             border-color: #ebccd1;
         }
+        
+        /* Mejoras para botones de edición */
+        .balance-modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
     </style>
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -444,14 +458,12 @@
                         <h3>Balance General</h3>
                         <p id="totalBalance" class="total-balance">0 Bs</p>
                     </div>
-                </div>
-
                     <div class="stat-card">
                         <h3>Tickets Pendientes</h3>
                         <p id="pendingTickets">0</p>
+                    </div>
                 </div>
-            
-        
+
                 <!-- Gráficos -->
                 <div class="chart-container">
                     <canvas id="usersChart"></canvas>
@@ -668,33 +680,25 @@
                     <tbody></tbody>
                 </table>
             </div>
-        </div>
-    </div>
-
-     <!-- Main Content - Agregada sección de Soporte -->
-     <div class="main-content">
-        <!-- ... (otras secciones sin cambios) ... -->
-        
-        <!-- Soporte -->
-        <div class="tab-content" id="support">
-            <h1>Soporte - Tickets</h1>
             
-            <div class="filter-tickets">
-                <select id="ticketFilter">
-                    <option value="all">Todos los tickets</option>
-                    <option value="pending">Pendientes</option>
-                    <option value="in-progress">En progreso</option>
-                    <option value="resolved">Resueltos</option>
-                </select>
-                <button class="btn btn-primary" id="filterTicketsBtn">Filtrar</button>
-            </div>
-            
-            <div id="ticketsList">
-                <!-- Los tickets se cargarán aquí dinámicamente -->
+            <!-- Soporte -->
+            <div class="tab-content" id="support">
+                <h1>Soporte - Tickets</h1>
+                <div class="filter-tickets">
+                    <select id="ticketFilter">
+                        <option value="all">Todos los tickets</option>
+                        <option value="pending">Pendientes</option>
+                        <option value="in-progress">En progreso</option>
+                        <option value="resolved">Resueltos</option>
+                    </select>
+                    <button class="btn btn-primary" id="filterTicketsBtn">Filtrar</button>
+                </div>
+                <div id="ticketsList">
+                    <!-- Los tickets se cargarán aquí dinámicamente -->
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <script>
         // Datos de ejemplo en localStorage si no existen
@@ -707,9 +711,9 @@
                         password: 'admin123',
                         email: 'admin@rulet.com',
                         fullName: 'Administrador',
-                        balance: 0,
-                        wins: 0,
-                        losses: 0,
+                        balance: 10000,
+                        wins: 5000,
+                        losses: 2000,
                         createdAt: new Date().toISOString(),
                         lastLogin: null,
                         active: true,
@@ -721,9 +725,9 @@
                         password: 'usuario123',
                         email: 'usuario1@ejemplo.com',
                         fullName: 'Usuario de Prueba',
-                        balance: 1000,
-                        wins: 500,
-                        losses: 200,
+                        balance: 1500,
+                        wins: 800,
+                        losses: 300,
                         createdAt: new Date().toISOString(),
                         lastLogin: null,
                         active: true,
@@ -735,9 +739,9 @@
                         password: 'usuario123',
                         email: 'usuario2@ejemplo.com',
                         fullName: 'Otro Usuario',
-                        balance: 800,
-                        wins: 300,
-                        losses: 150,
+                        balance: 2500,
+                        wins: 1200,
+                        losses: 500,
                         createdAt: new Date().toISOString(),
                         lastLogin: null,
                         active: true,
@@ -866,6 +870,10 @@
                     'admin': Date.now(),
                     'usuario1': Date.now()
                 }));
+            }
+            
+            if (!localStorage.getItem('supportTickets')) {
+                localStorage.setItem('supportTickets', JSON.stringify([]));
             }
         }
         
@@ -999,9 +1007,6 @@
             });
             
             const ctxUsers = document.getElementById('usersChart').getContext('2d');
-           /* if (window.usersChart) {
-                window.usersChart.destroy();
-            }*/
             window.usersChart = new Chart(ctxUsers, {
                 type: 'line',
                 data: {
@@ -1033,9 +1038,6 @@
             });
             
             const ctxTransactions = document.getElementById('transactionsChart').getContext('2d');
-            if (window.transactionsChart) {
-              /*  window.transactionsChart.destroy();*/
-            }
             window.transactionsChart = new Chart(ctxTransactions, {
                 type: 'bar',
                 data: {
@@ -1173,7 +1175,7 @@
                                         </td>
                                         <td>
                                             <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
-                                            <button onclick="editUserBalance('${user.username}')" class="btn btn-warning">Editar Saldo</button>
+                                            <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
                                         </td>
                                     </tr>
                                 `;
@@ -1219,25 +1221,6 @@
                     .filter(t => t.username === username)
                     .sort((a, b) => new Date(b.date) - new Date(a.date));
                 
-                // Filtrar participaciones en ruletas
-                const userRuletas = [];
-                Object.values(ruletasData.ruletas).forEach(ruleta => {
-                    ruleta.sectors.forEach((sector, index) => {
-                        if (sector && sector.playerName === username) {
-                            userRuletas.push({
-                                ruletaId: ruleta.id,
-                                sector: index + 1,
-                                bet: sector.bet,
-                                date: ruleta.createdAt,
-                                isWinner: ruleta.winners && 
-                                         (ruleta.winners.main.playerName === username ||
-                                          ruleta.winners.left.playerName === username ||
-                                          ruleta.winners.right.playerName === username)
-                            });
-                        }
-                    });
-                });
-
                 // Verificar estado de conexión
                 const now = Date.now();
                 const isOnline = onlineUsers[username] && (now - onlineUsers[username]) < 300000;
@@ -1272,7 +1255,6 @@
                         
                         <div class="history-tabs">
                             <div class="history-tab active" data-tab="transactions">Transacciones</div>
-                            <div class="history-tab" data-tab="ruletas">Participaciones</div>
                         </div>
                         
                         <div id="transactionsContent" class="history-content active">
@@ -1303,40 +1285,8 @@
                                 `<p style="margin-top: 10px; text-align: center;">Mostrando 10 de ${userTransactions.length} transacciones</p>` : ''}
                         </div>
                         
-                        <div id="ruletasContent" class="history-content">
-                            <h3>Participaciones en Ruletas</h3>
-                            <table style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Ruleta</th>
-                                        <th>Número</th>
-                                        <th>Apuesta</th>
-                                        <th>Fecha</th>
-                                        <th>Resultado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${userRuletas.slice(0, 10).map(r => `
-                                        <tr>
-                                            <td>#${r.ruletaId}</td>
-                                            <td>${r.sector}</td>
-                                            <td>${r.bet} Bs</td>
-                                            <td>${new Date(r.date).toLocaleDateString()}</td>
-                                            <td>
-                                                ${r.isWinner ? 
-                                                    '<span style="color: green;">Ganador</span>' : 
-                                                    '<span style="color: red;">No ganó</span>'}
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                            ${userRuletas.length > 10 ? 
-                                `<p style="margin-top: 10px; text-align: center;">Mostrando 10 de ${userRuletas.length} participaciones</p>` : ''}
-                        </div>
-                        
                         <div style="margin-top: 20px; text-align: center;">
-                            <button onclick="editUserBalance('${username}')" class="btn btn-warning">Editar Saldo</button>
+                            <button class="btn btn-warning edit-balance-btn" data-username="${username}">Editar Saldo</button>
                             ${user.active !== false ? 
                                 `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>` : 
                                 `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`}
@@ -1346,136 +1296,143 @@
                 `;
                 document.body.appendChild(modal);
                 modal.style.display = 'block';
-                
-                // Configurar pestañas
-                const tabs = modal.querySelectorAll('.history-tab');
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        // Remover clase active de todas las pestañas y contenidos
-                        tabs.forEach(t => t.classList.remove('active'));
-                        modal.querySelectorAll('.history-content').forEach(c => c.classList.remove('active'));
-                        
-                        // Agregar clase active a la pestaña y contenido seleccionado
-                        this.classList.add('active');
-                        const tabId = this.getAttribute('data-tab');
-                        document.getElementById(`${tabId}Content`).classList.add('active');
-                    });
-                });
             }
         };
 
         // Función para editar saldo del usuario
         window.editUserBalance = function(username) {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const user = users[username];
-            
-            if (user) {
-                // Crear modal para editar saldo
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.id = 'editBalanceModal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 500px;">
-                        <span class="close-modal" onclick="closeModal()">&times;</span>
-                        <h2>Editar Saldo: ${username}</h2>
-                        
-                        <div class="user-details" style="margin-bottom: 20px;">
-                            <p><strong>Saldo actual:</strong> ${user.balance || 0} Bs</p>
+            try {
+                const users = JSON.parse(localStorage.getItem('users')) || {};
+                const user = users[username];
+                
+                if (user) {
+                    // Crear modal para editar saldo
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.id = 'editBalanceModal';
+                    modal.innerHTML = `
+                        <div class="modal-content" style="max-width: 500px;">
+                            <span class="close-modal" onclick="closeModal()">&times;</span>
+                            <h2>Editar Saldo: ${username}</h2>
+                            
+                            <div class="user-details" style="margin-bottom: 20px;">
+                                <p><strong>Saldo actual:</strong> ${user.balance || 0} Bs</p>
+                            </div>
+                            
+                            <div class="balance-modal-form">
+                                <div>
+                                    <label for="balanceAction">Acción:</label>
+                                    <select id="balanceAction" class="form-control">
+                                        <option value="add">Agregar saldo</option>
+                                        <option value="subtract">Quitar saldo</option>
+                                        <option value="set">Establecer saldo exacto</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="balanceAmount">Cantidad (Bs):</label>
+                                    <input type="number" id="balanceAmount" class="form-control" min="0" step="0.01" required>
+                                </div>
+                                
+                                <div>
+                                    <label for="balanceReason">Razón:</label>
+                                    <textarea id="balanceReason" class="form-control" rows="3" placeholder="Motivo del ajuste" required></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="modal-footer">
+                                <button id="confirmBalanceEdit" class="btn btn-primary">Confirmar</button>
+                                <button onclick="closeModal()" class="btn btn-secondary">Cancelar</button>
+                            </div>
                         </div>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <label for="balanceAction">Acción:</label>
-                            <select id="balanceAction" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-                                <option value="add">Agregar saldo</option>
-                                <option value="subtract">Quitar saldo</option>
-                                <option value="set">Establecer saldo exacto</option>
-                            </select>
-                        </div>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <label for="balanceAmount">Cantidad (Bs):</label>
-                            <input type="number" id="balanceAmount" class="form-control" style="width: 100%; padding: 8px;" min="0" step="0.01">
-                        </div>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <label for="balanceReason">Razón:</label>
-                            <textarea id="balanceReason" class="form-control" style="width: 100%; padding: 8px;" rows="3" placeholder="Motivo del ajuste"></textarea>
-                        </div>
-                        
-                        <div style="text-align: center;">
-                            <button onclick="confirmBalanceEdit('${username}')" class="btn btn-primary">Confirmar</button>
-                            <button onclick="closeModal()" class="btn btn-secondary">Cancelar</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.style.display = 'block';
+                    `;
+                    document.body.appendChild(modal);
+                    modal.style.display = 'block';
+                    
+                    // Agregar evento al botón de confirmar
+                    document.getElementById('confirmBalanceEdit').addEventListener('click', function() {
+                        confirmBalanceEdit(username);
+                    });
+                } else {
+                    alert(`Usuario ${username} no encontrado`);
+                }
+            } catch (error) {
+                console.error('Error en editUserBalance:', error);
+                alert('Ocurrió un error: ' + error.message);
             }
         };
 
         // Función para confirmar edición de saldo
-        window.confirmBalanceEdit = function(username) {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const user = users[username];
-            
-            if (user) {
-                const action = document.getElementById('balanceAction').value;
-                const amount = parseFloat(document.getElementById('balanceAmount').value);
-                const reason = document.getElementById('balanceReason').value || 'Ajuste de saldo por administrador';
+        function confirmBalanceEdit(username) {
+            try {
+                const users = JSON.parse(localStorage.getItem('users')) || {};
+                const user = users[username];
                 
-                if (isNaN(amount) || amount <= 0) {
-                    alert('Por favor ingrese una cantidad válida (mayor que 0)');
-                    return;
-                }
-                
-                let newBalance = user.balance || 0;
-                let transactionAmount = amount;
-                
-                switch(action) {
-                    case 'add':
-                        newBalance += amount;
-                        break;
-                    case 'subtract':
-                        if (amount > newBalance) {
-                            alert('El usuario no tiene suficiente saldo para esta operación');
-                            return;
+                if (user) {
+                    const action = document.getElementById('balanceAction').value;
+                    const amount = parseFloat(document.getElementById('balanceAmount').value);
+                    const reason = document.getElementById('balanceReason').value || 'Ajuste de saldo por administrador';
+                    
+                    if (isNaN(amount) || amount <= 0) {
+                        alert('Por favor ingrese una cantidad válida (mayor que 0)');
+                        return;
+                    }
+                    
+                    let newBalance = user.balance || 0;
+                    let transactionAmount = amount;
+                    
+                    switch(action) {
+                        case 'add':
+                            newBalance += amount;
+                            break;
+                        case 'subtract':
+                            if (amount > newBalance) {
+                                alert('El usuario no tiene suficiente saldo para esta operación');
+                                return;
+                            }
+                            newBalance -= amount;
+                            transactionAmount = -amount;
+                            break;
+                        case 'set':
+                            newBalance = amount;
+                            transactionAmount = amount - (user.balance || 0);
+                            break;
+                    }
+                    
+                    // Actualizar saldo del usuario
+                    user.balance = newBalance;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    // Registrar transacción
+                    addTransaction({
+                        type: 'balance_adjustment',
+                        username: username,
+                        amount: transactionAmount,
+                        details: reason,
+                        status: 'completed'
+                    });
+                    
+                    // Cerrar modal y actualizar vista
+                    closeModal();
+                    loadUsers();
+                    loadDashboard();
+                    
+                    // Si el modal de detalles está abierto, actualizarlo
+                    const detailsModal = document.getElementById('userDetailsModal');
+                    if (detailsModal) {
+                        const balanceElement = detailsModal.querySelector('.user-details p:nth-child(5)');
+                        if (balanceElement) {
+                            balanceElement.innerHTML = `<strong>Saldo actual:</strong> ${user.balance || 0} Bs`;
                         }
-                        newBalance -= amount;
-                        transactionAmount = -amount;
-                        break;
-                    case 'set':
-                        newBalance = amount;
-                        transactionAmount = amount - (user.balance || 0);
-                        break;
+                    }
+                    
+                    alert(`Saldo de ${username} actualizado a ${newBalance} Bs`);
                 }
-                
-                // Actualizar saldo del usuario
-                user.balance = newBalance;
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                // Registrar transacción
-                addTransaction({
-                    type: 'balance_adjustment',
-                    username: username,
-                    amount: transactionAmount,
-                    details: reason,
-                    status: 'completed'
-                });
-                
-                // Cerrar modal y actualizar vista
-                closeModal();
-                loadUsers();
-                
-                // Si el modal de detalles está abierto, actualizarlo
-                const detailsModal = document.getElementById('userDetailsModal');
-                if (detailsModal) {
-                    detailsModal.querySelector('.user-details p:nth-child(5)').innerHTML = 
-                        `<strong>Saldo actual:</strong> ${user.balance || 0} Bs`;
-                }
-                
-                alert(`Saldo de ${username} actualizado a ${newBalance} Bs`);
+            } catch (error) {
+                console.error('Error en confirmBalanceEdit:', error);
+                alert('Ocurrió un error: ' + error.message);
             }
-        };
+        }
 
         // Función para desactivar usuario
         window.deactivateUser = function(username) {
@@ -1499,14 +1456,19 @@
                     // Si el modal de detalles está abierto, actualizarlo
                     const detailsModal = document.getElementById('userDetailsModal');
                     if (detailsModal) {
-                        detailsModal.querySelector('.user-details p:nth-child(4)').innerHTML = 
-                            `<strong>Estado:</strong> <span class="badge badge-inactive">Inactivo</span>`;
+                        const statusElement = detailsModal.querySelector('.user-details p:nth-child(4)');
+                        if (statusElement) {
+                            statusElement.innerHTML = `<strong>Estado:</strong> <span class="badge badge-inactive">Inactivo</span>`;
+                        }
+                        
                         // Reemplazar botón Desactivar por Activar
                         const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
-                        buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
-                            `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`,
-                            `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`
-                        );
+                        if (buttonsDiv) {
+                            buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
+                                `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`,
+                                `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`
+                            );
+                        }
                     }
                     
                     alert(`Usuario ${username} desactivado correctamente`);
@@ -1535,14 +1497,19 @@
                 // Si el modal de detalles está abierto, actualizarlo
                 const detailsModal = document.getElementById('userDetailsModal');
                 if (detailsModal) {
-                    detailsModal.querySelector('.user-details p:nth-child(4)').innerHTML = 
-                        `<strong>Estado:</strong> <span class="badge badge-active">Activo</span>`;
+                    const statusElement = detailsModal.querySelector('.user-details p:nth-child(4)');
+                    if (statusElement) {
+                        statusElement.innerHTML = `<strong>Estado:</strong> <span class="badge badge-active">Activo</span>`;
+                    }
+                    
                     // Reemplazar botón Activar por Desactivar
                     const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
-                    buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
-                        `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`,
-                        `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`
-                    );
+                    if (buttonsDiv) {
+                        buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
+                            `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`,
+                            `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`
+                        );
+                    }
                 }
                 
                 alert(`Usuario ${username} activado correctamente`);
@@ -1629,7 +1596,7 @@
                             ` : `
                                 <button onclick="activateUser('${user.username}')" class="btn btn-success">Activar</button>
                             `}
-                            <button onclick="editUserBalance('${user.username}')" class="btn btn-warning">Editar Saldo</button>
+                            <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
                         </td>
                     </tr>
                 `;
@@ -2138,7 +2105,7 @@
             return labels[type] || type;
         }
 
-        // Logout - Corregido
+        // Logout
         document.getElementById('logoutBtn').addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -2162,9 +2129,8 @@
         document.getElementById('loadTransactionsBtn').addEventListener('click', loadTransactions);
         document.getElementById('loadRuletasBtn').addEventListener('click', loadRuletas);
 
-        // Tabs - Corregido para excluir el botón de logout
+        // Tabs
         document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
-            console.log("aqui")
             item.addEventListener('click', function() {
                 const tabId = this.getAttribute('data-tab');
                 
@@ -2186,20 +2152,20 @@
                 if (tabId === 'deposits') loadDeposits();
                 if (tabId === 'transactions') loadTransactions();
                 if (tabId === 'ruletas') loadRuletas();
+                if (tabId === 'support') loadSupportTickets();
             });
         });
 
-        // Inicializar localStorage para tickets si no existe
-        function initializeLocalStorage() {
-            if (!localStorage.getItem('users')) {
-                // ... (código anterior sin cambios) ... 
+        // Delegación de eventos para botones de editar saldo
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('edit-balance-btn')) {
+                const username = e.target.dataset.username;
+                if (username) {
+                    editUserBalance(username);
+                }
             }
-            
-            if (!localStorage.getItem('supportTickets')) {
-                localStorage.setItem('supportTickets', JSON.stringify([]));
-            }
-        }
-        
+        });
+
         // Función para cargar tickets de soporte
         function loadSupportTickets(filter = 'all') {
             const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
@@ -2256,160 +2222,14 @@
             });
         }
         
-        // Función para ver detalles del ticket
-        window.viewTicketDetails = function(ticketId) {
-            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
-            const ticket = tickets.find(t => t.id === ticketId);
-            
-            if (ticket) {
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 700px;">
-                        <span class="close-modal" onclick="closeModal()">&times;</span>
-                        <h2>Detalles del Ticket</h2>
-                        
-                        <div class="ticket-header">
-                            <div class="ticket-title">${ticket.subject}</div>
-                            <div class="ticket-status status-${ticket.status.replace(' ', '-')}">
-                                ${getStatusLabel(ticket.status)}
-                            </div>
-                        </div>
-                        
-                        <div class="ticket-meta">
-                            <div>
-                                <strong>Usuario:</strong> ${ticket.username}<br>
-                                <strong>Fecha:</strong> ${new Date(ticket.createdAt).toLocaleString()}<br>
-                                <strong>Categoría:</strong> ${ticket.category || 'General'}
-                            </div>
-                        </div>
-                        
-                        <div class="ticket-message">
-                            <h4>Mensaje:</h4>
-                            <p>${ticket.message}</p>
-                        </div>
-                        
-                        <div class="replies-list">
-                            <h4>Respuestas:</h4>
-                            ${ticket.replies && ticket.replies.length > 0 ? 
-                                ticket.replies.map(reply => `
-                                    <div class="reply-item ${reply.isAdmin ? 'admin-reply' : 'user-reply'}">
-                                        <div class="reply-meta">
-                                            <span>${reply.isAdmin ? 'Administrador' : ticket.username}</span>
-                                            <span>${new Date(reply.date).toLocaleString()}</span>
-                                        </div>
-                                        <div class="reply-content">
-                                            ${reply.message}
-                                        </div>
-                                    </div>
-                                `).join('') : 
-                                '<p>No hay respuestas aún.</p>'}
-                        </div>
-                        
-                        <div class="reply-form">
-                            <h4>Responder:</h4>
-                            <textarea id="replyMessage" rows="4" placeholder="Escribe tu respuesta aquí..."></textarea>
-                            <button onclick="addReplyToTicket('${ticket.id}')" class="btn btn-primary">Enviar respuesta</button>
-                        </div>
-                        
-                        <div style="margin-top: 20px;">
-                            ${ticket.status !== 'resolved' ? `
-                                <button onclick="updateTicketStatus('${ticket.id}', 'resolved', true)" class="btn btn-success">
-                                    Marcar como resuelto
-                                </button>
-                            ` : ''}
-                            <button onclick="closeModal()" class="btn btn-secondary">Cerrar</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.style.display = 'block';
-            }
-        };
-        
-        // Función para agregar una respuesta a un ticket
-        window.addReplyToTicket = function(ticketId) {
-            const replyMessage = document.getElementById('replyMessage').value.trim();
-            if (!replyMessage) {
-                alert('Por favor escribe un mensaje');
-                return;
-            }
-            
-            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
-            const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-            
-            if (ticketIndex !== -1) {
-                if (!tickets[ticketIndex].replies) {
-                    tickets[ticketIndex].replies = [];
-                }
-                
-                tickets[ticketIndex].replies.push({
-                    message: replyMessage,
-                    isAdmin: true,
-                    date: new Date().toISOString()
-                });
-                
-                // Si estaba pendiente, cambiar a "en progreso"
-                if (tickets[ticketIndex].status === 'pending') {
-                    tickets[ticketIndex].status = 'in-progress';
-                }
-                
-                localStorage.setItem('supportTickets', JSON.stringify(tickets));
-                document.getElementById('replyMessage').value = '';
-                
-                // Recargar la vista del ticket
-                viewTicketDetails(ticketId);
-                loadSupportTickets(document.getElementById('ticketFilter').value);
-            }
-        };
-        
-        // Función para actualizar el estado de un ticket
-        window.updateTicketStatus = function(ticketId, newStatus, closeModalAfter = false) {
-            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
-            const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-            
-            if (ticketIndex !== -1) {
-                tickets[ticketIndex].status = newStatus;
-                localStorage.setItem('supportTickets', JSON.stringify(tickets));
-                
-                if (closeModalAfter) {
-                    closeModal();
-                }
-                
-                loadSupportTickets(document.getElementById('ticketFilter').value);
-            }
-        };
-        
-        // Obtener etiqueta para el estado del ticket
-        function getStatusLabel(status) {
-            const labels = {
-                'pending': 'Pendiente',
-                'in-progress': 'En progreso',
-                'resolved': 'Resuelto'
-            };
-            return labels[status] || status;
-        }
-        
         // Event listeners para el soporte
         document.getElementById('filterTicketsBtn').addEventListener('click', function() {
             const filter = document.getElementById('ticketFilter').value;
             loadSupportTickets(filter);
         });
         
-        // En el manejador de pestañas, agregar soporte
-        document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
-            item.addEventListener('click', function() {
-                // ... (código anterior sin cambios) ...
-                
-                // Cargar datos específicos de la pestaña
-                if (tabId === 'users') loadUsers();
-                if (tabId === 'withdrawals') loadWithdrawals();
-                if (tabId === 'deposits') loadDeposits();
-                if (tabId === 'transactions') loadTransactions();
-                if (tabId === 'ruletas') loadRuletas();
-                if (tabId === 'support') loadSupportTickets();
-            });
-        });
+        // Cargar soporte al inicio
+        loadSupportTickets();
     </script>
 </body>
 </html>
