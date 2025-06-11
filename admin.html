@@ -195,7 +195,7 @@
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 30px;
-            padding-top: calc(var(--header-height) + 30px;
+            padding-top: calc(var(--header-height) + 30px);
         }
         
         .tab-content {
@@ -292,12 +292,18 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             height: 350px;
+            position: relative;
         }
         
         .chart-container h3 {
             margin-bottom: 20px;
             color: var(--primary);
             font-weight: 500;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 250px;
         }
         
         /* Tables */
@@ -759,12 +765,16 @@
                     <div class="chart-row">
                         <div class="chart-container">
                             <h3><i class="fas fa-chart-line"></i> Registro de Usuarios</h3>
-                            <canvas id="usersChart"></canvas>
+                            <div class="chart-wrapper">
+                                <canvas id="usersChart"></canvas>
+                            </div>
                         </div>
                         
                         <div class="chart-container">
                             <h3><i class="fas fa-chart-pie"></i> Distribución de Transacciones</h3>
-                            <canvas id="transactionsChart"></canvas>
+                            <div class="chart-wrapper">
+                                <canvas id="transactionsChart"></canvas>
+                            </div>
                         </div>
                     </div>
                     
@@ -838,6 +848,54 @@
                     </table>
                 </div>
             </div>
+            
+            <!-- Retiros -->
+            <div class="tab-content" id="withdrawals">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="withdrawalFilter"><i class="fas fa-filter"></i> Filtrar:</label>
+                        <select id="withdrawalFilter">
+                            <option value="pending">Pendientes</option>
+                            <option value="approved">Aprobados</option>
+                            <option value="rejected">Rechazados</option>
+                            <option value="all">Todos</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="withdrawalDate"><i class="fas fa-calendar"></i> Fecha:</label>
+                        <input type="date" id="withdrawalDate">
+                        <button class="btn btn-primary" id="filterWithdrawalsBtn">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="withdrawalsStatus" class="alert alert-info">
+                    Cargando solicitudes de retiro...
+                </div>
+                
+                <div class="table-container">
+                    <table id="withdrawalsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Monto</th>
+                                <th>Banco</th>
+                                <th>Cuenta</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="8" style="text-align: center;">Cargando datos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -845,73 +903,8 @@
         // Configuración de la API - REEMPLAZA CON TU URL REAL
         const API_BASE_URL = 'https://tu-api-en-namecheap.com/api';
         let token = localStorage.getItem('adminToken');
-        
-        // Simulación de datos para la demo
-        const demoUsers = [
-            {
-                id: 1,
-                username: "usuario1",
-                fullName: "Juan Pérez",
-                email: "juan@example.com",
-                balance: 1500,
-                wins: 2000,
-                losses: 500,
-                createdAt: "2023-05-15T10:30:00Z",
-                online: true,
-                active: true
-            },
-            {
-                id: 2,
-                username: "usuario2",
-                fullName: "María García",
-                email: "maria@example.com",
-                balance: 3500,
-                wins: 5000,
-                losses: 1500,
-                createdAt: "2023-06-20T14:45:00Z",
-                online: false,
-                active: true
-            },
-            {
-                id: 3,
-                username: "usuario3",
-                fullName: "Carlos Rodríguez",
-                email: "carlos@example.com",
-                balance: 800,
-                wins: 1200,
-                losses: 400,
-                createdAt: "2023-07-10T08:15:00Z",
-                online: true,
-                active: false
-            }
-        ];
-        
-        const demoTransactions = [
-            {
-                id: 1,
-                date: "2023-09-01T10:30:00Z",
-                username: "usuario1",
-                type: "deposit",
-                amount: 500,
-                status: "approved"
-            },
-            {
-                id: 2,
-                date: "2023-09-01T12:15:00Z",
-                username: "usuario2",
-                type: "win",
-                amount: 200,
-                status: "completed"
-            },
-            {
-                id: 3,
-                date: "2023-09-01T15:45:00Z",
-                username: "usuario3",
-                type: "withdrawal",
-                amount: 300,
-                status: "pending"
-            }
-        ];
+        let usersChart = null;
+        let transactionsChart = null;
         
         // Función para mostrar estado de carga
         function showLoader(element) {
@@ -944,10 +937,94 @@
                 return { valid: true };
             }
             else if (endpoint === '/users') {
-                return demoUsers;
+                return [
+                    {
+                        id: 1,
+                        username: "usuario1",
+                        fullName: "Juan Pérez",
+                        email: "juan@example.com",
+                        balance: 1500,
+                        wins: 2000,
+                        losses: 500,
+                        createdAt: "2023-05-15T10:30:00Z",
+                        online: true,
+                        active: true
+                    },
+                    {
+                        id: 2,
+                        username: "usuario2",
+                        fullName: "María García",
+                        email: "maria@example.com",
+                        balance: 3500,
+                        wins: 5000,
+                        losses: 1500,
+                        createdAt: "2023-06-20T14:45:00Z",
+                        online: false,
+                        active: true
+                    },
+                    {
+                        id: 3,
+                        username: "usuario3",
+                        fullName: "Carlos Rodríguez",
+                        email: "carlos@example.com",
+                        balance: 800,
+                        wins: 1200,
+                        losses: 400,
+                        createdAt: "2023-07-10T08:15:00Z",
+                        online: true,
+                        active: false
+                    }
+                ];
             }
             else if (endpoint === '/transactions') {
-                return demoTransactions;
+                return [
+                    {
+                        id: 1,
+                        date: "2023-09-01T10:30:00Z",
+                        username: "usuario1",
+                        type: "deposit",
+                        amount: 500,
+                        status: "approved"
+                    },
+                    {
+                        id: 2,
+                        date: "2023-09-01T12:15:00Z",
+                        username: "usuario2",
+                        type: "win",
+                        amount: 200,
+                        status: "completed"
+                    },
+                    {
+                        id: 3,
+                        date: "2023-09-01T15:45:00Z",
+                        username: "usuario3",
+                        type: "withdrawal",
+                        amount: 300,
+                        status: "pending"
+                    }
+                ];
+            }
+            else if (endpoint === '/withdrawals') {
+                return [
+                    {
+                        id: 1,
+                        username: "usuario1",
+                        amount: 500,
+                        bank: "Banco Nacional",
+                        account: "1234-5678-9012-3456",
+                        date: "2023-09-01T10:30:00Z",
+                        status: "pending"
+                    },
+                    {
+                        id: 2,
+                        username: "usuario2",
+                        amount: 1200,
+                        bank: "Banco Mercantil",
+                        account: "5678-9012-3456-1234",
+                        date: "2023-09-02T14:20:00Z",
+                        status: "approved"
+                    }
+                ];
             }
             
             return null;
@@ -986,7 +1063,10 @@
 
         // Mostrar panel admin si ya está logueado
         if (token) {
-            showAdminPanel();
+            document.addEventListener('DOMContentLoaded', function() {
+                showAdminPanel();
+                initEventListeners();
+            });
         }
 
         async function showAdminPanel() {
@@ -1049,6 +1129,10 @@
         
         // Cargar gráficos
         function loadCharts(usersData, transactionsData) {
+            // Destruir gráficos anteriores si existen
+            if (usersChart) usersChart.destroy();
+            if (transactionsChart) transactionsChart.destroy();
+            
             // Gráfico de usuarios por fecha
             const userDates = usersData.map(user => new Date(user.createdAt).toLocaleDateString());
             const userCounts = {};
@@ -1058,7 +1142,7 @@
             });
             
             const ctxUsers = document.getElementById('usersChart').getContext('2d');
-            window.usersChart = new Chart(ctxUsers, {
+            usersChart = new Chart(ctxUsers, {
                 type: 'line',
                 data: {
                     labels: Object.keys(userCounts),
@@ -1096,7 +1180,7 @@
             });
             
             const ctxTransactions = document.getElementById('transactionsChart').getContext('2d');
-            window.transactionsChart = new Chart(ctxTransactions, {
+            transactionsChart = new Chart(ctxTransactions, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(transactionTypes),
@@ -1217,6 +1301,9 @@
                 
                 document.body.appendChild(modal);
                 modal.style.display = 'block';
+                
+                // Agregar evento para cerrar modal
+                modal.querySelector('.close-modal').addEventListener('click', closeModal);
             } catch (error) {
                 console.error('Error al cargar usuarios modal:', error);
                 alert('Error al cargar la lista de usuarios');
@@ -1283,6 +1370,46 @@
             }
         }
         
+        // Cargar retiros
+        async function loadWithdrawals() {
+            const withdrawalsStatus = document.getElementById('withdrawalsStatus');
+            showStatus(withdrawalsStatus, 'Cargando solicitudes de retiro...', 'info');
+            
+            try {
+                const withdrawals = await apiRequest('/withdrawals');
+                
+                const tbody = document.querySelector('#withdrawalsTable tbody');
+                tbody.innerHTML = withdrawals.map(w => {
+                    return `
+                        <tr>
+                            <td>${w.id || '-'}</td>
+                            <td>${w.username}</td>
+                            <td>${w.amount} Bs</td>
+                            <td>${w.bank || '-'}</td>
+                            <td>${w.account || '-'}</td>
+                            <td>${new Date(w.date).toLocaleString()}</td>
+                            <td>${getStatusLabel(w.status)}</td>
+                            <td>
+                                ${w.status === 'pending' ? `
+                                    <button class="btn btn-success btn-sm">
+                                        <i class="fas fa-check"></i> Aprobar
+                                    </button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="fas fa-times"></i> Rechazar
+                                    </button>
+                                ` : 'N/A'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                showStatus(withdrawalsStatus, `Solicitudes de retiro cargadas: ${withdrawals.length}`, 'success');
+            } catch (error) {
+                console.error('Error al cargar retiros:', error);
+                showStatus(withdrawalsStatus, 'Error al cargar solicitudes de retiro', 'danger');
+            }
+        }
+        
         // Buscar usuarios
         function searchUsers() {
             loadUsers();
@@ -1312,45 +1439,7 @@
             };
             return labels[type] || type;
         }
-
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            localStorage.removeItem('adminToken');
-            location.reload();
-        });
-
-        // Event listeners para botones de filtros
-        document.getElementById('searchUsersBtn').addEventListener('click', searchUsers);
-
-        // Tabs
-        document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
-            item.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
-                
-                // Actualizar active tab
-                document.querySelectorAll('.sidebar li[data-tab]').forEach(li => {
-                    li.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Actualizar título del tab
-                document.getElementById('currentTabTitle').textContent = 
-                    this.querySelector('span').textContent;
-                
-                // Mostrar contenido correspondiente
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(tabId).classList.add('active');
-                
-                // Cargar datos específicos de la pestaña
-                if (tabId === 'users') loadUsers();
-            });
-        });
-
+        
         // Función para cerrar el modal
         window.closeModal = function() {
             const modals = document.querySelectorAll('.modal');
@@ -1359,6 +1448,51 @@
                 setTimeout(() => modal.remove(), 300);
             });
         };
+
+        // Inicializar event listeners
+        function initEventListeners() {
+            // Tabs
+            document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
+                item.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Actualizar active tab
+                    document.querySelectorAll('.sidebar li[data-tab]').forEach(li => {
+                        li.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // Actualizar título del tab
+                    document.getElementById('currentTabTitle').textContent = 
+                        this.querySelector('span').textContent;
+                    
+                    // Mostrar contenido correspondiente
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Cargar datos específicos de la pestaña
+                    if (tabId === 'users') {
+                        loadUsers();
+                    } else if (tabId === 'withdrawals') {
+                        loadWithdrawals();
+                    }
+                });
+            });
+
+            // Botón de búsqueda de usuarios
+            document.getElementById('searchUsersBtn').addEventListener('click', searchUsers);
+
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                localStorage.removeItem('adminToken');
+                location.reload();
+            });
+        }
     </script>
 </body>
 </html>
