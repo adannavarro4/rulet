@@ -391,6 +391,22 @@
             gap: 10px;
             margin-top: 20px;
         }
+        
+        /* Loader */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--secondary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -402,13 +418,14 @@
         <form id="loginForm">
             <input type="text" id="username" placeholder="Usuario" required>
             <input type="password" id="password" placeholder="Contraseña" required>
-            <button type="submit">Ingresar</button>
+            <div id="loginStatus" style="margin-top: 15px;"></div>
+            <button type="submit" id="loginBtn">Ingresar</button>
         </form>
     </div>
 
     <!-- Panel Admin -->
     <div id="adminContainer" class="admin-container">
-        <!-- Sidebar - Agregado item de Soporte -->
+        <!-- Sidebar -->
         <div class="sidebar">
             <h2>Panel Admin</h2>
             <ul>
@@ -428,6 +445,7 @@
             <!-- Dashboard -->
             <div class="tab-content active" id="dashboard">
                 <h1>Dashboard</h1>
+                <div id="dashboardStatus"></div>
                 <div class="stats">
                     <div class="stat-card">
                         <h3>Usuarios Registrados</h3>
@@ -495,6 +513,7 @@
             <!-- Usuarios -->
             <div class="tab-content" id="users">
                 <h1>Usuarios Registrados</h1>
+                <div id="usersStatus"></div>
                 <div class="filters">
                     <div class="filter-group">
                         <label for="userFilter">Filtrar:</label>
@@ -534,6 +553,7 @@
             <!-- Retiros -->
             <div class="tab-content" id="withdrawals">
                 <h1>Solicitudes de Retiro</h1>
+                <div id="withdrawalsStatus"></div>
                 <div class="filters">
                     <div class="filter-group">
                         <label for="withdrawalFilter">Filtrar:</label>
@@ -571,6 +591,7 @@
             <!-- Depósitos -->
             <div class="tab-content" id="deposits">
                 <h1>Depósitos por Verificar</h1>
+                <div id="depositsStatus"></div>
                 <div class="filters">
                     <div class="filter-group">
                         <label for="depositFilter">Filtrar:</label>
@@ -608,6 +629,7 @@
             <!-- Transacciones -->
             <div class="tab-content" id="transactions">
                 <h1>Historial de Transacciones</h1>
+                <div id="transactionsStatus"></div>
                 <div class="filters">
                     <div class="filter-group">
                         <label for="transactionType">Tipo:</label>
@@ -652,6 +674,7 @@
             <!-- Ruletas -->
             <div class="tab-content" id="ruletas">
                 <h1>Historial de Ruletas</h1>
+                <div id="ruletasStatus"></div>
                 <div class="filters">
                     <div class="filter-group">
                         <label for="ruletaFilter">Filtrar:</label>
@@ -684,6 +707,7 @@
             <!-- Soporte -->
             <div class="tab-content" id="support">
                 <h1>Soporte - Tickets</h1>
+                <div id="supportStatus"></div>
                 <div class="filter-tickets">
                     <select id="ticketFilter">
                         <option value="all">Todos los tickets</option>
@@ -701,305 +725,200 @@
     </div>
 
     <script>
-        // Datos de ejemplo en localStorage si no existen
-        function initializeLocalStorage() {
-            if (!localStorage.getItem('users')) {
-                const users = {
-                    'admin': {
-                        id: 1,
-                        username: 'admin',
-                        password: 'admin123',
-                        email: 'admin@rulet.com',
-                        fullName: 'Administrador',
-                        balance: 10000,
-                        wins: 5000,
-                        losses: 2000,
-                        createdAt: new Date().toISOString(),
-                        lastLogin: null,
-                        active: true,
-                        role: 'admin'
-                    },
-                    'usuario1': {
-                        id: 2,
-                        username: 'usuario1',
-                        password: 'usuario123',
-                        email: 'usuario1@ejemplo.com',
-                        fullName: 'Usuario de Prueba',
-                        balance: 1500,
-                        wins: 800,
-                        losses: 300,
-                        createdAt: new Date().toISOString(),
-                        lastLogin: null,
-                        active: true,
-                        role: 'user'
-                    },
-                    'usuario2': {
-                        id: 3,
-                        username: 'usuario2',
-                        password: 'usuario123',
-                        email: 'usuario2@ejemplo.com',
-                        fullName: 'Otro Usuario',
-                        balance: 2500,
-                        wins: 1200,
-                        losses: 500,
-                        createdAt: new Date().toISOString(),
-                        lastLogin: null,
-                        active: true,
-                        role: 'user'
-                    }
-                };
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-
-            if (!localStorage.getItem('withdrawals')) {
-                localStorage.setItem('withdrawals', JSON.stringify([
-                    {
-                        id: 1,
-                        username: 'usuario1',
-                        amount: 200,
-                        bank: 'Banco Nacional',
-                        account: '1234567890',
-                        date: new Date().toISOString(),
-                        status: 'pending'
-                    },
-                    {
-                        id: 2,
-                        username: 'usuario2',
-                        amount: 150,
-                        bank: 'Banco Mercantil',
-                        account: '9876543210',
-                        date: new Date().toISOString(),
-                        status: 'pending'
-                    }
-                ]));
-            }
-
-            if (!localStorage.getItem('deposits')) {
-                localStorage.setItem('deposits', JSON.stringify([
-                    {
-                        id: 1,
-                        username: 'usuario1',
-                        amount: 500,
-                        reference: 'DEP12345',
-                        bank: 'Banco Nacional',
-                        date: new Date().toISOString(),
-                        status: 'pending'
-                    },
-                    {
-                        id: 2,
-                        username: 'usuario2',
-                        amount: 300,
-                        reference: 'DEP67890',
-                        bank: 'Banco Mercantil',
-                        date: new Date().toISOString(),
-                        status: 'pending'
-                    }
-                ]));
-            }
-            
-            if (!localStorage.getItem('transactions')) {
-                localStorage.setItem('transactions', JSON.stringify([
-                    {
-                        id: 1,
-                        username: 'usuario1',
-                        type: 'deposit',
-                        amount: 500,
-                        details: 'Depósito inicial',
-                        status: 'pending',
-                        date: new Date().toISOString()
-                    },
-                    {
-                        id: 2,
-                        username: 'usuario1',
-                        type: 'win',
-                        amount: 200,
-                        details: 'Ganancia en ruleta #1',
-                        status: 'completed',
-                        date: new Date().toISOString()
-                    },
-                    {
-                        id: 3,
-                        username: 'usuario2',
-                        type: 'deposit',
-                        amount: 300,
-                        details: 'Depósito inicial',
-                        status: 'pending',
-                        date: new Date().toISOString()
-                    }
-                ]));
-            }
-            
-            if (!localStorage.getItem('ruletasData')) {
-                const ruletasData = {
-                    currentRuletaId: 1,
-                    ruletas: {
-                        1: {
-                            id: 1,
-                            sectors: [
-                                { playerName: 'usuario1', bet: 50 },
-                                null, null, null, null, null, null, null,
-                                null, null, null, null, null, null, null
-                            ],
-                            spinning: false,
-                            winners: {
-                                main: { playerName: 'usuario1', bet: 50 },
-                                left: null,
-                                right: null
-                            },
-                            houseEarnings: 100,
-                            active: false,
-                            createdAt: new Date().toISOString(),
-                            completedAt: new Date().toISOString()
-                        },
-                        2: {
-                            id: 2,
-                            sectors: new Array(15).fill(null),
-                            spinning: false,
-                            winners: null,
-                            houseEarnings: 0,
-                            active: true,
-                            createdAt: new Date().toISOString()
-                        }
-                    }
-                };
-                localStorage.setItem('ruletasData', JSON.stringify(ruletasData));
-            }
-            
-            if (!localStorage.getItem('onlineUsers')) {
-                localStorage.setItem('onlineUsers', JSON.stringify({
-                    'admin': Date.now(),
-                    'usuario1': Date.now()
-                }));
-            }
-            
-            if (!localStorage.getItem('supportTickets')) {
-                localStorage.setItem('supportTickets', JSON.stringify([]));
-            }
-        }
-        
-        // Llamar a la función de inicialización al inicio
-        initializeLocalStorage();
-
-        // Credenciales de admin
-        const ADMIN_CREDENTIALS = {
-            username: 'admin',
-            password: 'admin123'
-        };
+        // Configuración de la API
+        const API_BASE_URL = 'https://tu-api-en-namecheap.com/api'; // Reemplazar con tu URL
+        let token = localStorage.getItem('adminToken');
         
         // Objeto para seguimiento de usuarios en línea
-        let onlineUsers = JSON.parse(localStorage.getItem('onlineUsers')) || {};
-
-        // Función para actualizar estado de conexión
-        function updateOnlineStatus(username, isOnline) {
-            onlineUsers[username] = isOnline ? Date.now() : false;
-            localStorage.setItem('onlineUsers', JSON.stringify(onlineUsers));
+        let onlineUsers = {};
+        
+        // Función para mostrar estado de carga
+        function showLoader(element) {
+            element.innerHTML = '<div class="loader"></div>';
         }
-
+        
+        // Función para mostrar mensaje de estado
+        function showStatus(element, message, type = 'success') {
+            element.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            if (type !== 'danger') {
+                setTimeout(() => element.innerHTML = '', 3000);
+            }
+        }
+        
+        // Función para realizar peticiones a la API
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const options = {
+                method,
+                headers
+            };
+            
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                
+                if (response.status === 401) {
+                    // Token inválido o expirado
+                    localStorage.removeItem('adminToken');
+                    showAdminPanel(false);
+                    showStatus(document.getElementById('loginStatus'), 'Sesión expirada. Por favor ingresa nuevamente.', 'danger');
+                    return null;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+        
         // Login
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginStatus = document.getElementById('loginStatus');
             
-            // Primero verificar contra credenciales hardcodeadas
-            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                localStorage.setItem('adminLoggedIn', 'true');
-                updateOnlineStatus(username, true);
-                showAdminPanel();
-                return;
-            }
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Cargando...';
+            showStatus(loginStatus, 'Verificando credenciales...', 'info');
             
-            // Si no coincide, verificar en localStorage
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const user = users[username];
-            
-            if (user && user.password === password && user.role === 'admin') {
-                localStorage.setItem('adminLoggedIn', 'true');
-                localStorage.setItem('adminUser', JSON.stringify(user));
-                updateOnlineStatus(username, true);
-                showAdminPanel();
-            } else {
-                alert('Credenciales incorrectas o no tiene permisos de administrador');
+            try {
+                const response = await apiRequest('/login', 'POST', { username, password });
+                
+                if (response && response.token) {
+                    token = response.token;
+                    localStorage.setItem('adminToken', token);
+                    showAdminPanel();
+                } else {
+                    showStatus(loginStatus, 'Credenciales incorrectas', 'danger');
+                }
+            } catch (error) {
+                showStatus(loginStatus, 'Error al conectar con el servidor', 'danger');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Ingresar';
             }
         });
 
         // Mostrar panel admin si ya está logueado
-        if (localStorage.getItem('adminLoggedIn') === 'true') {
+        if (token) {
             showAdminPanel();
         }
 
-        function showAdminPanel() {
+        async function showAdminPanel() {
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('adminContainer').style.display = 'block';
-            loadDashboard();
+            
+            try {
+                // Verificar token
+                const validToken = await apiRequest('/validate-token');
+                if (!validToken || !validToken.valid) {
+                    localStorage.removeItem('adminToken');
+                    document.getElementById('loginContainer').style.display = 'block';
+                    document.getElementById('adminContainer').style.display = 'none';
+                    showStatus(document.getElementById('loginStatus'), 'Sesión expirada. Por favor ingresa nuevamente.', 'danger');
+                    return;
+                }
+                
+                // Cargar datos del dashboard
+                await loadDashboard();
+            } catch (error) {
+                console.error('Error al mostrar panel admin:', error);
+                showStatus(document.getElementById('dashboardStatus'), 'Error al cargar datos del dashboard', 'danger');
+            }
         }
 
         // Cargar datos del dashboard
-        function loadDashboard() {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
-            const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        async function loadDashboard() {
+            const dashboardStatus = document.getElementById('dashboardStatus');
+            showStatus(dashboardStatus, 'Cargando datos del dashboard...', 'info');
             
-            // Calcular estadísticas
-            const totalUsers = Object.keys(users).length;
-            const pendingWithdrawals = withdrawals.filter(w => w.status === 'pending').length;
-            const pendingDeposits = deposits.filter(d => d.status === 'pending').length;
-            
-            // Calcular usuarios en línea (últimos 5 minutos)
-            const now = Date.now();
-            const onlineCount = Object.entries(onlineUsers).filter(([_, timestamp]) => 
-                timestamp && (now - timestamp) < 300000 // 5 minutos
-            ).length;
-            
-            // Calcular ganancias y pérdidas totales
-            let totalWins = 0;
-            let totalLosses = 0;
-            
-            Object.values(users).forEach(user => {
-                totalWins += user.wins || 0;
-                totalLosses += user.losses || 0;
-            });
-            
-            // Calcular balance general (ganancias de la casa)
-            const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
-            let houseEarnings = 0;
-            
-            Object.values(ruletasData.ruletas).forEach(ruleta => {
-                houseEarnings += ruleta.houseEarnings || 0;
-            });
-            
-            // Actualizar UI
-            document.getElementById('totalUsers').textContent = totalUsers;
-            document.getElementById('onlineUsers').textContent = onlineCount;
-            document.getElementById('pendingWithdrawals').textContent = pendingWithdrawals;
-            document.getElementById('pendingDeposits').textContent = pendingDeposits;
-            document.getElementById('totalWins').textContent = totalWins + ' Bs';
-            document.getElementById('totalLosses').textContent = totalLosses + ' Bs';
-            document.getElementById('totalBalance').textContent = houseEarnings + ' Bs';
-            
-            // Cargar datos adicionales
-            loadUsers();
-            loadWithdrawals();
-            loadDeposits();
-            loadTransactions();
-            loadRuletas();
-            
-            // Cargar gráficos
-            loadCharts();
-            
-            // Cargar últimas transacciones
-            loadRecentTransactions();
+            try {
+                // Cargar datos en paralelo
+                const [usersData, withdrawalsData, depositsData, transactionsData, ruletasData] = await Promise.all([
+                    apiRequest('/users'),
+                    apiRequest('/withdrawals?status=pending'),
+                    apiRequest('/deposits?status=pending'),
+                    apiRequest('/transactions?limit=10'),
+                    apiRequest('/ruletas')
+                ]);
+                
+                // Calcular estadísticas
+                const totalUsers = usersData.length;
+                const pendingWithdrawals = withdrawalsData.length;
+                const pendingDeposits = depositsData.length;
+                
+                // Calcular usuarios en línea
+                const onlineCount = usersData.filter(user => user.online).length;
+                
+                // Calcular ganancias y pérdidas totales
+                let totalWins = 0;
+                let totalLosses = 0;
+                
+                usersData.forEach(user => {
+                    totalWins += user.wins || 0;
+                    totalLosses += user.losses || 0;
+                });
+                
+                // Calcular balance general (ganancias de la casa)
+                let houseEarnings = 0;
+                
+                ruletasData.forEach(ruleta => {
+                    houseEarnings += ruleta.houseEarnings || 0;
+                });
+                
+                // Actualizar UI
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('onlineUsers').textContent = onlineCount;
+                document.getElementById('pendingWithdrawals').textContent = pendingWithdrawals;
+                document.getElementById('pendingDeposits').textContent = pendingDeposits;
+                document.getElementById('totalWins').textContent = totalWins + ' Bs';
+                document.getElementById('totalLosses').textContent = totalLosses + ' Bs';
+                document.getElementById('totalBalance').textContent = houseEarnings + ' Bs';
+                
+                // Cargar datos adicionales
+                await Promise.all([
+                    loadUsers(),
+                    loadWithdrawals(),
+                    loadDeposits(),
+                    loadTransactions(),
+                    loadRuletas()
+                ]);
+                
+                // Cargar gráficos
+                loadCharts(usersData, transactionsData);
+                
+                // Cargar últimas transacciones
+                loadRecentTransactions(transactionsData);
+                
+                showStatus(dashboardStatus, 'Dashboard cargado correctamente');
+            } catch (error) {
+                console.error('Error al cargar dashboard:', error);
+                showStatus(dashboardStatus, 'Error al cargar datos del dashboard', 'danger');
+            }
         }
         
         // Cargar gráficos
-        function loadCharts() {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            
+        function loadCharts(usersData, transactionsData) {
             // Gráfico de usuarios por fecha
-            const userDates = Object.values(users).map(user => new Date(user.createdAt).toLocaleDateString());
+            const userDates = usersData.map(user => new Date(user.createdAt).toLocaleDateString());
             const userCounts = {};
             
             userDates.forEach(date => {
@@ -1033,7 +952,7 @@
             // Gráfico de transacciones por tipo
             const transactionTypes = {};
             
-            transactions.forEach(transaction => {
+            transactionsData.forEach(transaction => {
                 transactionTypes[transaction.type] = (transactionTypes[transaction.type] || 0) + 1;
             });
             
@@ -1073,9 +992,8 @@
         }
         
         // Cargar últimas transacciones
-        function loadRecentTransactions() {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const recentTransactions = transactions.slice(-10).reverse(); // Últimas 10 transacciones
+        function loadRecentTransactions(transactions) {
+            const recentTransactions = transactions.slice(-10).reverse();
             
             const tbody = document.querySelector('#recentTransactions tbody');
             tbody.innerHTML = recentTransactions.map(transaction => `
@@ -1093,217 +1011,217 @@
         }
         
         // Ver detalles de transacción
-        window.viewTransactionDetails = function(id) {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const transaction = transactions.find(t => t.id === id);
-            
-            if (transaction) {
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 600px;">
-                        <span class="close-modal" onclick="closeModal()">&times;</span>
-                        <h2>Detalles de Transacción</h2>
-                        
-                        <div class="user-details">
-                            <p><strong>ID:</strong> ${transaction.id}</p>
-                            <p><strong>Fecha:</strong> ${new Date(transaction.date).toLocaleString()}</p>
-                            <p><strong>Usuario:</strong> ${transaction.username}</p>
-                            <p><strong>Tipo:</strong> ${getTransactionTypeLabel(transaction.type)}</p>
-                            <p><strong>Monto:</strong> ${transaction.amount} Bs</p>
-                            <p><strong>Estado:</strong> ${getStatusLabel(transaction.status)}</p>
-                            <p><strong>Detalles:</strong> ${transaction.details || 'No hay detalles adicionales'}</p>
+        window.viewTransactionDetails = async function(id) {
+            try {
+                const transaction = await apiRequest(`/transactions/${id}`);
+                
+                if (transaction) {
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.innerHTML = `
+                        <div class="modal-content" style="max-width: 600px;">
+                            <span class="close-modal" onclick="closeModal()">&times;</span>
+                            <h2>Detalles de Transacción</h2>
+                            
+                            <div class="user-details">
+                                <p><strong>ID:</strong> ${transaction.id}</p>
+                                <p><strong>Fecha:</strong> ${new Date(transaction.date).toLocaleString()}</p>
+                                <p><strong>Usuario:</strong> ${transaction.username}</p>
+                                <p><strong>Tipo:</strong> ${getTransactionTypeLabel(transaction.type)}</p>
+                                <p><strong>Monto:</strong> ${transaction.amount} Bs</p>
+                                <p><strong>Estado:</strong> ${getStatusLabel(transaction.status)}</p>
+                                <p><strong>Detalles:</strong> ${transaction.details || 'No hay detalles adicionales'}</p>
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 20px;">
+                                <button onclick="closeModal()" class="btn btn-primary">Cerrar</button>
+                            </div>
                         </div>
-                        
-                        <div style="text-align: center; margin-top: 20px;">
-                            <button onclick="closeModal()" class="btn btn-primary">Cerrar</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.style.display = 'block';
+                    `;
+                    document.body.appendChild(modal);
+                    modal.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al ver detalles de transacción:', error);
+                alert('Error al cargar detalles de la transacción');
             }
         };
 
         // Función para ver todos los usuarios desde el dashboard
-        window.loadUsersModal = function() {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const now = Date.now();
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 800px;">
-                    <span class="close-modal" onclick="closeModal()">&times;</span>
-                    <h2>Lista de Usuarios Registrados</h2>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <input type="text" id="modalUserSearch" placeholder="Buscar usuario..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    
-                    <table style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th>Usuario</th>
-                                <th>Nombre</th>
-                                <th>Email</th>
-                                <th>Saldo</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.values(users).map(user => {
-                                const isOnline = onlineUsers[user.username] && (now - onlineUsers[user.username]) < 300000;
-                                return `
-                                    <tr>
-                                        <td>${user.username}</td>
-                                        <td>${user.fullName || '-'}</td>
-                                        <td>${user.email || '-'}</td>
-                                        <td>${user.balance || 0} Bs</td>
-                                        <td>
-                                            ${user.active !== false ? `
-                                                <span class="badge badge-active">Activo</span>
-                                            ` : `
-                                                <span class="badge badge-inactive">Inactivo</span>
-                                            `}
-                                            ${isOnline ? `
-                                                <span class="badge badge-online">En línea</span>
-                                            ` : `
-                                                <span class="badge badge-offline">Desconectado</span>
-                                            `}
-                                        </td>
-                                        <td>
-                                            <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
-                                            <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            modal.style.display = 'block';
-            
-            // Agregar funcionalidad de búsqueda
-            const searchInput = modal.querySelector('#modalUserSearch');
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = modal.querySelectorAll('tbody tr');
+        window.loadUsersModal = async function() {
+            try {
+                const users = await apiRequest('/users');
                 
-                rows.forEach(row => {
-                    const username = row.cells[0].textContent.toLowerCase();
-                    const name = row.cells[1].textContent.toLowerCase();
-                    const email = row.cells[2].textContent.toLowerCase();
-                    
-                    if (username.includes(searchTerm) || name.includes(searchTerm) || email.includes(searchTerm)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-        };
-
-        // Función para ver detalles del usuario
-        window.viewUserDetails = function(username) {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const user = users[username];
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
-            
-            if (user) {
-                // Filtrar transacciones del usuario
-                const userTransactions = transactions
-                    .filter(t => t.username === username)
-                    .sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                // Verificar estado de conexión
-                const now = Date.now();
-                const isOnline = onlineUsers[username] && (now - onlineUsers[username]) < 300000;
-                
-                // Crear modal con los detalles
                 const modal = document.createElement('div');
                 modal.className = 'modal';
-                modal.id = 'userDetailsModal';
                 modal.innerHTML = `
                     <div class="modal-content" style="max-width: 800px;">
                         <span class="close-modal" onclick="closeModal()">&times;</span>
-                        <h2>Detalles del Usuario: ${username}</h2>
+                        <h2>Lista de Usuarios Registrados</h2>
                         
-                        <div class="user-details">
-                            <p><strong>Nombre completo:</strong> ${user.fullName || 'No registrado'}</p>
-                            <p><strong>Email:</strong> ${user.email || 'No registrado'}</p>
-                            <p><strong>Teléfono:</strong> ${user.phone || 'No registrado'}</p>
-                            <p><strong>Estado:</strong> 
-                                ${user.active !== false ? 
-                                    '<span class="badge badge-active">Activo</span>' : 
-                                    '<span class="badge badge-inactive">Inactivo</span>'}
-                                ${isOnline ? 
-                                    '<span class="badge badge-online">En línea</span>' : 
-                                    '<span class="badge badge-offline">Desconectado</span>'}
-                            </p>
-                            <p><strong>Saldo actual:</strong> ${user.balance || 0} Bs</p>
-                            <p><strong>Ganancias totales:</strong> ${user.wins || 0} Bs</p>
-                            <p><strong>Pérdidas totales:</strong> ${user.losses || 0} Bs</p>
-                            <p><strong>Fecha de registro:</strong> ${new Date(user.createdAt).toLocaleString()}</p>
-                            <p><strong>Último acceso:</strong> ${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Nunca'}</p>
+                        <div style="margin-bottom: 20px;">
+                            <input type="text" id="modalUserSearch" placeholder="Buscar usuario..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         
-                        <div class="history-tabs">
-                            <div class="history-tab active" data-tab="transactions">Transacciones</div>
-                        </div>
-                        
-                        <div id="transactionsContent" class="history-content active">
-                            <h3>Últimas Transacciones</h3>
-                            <table style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Tipo</th>
-                                        <th>Monto</th>
-                                        <th>Detalles</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${userTransactions.slice(0, 10).map(t => `
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Saldo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(user => {
+                                    return `
                                         <tr>
-                                            <td>${new Date(t.date).toLocaleString()}</td>
-                                            <td>${getTransactionTypeLabel(t.type)}</td>
-                                            <td>${t.amount} Bs</td>
-                                            <td>${t.details || '-'}</td>
-                                            <td>${getStatusLabel(t.status)}</td>
+                                            <td>${user.username}</td>
+                                            <td>${user.fullName || '-'}</td>
+                                            <td>${user.email || '-'}</td>
+                                            <td>${user.balance || 0} Bs</td>
+                                            <td>
+                                                ${user.active !== false ? `
+                                                    <span class="badge badge-active">Activo</span>
+                                                ` : `
+                                                    <span class="badge badge-inactive">Inactivo</span>
+                                                `}
+                                                ${user.online ? `
+                                                    <span class="badge badge-online">En línea</span>
+                                                ` : `
+                                                    <span class="badge badge-offline">Desconectado</span>
+                                                `}
+                                            </td>
+                                            <td>
+                                                <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
+                                                <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
+                                            </td>
                                         </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                            ${userTransactions.length > 10 ? 
-                                `<p style="margin-top: 10px; text-align: center;">Mostrando 10 de ${userTransactions.length} transacciones</p>` : ''}
-                        </div>
-                        
-                        <div style="margin-top: 20px; text-align: center;">
-                            <button class="btn btn-warning edit-balance-btn" data-username="${username}">Editar Saldo</button>
-                            ${user.active !== false ? 
-                                `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>` : 
-                                `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`}
-                            <button onclick="closeModal()" class="btn btn-primary">Cerrar</button>
-                        </div>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 `;
+                
                 document.body.appendChild(modal);
                 modal.style.display = 'block';
+                
+                // Agregar funcionalidad de búsqueda
+                const searchInput = modal.querySelector('#modalUserSearch');
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = modal.querySelectorAll('tbody tr');
+                    
+                    rows.forEach(row => {
+                        const username = row.cells[0].textContent.toLowerCase();
+                        const name = row.cells[1].textContent.toLowerCase();
+                        const email = row.cells[2].textContent.toLowerCase();
+                        
+                        if (username.includes(searchTerm) || name.includes(searchTerm) || email.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error al cargar usuarios modal:', error);
+                alert('Error al cargar la lista de usuarios');
+            }
+        };
+
+        // Función para ver detalles del usuario
+        window.viewUserDetails = async function(username) {
+            try {
+                const user = await apiRequest(`/users/${username}`);
+                const transactions = await apiRequest(`/transactions?username=${username}&limit=10`);
+                
+                if (user) {
+                    // Crear modal con los detalles
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.id = 'userDetailsModal';
+                    modal.innerHTML = `
+                        <div class="modal-content" style="max-width: 800px;">
+                            <span class="close-modal" onclick="closeModal()">&times;</span>
+                            <h2>Detalles del Usuario: ${username}</h2>
+                            
+                            <div class="user-details">
+                                <p><strong>Nombre completo:</strong> ${user.fullName || 'No registrado'}</p>
+                                <p><strong>Email:</strong> ${user.email || 'No registrado'}</p>
+                                <p><strong>Teléfono:</strong> ${user.phone || 'No registrado'}</p>
+                                <p><strong>Estado:</strong> 
+                                    ${user.active !== false ? 
+                                        '<span class="badge badge-active">Activo</span>' : 
+                                        '<span class="badge badge-inactive">Inactivo</span>'}
+                                    ${user.online ? 
+                                        '<span class="badge badge-online">En línea</span>' : 
+                                        '<span class="badge badge-offline">Desconectado</span>'}
+                                </p>
+                                <p><strong>Saldo actual:</strong> ${user.balance || 0} Bs</p>
+                                <p><strong>Ganancias totales:</strong> ${user.wins || 0} Bs</p>
+                                <p><strong>Pérdidas totales:</strong> ${user.losses || 0} Bs</p>
+                                <p><strong>Fecha de registro:</strong> ${new Date(user.createdAt).toLocaleString()}</p>
+                                <p><strong>Último acceso:</strong> ${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Nunca'}</p>
+                            </div>
+                            
+                            <div class="history-tabs">
+                                <div class="history-tab active" data-tab="transactions">Transacciones</div>
+                            </div>
+                            
+                            <div id="transactionsContent" class="history-content active">
+                                <h3>Últimas Transacciones</h3>
+                                <table style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Tipo</th>
+                                            <th>Monto</th>
+                                            <th>Detalles</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${transactions.map(t => `
+                                            <tr>
+                                                <td>${new Date(t.date).toLocaleString()}</td>
+                                                <td>${getTransactionTypeLabel(t.type)}</td>
+                                                <td>${t.amount} Bs</td>
+                                                <td>${t.details || '-'}</td>
+                                                <td>${getStatusLabel(t.status)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                ${transactions.length > 10 ? 
+                                    `<p style="margin-top: 10px; text-align: center;">Mostrando 10 de ${transactions.length} transacciones</p>` : ''}
+                            </div>
+                            
+                            <div style="margin-top: 20px; text-align: center;">
+                                <button class="btn btn-warning edit-balance-btn" data-username="${username}">Editar Saldo</button>
+                                ${user.active !== false ? 
+                                    `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>` : 
+                                    `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`}
+                                <button onclick="closeModal()" class="btn btn-primary">Cerrar</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    modal.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al ver detalles de usuario:', error);
+                alert('Error al cargar detalles del usuario');
             }
         };
 
         // Función para editar saldo del usuario
-        window.editUserBalance = function(username) {
+        window.editUserBalance = async function(username) {
             try {
-                const users = JSON.parse(localStorage.getItem('users')) || {};
-                const user = users[username];
+                const user = await apiRequest(`/users/${username}`);
                 
                 if (user) {
                     // Crear modal para editar saldo
@@ -1350,169 +1268,135 @@
                     modal.style.display = 'block';
                     
                     // Agregar evento al botón de confirmar
-                    document.getElementById('confirmBalanceEdit').addEventListener('click', function() {
-                        confirmBalanceEdit(username);
+                    document.getElementById('confirmBalanceEdit').addEventListener('click', async function() {
+                        await confirmBalanceEdit(username);
                     });
-                } else {
-                    alert(`Usuario ${username} no encontrado`);
                 }
             } catch (error) {
-                console.error('Error en editUserBalance:', error);
-                alert('Ocurrió un error: ' + error.message);
+                console.error('Error al editar saldo:', error);
+                alert('Error al cargar datos del usuario');
             }
         };
 
         // Función para confirmar edición de saldo
-        function confirmBalanceEdit(username) {
+        async function confirmBalanceEdit(username) {
             try {
-                const users = JSON.parse(localStorage.getItem('users')) || {};
-                const user = users[username];
+                const action = document.getElementById('balanceAction').value;
+                const amount = parseFloat(document.getElementById('balanceAmount').value);
+                const reason = document.getElementById('balanceReason').value || 'Ajuste de saldo por administrador';
                 
-                if (user) {
-                    const action = document.getElementById('balanceAction').value;
-                    const amount = parseFloat(document.getElementById('balanceAmount').value);
-                    const reason = document.getElementById('balanceReason').value || 'Ajuste de saldo por administrador';
-                    
-                    if (isNaN(amount) || amount <= 0) {
-                        alert('Por favor ingrese una cantidad válida (mayor que 0)');
-                        return;
-                    }
-                    
-                    let newBalance = user.balance || 0;
-                    let transactionAmount = amount;
-                    
-                    switch(action) {
-                        case 'add':
-                            newBalance += amount;
-                            break;
-                        case 'subtract':
-                            if (amount > newBalance) {
-                                alert('El usuario no tiene suficiente saldo para esta operación');
-                                return;
-                            }
-                            newBalance -= amount;
-                            transactionAmount = -amount;
-                            break;
-                        case 'set':
-                            newBalance = amount;
-                            transactionAmount = amount - (user.balance || 0);
-                            break;
-                    }
-                    
-                    // Actualizar saldo del usuario
-                    user.balance = newBalance;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    // Registrar transacción
-                    addTransaction({
-                        type: 'balance_adjustment',
-                        username: username,
-                        amount: transactionAmount,
-                        details: reason,
-                        status: 'completed'
-                    });
-                    
+                if (isNaN(amount) || amount <= 0) {
+                    alert('Por favor ingrese una cantidad válida (mayor que 0)');
+                    return;
+                }
+                
+                // Actualizar saldo del usuario
+                const response = await apiRequest(`/users/${username}/balance`, 'PATCH', {
+                    action,
+                    amount,
+                    reason
+                });
+                
+                if (response && response.success) {
                     // Cerrar modal y actualizar vista
                     closeModal();
-                    loadUsers();
-                    loadDashboard();
+                    await loadUsers();
+                    await loadDashboard();
                     
                     // Si el modal de detalles está abierto, actualizarlo
                     const detailsModal = document.getElementById('userDetailsModal');
                     if (detailsModal) {
                         const balanceElement = detailsModal.querySelector('.user-details p:nth-child(5)');
                         if (balanceElement) {
-                            balanceElement.innerHTML = `<strong>Saldo actual:</strong> ${user.balance || 0} Bs`;
+                            balanceElement.innerHTML = `<strong>Saldo actual:</strong> ${response.newBalance} Bs`;
                         }
                     }
                     
-                    alert(`Saldo de ${username} actualizado a ${newBalance} Bs`);
+                    alert(`Saldo de ${username} actualizado a ${response.newBalance} Bs`);
+                } else {
+                    alert('Error al actualizar el saldo');
                 }
             } catch (error) {
-                console.error('Error en confirmBalanceEdit:', error);
-                alert('Ocurrió un error: ' + error.message);
+                console.error('Error al confirmar edición de saldo:', error);
+                alert('Ocurrió un error al actualizar el saldo');
             }
         }
 
         // Función para desactivar usuario
-        window.deactivateUser = function(username) {
+        window.deactivateUser = async function(username) {
             if (confirm(`¿Estás seguro de desactivar al usuario ${username}? No podrá acceder al sistema hasta que sea reactivado.`)) {
-                const users = JSON.parse(localStorage.getItem('users')) || {};
-                if (users[username]) {
-                    users[username].active = false;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    // Registrar transacción
-                    addTransaction({
-                        type: 'user_status',
-                        username: username,
-                        amount: 0,
-                        details: 'Usuario desactivado por administrador',
-                        status: 'completed'
+                try {
+                    const response = await apiRequest(`/users/${username}/status`, 'PATCH', {
+                        active: false
                     });
                     
-                    loadUsers();
+                    if (response && response.success) {
+                        await loadUsers();
+                        
+                        // Si el modal de detalles está abierto, actualizarlo
+                        const detailsModal = document.getElementById('userDetailsModal');
+                        if (detailsModal) {
+                            const statusElement = detailsModal.querySelector('.user-details p:nth-child(4)');
+                            if (statusElement) {
+                                statusElement.innerHTML = `<strong>Estado:</strong> <span class="badge badge-inactive">Inactivo</span>`;
+                            }
+                            
+                            // Reemplazar botón Desactivar por Activar
+                            const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
+                            if (buttonsDiv) {
+                                buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
+                                    `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`,
+                                    `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`
+                                );
+                            }
+                        }
+                        
+                        alert(`Usuario ${username} desactivado correctamente`);
+                    } else {
+                        alert('Error al desactivar el usuario');
+                    }
+                } catch (error) {
+                    console.error('Error al desactivar usuario:', error);
+                    alert('Error al desactivar el usuario');
+                }
+            }
+        };
+
+        // Función para activar usuario
+        window.activateUser = async function(username) {
+            try {
+                const response = await apiRequest(`/users/${username}/status`, 'PATCH', {
+                    active: true
+                });
+                
+                if (response && response.success) {
+                    await loadUsers();
                     
                     // Si el modal de detalles está abierto, actualizarlo
                     const detailsModal = document.getElementById('userDetailsModal');
                     if (detailsModal) {
                         const statusElement = detailsModal.querySelector('.user-details p:nth-child(4)');
                         if (statusElement) {
-                            statusElement.innerHTML = `<strong>Estado:</strong> <span class="badge badge-inactive">Inactivo</span>`;
+                            statusElement.innerHTML = `<strong>Estado:</strong> <span class="badge badge-active">Activo</span>`;
                         }
                         
-                        // Reemplazar botón Desactivar por Activar
+                        // Reemplazar botón Activar por Desactivar
                         const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
                         if (buttonsDiv) {
                             buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
-                                `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`,
-                                `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`
+                                `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`,
+                                `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`
                             );
                         }
                     }
                     
-                    alert(`Usuario ${username} desactivado correctamente`);
+                    alert(`Usuario ${username} activado correctamente`);
+                } else {
+                    alert('Error al activar el usuario');
                 }
-            }
-        };
-
-        // Función para activar usuario
-        window.activateUser = function(username) {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            if (users[username]) {
-                users[username].active = true;
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                // Registrar transacción
-                addTransaction({
-                    type: 'user_status',
-                    username: username,
-                    amount: 0,
-                    details: 'Usuario activado por administrador',
-                    status: 'completed'
-                });
-                
-                loadUsers();
-                
-                // Si el modal de detalles está abierto, actualizarlo
-                const detailsModal = document.getElementById('userDetailsModal');
-                if (detailsModal) {
-                    const statusElement = detailsModal.querySelector('.user-details p:nth-child(4)');
-                    if (statusElement) {
-                        statusElement.innerHTML = `<strong>Estado:</strong> <span class="badge badge-active">Activo</span>`;
-                    }
-                    
-                    // Reemplazar botón Activar por Desactivar
-                    const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
-                    if (buttonsDiv) {
-                        buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
-                            `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`,
-                            `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`
-                        );
-                    }
-                }
-                
-                alert(`Usuario ${username} activado correctamente`);
+            } catch (error) {
+                console.error('Error al activar usuario:', error);
+                alert('Error al activar el usuario');
             }
         };
 
@@ -1526,81 +1410,81 @@
         };
 
         // Cargar usuarios
-        function loadUsers() {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const filter = document.getElementById('userFilter').value;
-            const search = document.getElementById('userSearch').value.toLowerCase();
+        async function loadUsers() {
+            const usersStatus = document.getElementById('usersStatus');
+            showStatus(usersStatus, 'Cargando usuarios...', 'info');
             
-            let filteredUsers = Object.values(users);
-            
-            // Aplicar filtros
-            if (filter === 'active') {
-                filteredUsers = filteredUsers.filter(user => user.active !== false);
-            } else if (filter === 'inactive') {
-                filteredUsers = filteredUsers.filter(user => user.active === false);
-            } else if (filter === 'online') {
-                const now = Date.now();
-                filteredUsers = filteredUsers.filter(user => 
-                    onlineUsers[user.username] && (now - onlineUsers[user.username]) < 300000
-                );
-            } else if (filter === 'offline') {
-                const now = Date.now();
-                filteredUsers = filteredUsers.filter(user => 
-                    !onlineUsers[user.username] || (now - onlineUsers[user.username]) >= 300000
-                );
-            }
-            
-            if (search) {
-                filteredUsers = filteredUsers.filter(user => 
-                    user.username.toLowerCase().includes(search) || 
-                    (user.fullName && user.fullName.toLowerCase().includes(search))
-                );
-            }
-            
-            const now = Date.now();
-            const tbody = document.querySelector('#usersTable tbody');
-            tbody.innerHTML = filteredUsers.map(user => {
-                // Verificar si está en línea (últimos 5 minutos)
-                const isOnline = onlineUsers[user.username] && 
-                                (now - onlineUsers[user.username]) < 300000;
+            try {
+                const users = await apiRequest('/users');
                 
-                return `
-                    <tr>
-                        <td>${user.id || '-'}</td>
-                        <td>
-                            <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
-                            ${user.username}
-                        </td>
-                        <td>${user.fullName || '-'}</td>
-                        <td>${user.email || '-'}</td>
-                        <td>${user.balance || 0} Bs</td>
-                        <td>${user.wins || 0} Bs</td>
-                        <td>${user.losses || 0} Bs</td>
-                        <td>${new Date(user.createdAt).toLocaleDateString()}</td>
-                        <td>
-                            ${user.active !== false ? `
-                                <span class="badge badge-active">Activo</span>
-                            ` : `
-                                <span class="badge badge-inactive">Inactivo</span>
-                            `}
-                            ${isOnline ? `
-                                <span class="badge badge-online">En línea</span>
-                            ` : `
-                                <span class="badge badge-offline">Desconectado</span>
-                            `}
-                        </td>
-                        <td>
-                            <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
-                            ${user.active !== false ? `
-                                <button onclick="deactivateUser('${user.username}')" class="btn btn-danger">Desactivar</button>
-                            ` : `
-                                <button onclick="activateUser('${user.username}')" class="btn btn-success">Activar</button>
-                            `}
-                            <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+                const filter = document.getElementById('userFilter').value;
+                const search = document.getElementById('userSearch').value.toLowerCase();
+                
+                let filteredUsers = users;
+                
+                // Aplicar filtros
+                if (filter === 'active') {
+                    filteredUsers = filteredUsers.filter(user => user.active !== false);
+                } else if (filter === 'inactive') {
+                    filteredUsers = filteredUsers.filter(user => user.active === false);
+                } else if (filter === 'online') {
+                    filteredUsers = filteredUsers.filter(user => user.online);
+                } else if (filter === 'offline') {
+                    filteredUsers = filteredUsers.filter(user => !user.online);
+                }
+                
+                if (search) {
+                    filteredUsers = filteredUsers.filter(user => 
+                        user.username.toLowerCase().includes(search) || 
+                        (user.fullName && user.fullName.toLowerCase().includes(search))
+                    );
+                }
+                
+                const tbody = document.querySelector('#usersTable tbody');
+                tbody.innerHTML = filteredUsers.map(user => {
+                    return `
+                        <tr>
+                            <td>${user.id || '-'}</td>
+                            <td>
+                                <span class="status-indicator ${user.online ? 'online' : 'offline'}"></span>
+                                ${user.username}
+                            </td>
+                            <td>${user.fullName || '-'}</td>
+                            <td>${user.email || '-'}</td>
+                            <td>${user.balance || 0} Bs</td>
+                            <td>${user.wins || 0} Bs</td>
+                            <td>${user.losses || 0} Bs</td>
+                            <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                ${user.active !== false ? `
+                                    <span class="badge badge-active">Activo</span>
+                                ` : `
+                                    <span class="badge badge-inactive">Inactivo</span>
+                                `}
+                                ${user.online ? `
+                                    <span class="badge badge-online">En línea</span>
+                                ` : `
+                                    <span class="badge badge-offline">Desconectado</span>
+                                `}
+                            </td>
+                            <td>
+                                <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
+                                ${user.active !== false ? `
+                                    <button onclick="deactivateUser('${user.username}')" class="btn btn-danger">Desactivar</button>
+                                ` : `
+                                    <button onclick="activateUser('${user.username}')" class="btn btn-success">Activar</button>
+                                `}
+                                <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                showStatus(usersStatus, `Usuarios cargados: ${filteredUsers.length}`);
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+                showStatus(usersStatus, 'Error al cargar usuarios', 'danger');
+            }
         }
         
         // Buscar usuarios
@@ -1609,333 +1493,296 @@
         }
         
         // Cargar retiros
-        function loadWithdrawals() {
-            const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
-            const filter = document.getElementById('withdrawalFilter').value;
-            const dateFilter = document.getElementById('withdrawalDate').value;
+        async function loadWithdrawals() {
+            const withdrawalsStatus = document.getElementById('withdrawalsStatus');
+            showStatus(withdrawalsStatus, 'Cargando retiros...', 'info');
             
-            let filteredWithdrawals = withdrawals;
-            
-            // Aplicar filtros
-            if (filter !== 'all') {
-                filteredWithdrawals = filteredWithdrawals.filter(w => w.status === filter);
+            try {
+                const filter = document.getElementById('withdrawalFilter').value;
+                const dateFilter = document.getElementById('withdrawalDate').value;
+                
+                // Construir parámetros de consulta
+                const params = new URLSearchParams();
+                if (filter !== 'all') params.append('status', filter);
+                if (dateFilter) params.append('date', dateFilter);
+                
+                const withdrawals = await apiRequest(`/withdrawals?${params.toString()}`);
+                
+                // Ordenar por fecha (más reciente primero)
+                withdrawals.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                const tbody = document.querySelector('#withdrawalsTable tbody');
+                tbody.innerHTML = withdrawals.map(w => `
+                    <tr>
+                        <td>${w.id || '-'}</td>
+                        <td>${w.username}</td>
+                        <td>${w.amount} Bs</td>
+                        <td>${w.bank || '-'}</td>
+                        <td>${w.account || w.cedula || '-'}</td>
+                        <td>${new Date(w.date).toLocaleString()}</td>
+                        <td>${getStatusLabel(w.status)}</td>
+                        <td>
+                            ${w.status === 'pending' ? `
+                                <button onclick="approveWithdrawal(${w.id})" class="btn btn-success">Aprobar</button>
+                                <button onclick="rejectWithdrawal(${w.id})" class="btn btn-danger">Rechazar</button>
+                            ` : 'N/A'}
+                        </td>
+                    </tr>
+                `).join('');
+                
+                showStatus(withdrawalsStatus, `Retiros cargados: ${withdrawals.length}`);
+            } catch (error) {
+                console.error('Error al cargar retiros:', error);
+                showStatus(withdrawalsStatus, 'Error al cargar retiros', 'danger');
             }
-            
-            if (dateFilter) {
-                filteredWithdrawals = filteredWithdrawals.filter(w => {
-                    const withdrawalDate = new Date(w.date).toISOString().split('T')[0];
-                    return withdrawalDate === dateFilter;
-                });
-            }
-            
-            // Ordenar por fecha (más reciente primero)
-            filteredWithdrawals.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            const tbody = document.querySelector('#withdrawalsTable tbody');
-            tbody.innerHTML = filteredWithdrawals.map(w => `
-                <tr>
-                    <td>${w.id || '-'}</td>
-                    <td>${w.username}</td>
-                    <td>${w.amount} Bs</td>
-                    <td>${w.bank || '-'}</td>
-                    <td>${w.account || w.cedula || '-'}</td>
-                    <td>${new Date(w.date).toLocaleString()}</td>
-                    <td>${getStatusLabel(w.status)}</td>
-                    <td>
-                        ${w.status === 'pending' ? `
-                            <button onclick="approveWithdrawal(${w.id})" class="btn btn-success">Aprobar</button>
-                            <button onclick="rejectWithdrawal(${w.id})" class="btn btn-danger">Rechazar</button>
-                        ` : 'N/A'}
-                    </td>
-                </tr>
-            `).join('');
         }
 
         // Aprobar retiro
-        window.approveWithdrawal = function(id) {
-            const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
-            const withdrawal = withdrawals.find(w => w.id === id);
-            
-            if (withdrawal) {
-                withdrawal.status = 'approved';
-                withdrawal.approvedAt = new Date().toISOString();
-                localStorage.setItem('withdrawals', JSON.stringify(withdrawals));
+        window.approveWithdrawal = async function(id) {
+            try {
+                const response = await apiRequest(`/withdrawals/${id}/approve`, 'PATCH');
                 
-                // Registrar transacción
-                addTransaction({
-                    type: 'withdrawal',
-                    username: withdrawal.username,
-                    amount: -withdrawal.amount,
-                    details: `Retiro aprobado a ${withdrawal.bank}`,
-                    status: 'completed'
-                });
-                
-                alert('Retiro aprobado');
-                loadWithdrawals();
-                loadDashboard();
+                if (response && response.success) {
+                    await loadWithdrawals();
+                    await loadDashboard();
+                    alert('Retiro aprobado');
+                } else {
+                    alert('Error al aprobar el retiro');
+                }
+            } catch (error) {
+                console.error('Error al aprobar retiro:', error);
+                alert('Error al aprobar el retiro');
             }
         };
 
         // Rechazar retiro
-        window.rejectWithdrawal = function(id) {
-            const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
-            const withdrawal = withdrawals.find(w => w.id === id);
-            
-            if (withdrawal) {
-                withdrawal.status = 'rejected';
-                withdrawal.rejectedAt = new Date().toISOString();
+        window.rejectWithdrawal = async function(id) {
+            try {
+                const response = await apiRequest(`/withdrawals/${id}/reject`, 'PATCH');
                 
-                // Devolver el dinero al usuario
-                const users = JSON.parse(localStorage.getItem('users')) || {};
-                const user = users[withdrawal.username];
-                if (user) {
-                    user.balance += withdrawal.amount;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    // Registrar transacción
-                    addTransaction({
-                        type: 'withdrawal',
-                        username: withdrawal.username,
-                        amount: withdrawal.amount,
-                        details: `Retiro rechazado - Dinero devuelto`,
-                        status: 'reversed'
-                    });
+                if (response && response.success) {
+                    await loadWithdrawals();
+                    await loadDashboard();
+                    alert('Retiro rechazado y dinero devuelto');
+                } else {
+                    alert('Error al rechazar el retiro');
                 }
-                
-                localStorage.setItem('withdrawals', JSON.stringify(withdrawals));
-                alert('Retiro rechazado y dinero devuelto');
-                loadWithdrawals();
-                loadDashboard();
+            } catch (error) {
+                console.error('Error al rechazar retiro:', error);
+                alert('Error al rechazar el retiro');
             }
         };
 
         // Cargar depósitos
-        function loadDeposits() {
-            const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
-            const filter = document.getElementById('depositFilter').value;
-            const dateFilter = document.getElementById('depositDate').value;
+        async function loadDeposits() {
+            const depositsStatus = document.getElementById('depositsStatus');
+            showStatus(depositsStatus, 'Cargando depósitos...', 'info');
             
-            let filteredDeposits = deposits;
-            
-            // Aplicar filtros
-            if (filter !== 'all') {
-                filteredDeposits = filteredDeposits.filter(d => d.status === filter);
+            try {
+                const filter = document.getElementById('depositFilter').value;
+                const dateFilter = document.getElementById('depositDate').value;
+                
+                // Construir parámetros de consulta
+                const params = new URLSearchParams();
+                if (filter !== 'all') params.append('status', filter);
+                if (dateFilter) params.append('date', dateFilter);
+                
+                const deposits = await apiRequest(`/deposits?${params.toString()}`);
+                
+                // Ordenar por fecha (más reciente primero)
+                deposits.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                const tbody = document.querySelector('#depositsTable tbody');
+                tbody.innerHTML = deposits.map(d => `
+                    <tr>
+                        <td>${d.id || '-'}</td>
+                        <td>${d.username}</td>
+                        <td>${d.amount} Bs</td>
+                        <td>${d.reference || '-'}</td>
+                        <td>${d.bank || '-'}</td>
+                        <td>${new Date(d.date).toLocaleString()}</td>
+                        <td>${getStatusLabel(d.status)}</td>
+                        <td>
+                            ${d.status === 'pending' ? `
+                                <button onclick="approveDeposit(${d.id})" class="btn btn-success">Aprobar</button>
+                                <button onclick="rejectDeposit(${d.id})" class="btn btn-danger">Rechazar</button>
+                            ` : 'N/A'}
+                        </td>
+                    </tr>
+                `).join('');
+                
+                showStatus(depositsStatus, `Depósitos cargados: ${deposits.length}`);
+            } catch (error) {
+                console.error('Error al cargar depósitos:', error);
+                showStatus(depositsStatus, 'Error al cargar depósitos', 'danger');
             }
-            
-            if (dateFilter) {
-                filteredDeposits = filteredDeposits.filter(d => {
-                    const depositDate = new Date(d.date).toISOString().split('T')[0];
-                    return depositDate === dateFilter;
-                });
-            }
-            
-            // Ordenar por fecha (más reciente primero)
-            filteredDeposits.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            const tbody = document.querySelector('#depositsTable tbody');
-            tbody.innerHTML = filteredDeposits.map(d => `
-                <tr>
-                    <td>${d.id || '-'}</td>
-                    <td>${d.username}</td>
-                    <td>${d.amount} Bs</td>
-                    <td>${d.reference || '-'}</td>
-                    <td>${d.bank || '-'}</td>
-                    <td>${new Date(d.date).toLocaleString()}</td>
-                    <td>${getStatusLabel(d.status)}</td>
-                    <td>
-                        ${d.status === 'pending' ? `
-                            <button onclick="approveDeposit(${d.id})" class="btn btn-success">Aprobar</button>
-                            <button onclick="rejectDeposit(${d.id})" class="btn btn-danger">Rechazar</button>
-                        ` : 'N/A'}
-                    </td>
-                </tr>
-            `).join('');
         }
         
         // Aprobar depósito
-        window.approveDeposit = function(id) {
-            const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
-            const deposit = deposits.find(d => d.id === id);
-            
-            if (deposit) {
-                deposit.status = 'approved';
-                deposit.approvedAt = new Date().toISOString();
+        window.approveDeposit = async function(id) {
+            try {
+                const response = await apiRequest(`/deposits/${id}/approve`, 'PATCH');
                 
-                // Añadir dinero al usuario
-                const users = JSON.parse(localStorage.getItem('users')) || {};
-                const user = users[deposit.username];
-                if (user) {
-                    user.balance += deposit.amount;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    // Registrar transacción
-                    addTransaction({
-                        type: 'deposit',
-                        username: deposit.username,
-                        amount: deposit.amount,
-                        details: `Depósito aprobado desde ${deposit.bank}`,
-                        status: 'completed'
-                    });
+                if (response && response.success) {
+                    await loadDeposits();
+                    await loadDashboard();
+                    alert('Depósito aprobado');
+                } else {
+                    alert('Error al aprobar el depósito');
                 }
-                
-                localStorage.setItem('deposits', JSON.stringify(deposits));
-                alert('Depósito aprobado');
-                loadDeposits();
-                loadDashboard();
+            } catch (error) {
+                console.error('Error al aprobar depósito:', error);
+                alert('Error al aprobar el depósito');
             }
         };
 
         // Rechazar depósito
-        window.rejectDeposit = function(id) {
-            const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
-            const deposit = deposits.find(d => d.id === id);
-            
-            if (deposit) {
-                deposit.status = 'rejected';
-                deposit.rejectedAt = new Date().toISOString();
-                localStorage.setItem('deposits', JSON.stringify(deposits));
+        window.rejectDeposit = async function(id) {
+            try {
+                const response = await apiRequest(`/deposits/${id}/reject`, 'PATCH');
                 
-                // Registrar transacción
-                addTransaction({
-                    type: 'deposit',
-                    username: deposit.username,
-                    amount: -deposit.amount,
-                    details: `Depósito rechazado`,
-                    status: 'rejected'
-                });
-                
-                alert('Depósito rechazado');
-                loadDeposits();
-                loadDashboard();
+                if (response && response.success) {
+                    await loadDeposits();
+                    await loadDashboard();
+                    alert('Depósito rechazado');
+                } else {
+                    alert('Error al rechazar el depósito');
+                }
+            } catch (error) {
+                console.error('Error al rechazar depósito:', error);
+                alert('Error al rechazar el depósito');
             }
         };
         
         // Cargar transacciones
-        function loadTransactions() {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const typeFilter = document.getElementById('transactionType').value;
-            const userFilter = document.getElementById('transactionUser').value.toLowerCase();
-            const dateFrom = document.getElementById('transactionDateFrom').value;
-            const dateTo = document.getElementById('transactionDateTo').value;
+        async function loadTransactions() {
+            const transactionsStatus = document.getElementById('transactionsStatus');
+            showStatus(transactionsStatus, 'Cargando transacciones...', 'info');
             
-            let filteredTransactions = transactions;
-            
-            // Aplicar filtros
-            if (typeFilter !== 'all') {
-                filteredTransactions = filteredTransactions.filter(t => t.type === typeFilter);
+            try {
+                const typeFilter = document.getElementById('transactionType').value;
+                const userFilter = document.getElementById('transactionUser').value.toLowerCase();
+                const dateFrom = document.getElementById('transactionDateFrom').value;
+                const dateTo = document.getElementById('transactionDateTo').value;
+                
+                // Construir parámetros de consulta
+                const params = new URLSearchParams();
+                if (typeFilter !== 'all') params.append('type', typeFilter);
+                if (userFilter) params.append('username', userFilter);
+                if (dateFrom) params.append('dateFrom', dateFrom);
+                if (dateTo) params.append('dateTo', dateTo);
+                
+                const transactions = await apiRequest(`/transactions?${params.toString()}`);
+                
+                // Ordenar por fecha (más reciente primero)
+                transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                const tbody = document.querySelector('#transactionsTable tbody');
+                tbody.innerHTML = transactions.map(t => `
+                    <tr>
+                        <td>${t.id || '-'}</td>
+                        <td>${new Date(t.date).toLocaleString()}</td>
+                        <td>${t.username}</td>
+                        <td>${getTransactionTypeLabel(t.type)}</td>
+                        <td>${t.amount} Bs</td>
+                        <td>${t.details || '-'}</td>
+                        <td>${getStatusLabel(t.status)}</td>
+                    </tr>
+                `).join('');
+                
+                showStatus(transactionsStatus, `Transacciones cargadas: ${transactions.length}`);
+            } catch (error) {
+                console.error('Error al cargar transacciones:', error);
+                showStatus(transactionsStatus, 'Error al cargar transacciones', 'danger');
             }
-            
-            if (userFilter) {
-                filteredTransactions = filteredTransactions.filter(t => 
-                    t.username.toLowerCase().includes(userFilter))
-                ;
-            }
-            
-            if (dateFrom) {
-                filteredTransactions = filteredTransactions.filter(t => {
-                    const transactionDate = new Date(t.date).toISOString().split('T')[0];
-                    return transactionDate >= dateFrom;
-                });
-            }
-            
-            if (dateTo) {
-                filteredTransactions = filteredTransactions.filter(t => {
-                    const transactionDate = new Date(t.date).toISOString().split('T')[0];
-                    return transactionDate <= dateTo;
-                });
-            }
-            
-            // Ordenar por fecha (más reciente primero)
-            filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            const tbody = document.querySelector('#transactionsTable tbody');
-            tbody.innerHTML = filteredTransactions.map(t => `
-                <tr>
-                    <td>${t.id || '-'}</td>
-                    <td>${new Date(t.date).toLocaleString()}</td>
-                    <td>${t.username}</td>
-                    <td>${getTransactionTypeLabel(t.type)}</td>
-                    <td>${t.amount} Bs</td>
-                    <td>${t.details || '-'}</td>
-                    <td>${getStatusLabel(t.status)}</td>
-                </tr>
-            `).join('');
         }
         
         // Cargar ruletas
-        function loadRuletas() {
-            const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
-            const filter = document.getElementById('ruletaFilter').value;
+        async function loadRuletas() {
+            const ruletasStatus = document.getElementById('ruletasStatus');
+            showStatus(ruletasStatus, 'Cargando ruletas...', 'info');
             
-            let ruletas = Object.values(ruletasData.ruletas);
-            
-            // Aplicar filtros
-            if (filter === 'completed') {
-                ruletas = ruletas.filter(r => !r.active && r.winners);
-            } else if (filter === 'active') {
-                ruletas = ruletas.filter(r => r.active);
+            try {
+                const filter = document.getElementById('ruletaFilter').value;
+                
+                // Construir parámetros de consulta
+                const params = new URLSearchParams();
+                if (filter !== 'all') {
+                    params.append('status', filter === 'active' ? 'active' : 'completed');
+                }
+                
+                const ruletas = await apiRequest(`/ruletas?${params.toString()}`);
+                
+                // Ordenar por fecha (más reciente primero)
+                ruletas.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                const tbody = document.querySelector('#ruletasTable tbody');
+                tbody.innerHTML = ruletas.map(r => `
+                    <tr>
+                        <td>${r.id}</td>
+                        <td>${new Date(r.createdAt).toLocaleString()}</td>
+                        <td>${r.sectors.filter(s => s !== null).length}</td>
+                        <td>${r.winners?.main?.playerName || '-'}</td>
+                        <td>${r.winners?.main ? '550 Bs' : '-'}</td>
+                        <td>
+                            ${r.winners?.left?.playerName || '-'}<br>
+                            ${r.winners?.right?.playerName || '-'}
+                        </td>
+                        <td>
+                            ${r.winners?.left ? '50 Bs' : '-'}<br>
+                            ${r.winners?.right ? '50 Bs' : '-'}
+                        </td>
+                        <td>${r.active ? 'Activa' : 'Completada'}</td>
+                        <td>
+                            ${!r.active ? `
+                                <button onclick="viewRuletaDetails(${r.id})" class="btn btn-primary">Ver Detalles</button>
+                            ` : `
+                                <button onclick="forceCompleteRuleta(${r.id})" class="btn btn-danger">Forzar Cierre</button>
+                            `}
+                        </td>
+                    </tr>
+                `).join('');
+                
+                showStatus(ruletasStatus, `Ruletas cargadas: ${ruletas.length}`);
+            } catch (error) {
+                console.error('Error al cargar ruletas:', error);
+                showStatus(ruletasStatus, 'Error al cargar ruletas', 'danger');
             }
-            
-            // Ordenar por fecha (más reciente primero)
-            ruletas.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
-            const tbody = document.querySelector('#ruletasTable tbody');
-            tbody.innerHTML = ruletas.map(r => `
-                <tr>
-                    <td>${r.id}</td>
-                    <td>${new Date(r.createdAt).toLocaleString()}</td>
-                    <td>${r.sectors.filter(s => s !== null).length}</td>
-                    <td>${r.winners?.main?.playerName || '-'}</td>
-                    <td>${r.winners?.main ? '550 Bs' : '-'}</td>
-                    <td>
-                        ${r.winners?.left?.playerName || '-'}<br>
-                        ${r.winners?.right?.playerName || '-'}
-                    </td>
-                    <td>
-                        ${r.winners?.left ? '50 Bs' : '-'}<br>
-                        ${r.winners?.right ? '50 Bs' : '-'}
-                    </td>
-                    <td>${r.active ? 'Activa' : 'Completada'}</td>
-                    <td>
-                        ${!r.active ? `
-                            <button onclick="viewRuletaDetails(${r.id})" class="btn btn-primary">Ver Detalles</button>
-                        ` : `
-                            <button onclick="forceCompleteRuleta(${r.id})" class="btn btn-danger">Forzar Cierre</button>
-                        `}
-                    </td>
-                </tr>
-            `).join('');
         }
         
         // Ver detalles de ruleta
-        window.viewRuletaDetails = function(ruletaId) {
-            const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
-            const ruleta = ruletasData.ruletas[ruletaId];
-            
-            if (ruleta) {
-                let details = `Ruleta #${ruletaId}\n`;
-                details += `Fecha: ${new Date(ruleta.createdAt).toLocaleString()}\n`;
-                details += `Estado: ${ruleta.active ? 'Activa' : 'Completada'}\n\n`;
+        window.viewRuletaDetails = async function(ruletaId) {
+            try {
+                const ruleta = await apiRequest(`/ruletas/${ruletaId}`);
                 
-                if (ruleta.winners) {
-                    details += 'Ganadores:\n';
-                    details += `- Principal: ${ruleta.winners.main.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.main)} - 550 Bs)\n`;
-                    if (ruleta.winners.left) {
-                        details += `- Secundario Izq: ${ruleta.winners.left.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.left)} - 50 Bs)\n`;
+                if (ruleta) {
+                    let details = `Ruleta #${ruletaId}\n`;
+                    details += `Fecha: ${new Date(ruleta.createdAt).toLocaleString()}\n`;
+                    details += `Estado: ${ruleta.active ? 'Activa' : 'Completada'}\n\n`;
+                    
+                    if (ruleta.winners) {
+                        details += 'Ganadores:\n';
+                        details += `- Principal: ${ruleta.winners.main.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.main)} - 550 Bs)\n`;
+                        if (ruleta.winners.left) {
+                            details += `- Secundario Izq: ${ruleta.winners.left.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.left)} - 50 Bs)\n`;
+                        }
+                        if (ruleta.winners.right) {
+                            details += `- Secundario Der: ${ruleta.winners.right.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.right)} - 50 Bs)\n`;
+                        }
                     }
-                    if (ruleta.winners.right) {
-                        details += `- Secundario Der: ${ruleta.winners.right.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.right)} - 50 Bs)\n`;
-                    }
+                    
+                    details += '\nParticipantes:\n';
+                    ruleta.sectors.forEach((sector, index) => {
+                        if (sector) {
+                            details += `- N° ${index + 1}: ${sector.playerName} (${sector.bet} Bs)\n`;
+                        }
+                    });
+                    
+                    alert(details);
                 }
-                
-                details += '\nParticipantes:\n';
-                ruleta.sectors.forEach((sector, index) => {
-                    if (sector) {
-                        details += `- N° ${index + 1}: ${sector.playerName} (${sector.bet} Bs)\n`;
-                    }
-                });
-                
-                alert(details);
+            } catch (error) {
+                console.error('Error al ver detalles de ruleta:', error);
+                alert('Error al cargar detalles de la ruleta');
             }
         }
         
@@ -1945,140 +1792,24 @@
         }
         
         // Forzar cierre de ruleta
-        window.forceCompleteRuleta = function(ruletaId) {
+        window.forceCompleteRuleta = async function(ruletaId) {
             if (confirm('¿Estás seguro de forzar el cierre de esta ruleta? Esto seleccionará ganadores aleatorios.')) {
-                const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
-                const ruleta = ruletasData.ruletas[ruletaId];
-                
-                if (ruleta && ruleta.active) {
-                    // Seleccionar ganadores aleatorios
-                    const occupiedSectors = ruleta.sectors
-                        .map((sector, index) => sector ? index : null)
-                        .filter(index => index !== null);
+                try {
+                    const response = await apiRequest(`/ruletas/${ruletaId}/complete`, 'PATCH');
                     
-                    if (occupiedSectors.length >= 3) {
-                        // Mezclar sectores ocupados
-                        const shuffled = [...occupiedSectors].sort(() => 0.5 - Math.random());
-                        
-                        // Seleccionar ganadores
-                        ruleta.winners = {
-                            main: ruleta.sectors[shuffled[0]],
-                            left: ruleta.sectors[shuffled[1]],
-                            right: ruleta.sectors[shuffled[2]]
-                        };
-                        
-                        // Calcular premios
-                        const premioPrincipal = 550;
-                        const premioSecundario = 50;
-                        
-                        // Actualizar saldos de los ganadores
-                        const users = JSON.parse(localStorage.getItem('users')) || {};
-                        
-                        // Premio principal
-                        if (users[ruleta.winners.main.playerName]) {
-                            users[ruleta.winners.main.playerName].wins = 
-                                (users[ruleta.winners.main.playerName].wins || 0) + premioPrincipal;
-                            users[ruleta.winners.main.playerName].balance = 
-                                (users[ruleta.winners.main.playerName].balance || 0) + premioPrincipal + ruleta.winners.main.bet;
-                            
-                            // Registrar transacción
-                            addTransaction({
-                                type: 'win',
-                                username: ruleta.winners.main.playerName,
-                                amount: premioPrincipal,
-                                details: `Ganador principal ruleta #${ruletaId}`,
-                                status: 'completed'
-                            });
-                        }
-                        
-                        // Premios secundarios
-                        if (users[ruleta.winners.left.playerName]) {
-                            users[ruleta.winners.left.playerName].wins = 
-                                (users[ruleta.winners.left.playerName].wins || 0) + premioSecundario;
-                            users[ruleta.winners.left.playerName].balance = 
-                                (users[ruleta.winners.left.playerName].balance || 0) + premioSecundario + ruleta.winners.left.bet;
-                            
-                            // Registrar transacción
-                            addTransaction({
-                                type: 'win',
-                                username: ruleta.winners.left.playerName,
-                                amount: premioSecundario,
-                                details: `Ganador secundario ruleta #${ruletaId}`,
-                                status: 'completed'
-                            });
-                        }
-                        
-                        if (users[ruleta.winners.right.playerName]) {
-                            users[ruleta.winners.right.playerName].wins = 
-                                (users[ruleta.winners.right.playerName].wins || 0) + premioSecundario;
-                            users[ruleta.winners.right.playerName].balance = 
-                                (users[ruleta.winners.right.playerName].balance || 0) + premioSecundario + ruleta.winners.right.bet;
-                            
-                            // Registrar transacción
-                            addTransaction({
-                                type: 'win',
-                                username: ruleta.winners.right.playerName,
-                                amount: premioSecundario,
-                                details: `Ganador secundario ruleta #${ruletaId}`,
-                                status: 'completed'
-                            });
-                        }
-                        
-                        // Actualizar ganancias de la casa (100 Bs fijos)
-                        ruleta.houseEarnings = 100;
-                        
-                        // Marcar ruleta como completada
-                        ruleta.active = false;
-                        ruleta.completedAt = new Date().toISOString();
-                        
-                        // Guardar cambios
-                        ruletasData.ruletas[ruletaId] = ruleta;
-                        localStorage.setItem('ruletasData', JSON.stringify(ruletasData));
-                        localStorage.setItem('users', JSON.stringify(users));
-                        
-                        // Crear nueva ruleta si es la actual
-                        if (ruletaId === ruletasData.currentRuletaId) {
-                            const newId = ruletasData.currentRuletaId + 1;
-                            
-                            ruletasData.ruletas[newId] = {
-                                id: newId,
-                                sectors: new Array(15).fill(null),
-                                spinning: false,
-                                winners: null,
-                                houseEarnings: 0,
-                                active: true,
-                                createdAt: new Date().toISOString()
-                            };
-                            
-                            ruletasData.currentRuletaId = newId;
-                            localStorage.setItem('ruletasData', JSON.stringify(ruletasData));
-                        }
-                        
-                        loadRuletas();
-                        loadDashboard();
+                    if (response && response.success) {
+                        await loadRuletas();
+                        await loadDashboard();
                         alert('Ruleta cerrada y ganadores seleccionados.');
                     } else {
-                        alert('No hay suficientes participantes para seleccionar ganadores.');
+                        alert('Error al forzar el cierre de la ruleta');
                     }
+                } catch (error) {
+                    console.error('Error al forzar cierre de ruleta:', error);
+                    alert('Error al forzar el cierre de la ruleta');
                 }
             }
         };
-
-        // Función para agregar una transacción
-        function addTransaction(transaction) {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            
-            const newTransaction = {
-                id: Date.now(),
-                date: new Date().toISOString(),
-                ...transaction
-            };
-            
-            transactions.push(newTransaction);
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            
-            return newTransaction;
-        }
         
         // Obtener etiqueta para el estado
         function getStatusLabel(status) {
@@ -2110,13 +1841,7 @@
             e.preventDefault();
             e.stopPropagation();
             
-            const adminUser = JSON.parse(localStorage.getItem('adminUser'));
-            if (adminUser) {
-                updateOnlineStatus(adminUser.username, false);
-            }
-            
-            localStorage.removeItem('adminLoggedIn');
-            localStorage.removeItem('adminUser');
+            localStorage.removeItem('adminToken');
             location.reload();
         });
 
@@ -2167,59 +1892,61 @@
         });
 
         // Función para cargar tickets de soporte
-        function loadSupportTickets(filter = 'all') {
-            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
-            let filteredTickets = tickets;
+        async function loadSupportTickets(filter = 'all') {
+            const supportStatus = document.getElementById('supportStatus');
+            showStatus(supportStatus, 'Cargando tickets...', 'info');
             
-            // Aplicar filtro
-            if (filter !== 'all') {
-                filteredTickets = tickets.filter(ticket => ticket.status === filter);
-            }
-            
-            // Ordenar por fecha (más reciente primero)
-            filteredTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
-            const ticketsList = document.getElementById('ticketsList');
-            ticketsList.innerHTML = '';
-            
-            if (filteredTickets.length === 0) {
-                ticketsList.innerHTML = '<p>No hay tickets que mostrar.</p>';
-                return;
-            }
-            
-            filteredTickets.forEach(ticket => {
-                const ticketElement = document.createElement('div');
-                ticketElement.className = 'ticket-card';
-                ticketElement.innerHTML = `
-                    <div class="ticket-header">
-                        <div class="ticket-title">${ticket.subject}</div>
-                        <div class="ticket-status status-${ticket.status.replace(' ', '-')}">
-                            ${getStatusLabel(ticket.status)}
+            try {
+                const tickets = await apiRequest(`/support-tickets?status=${filter}`);
+                
+                const ticketsList = document.getElementById('ticketsList');
+                ticketsList.innerHTML = '';
+                
+                if (tickets.length === 0) {
+                    ticketsList.innerHTML = '<p>No hay tickets que mostrar.</p>';
+                    showStatus(supportStatus, 'No se encontraron tickets');
+                    return;
+                }
+                
+                tickets.forEach(ticket => {
+                    const ticketElement = document.createElement('div');
+                    ticketElement.className = 'ticket-card';
+                    ticketElement.innerHTML = `
+                        <div class="ticket-header">
+                            <div class="ticket-title">${ticket.subject}</div>
+                            <div class="ticket-status status-${ticket.status.replace(' ', '-')}">
+                                ${getStatusLabel(ticket.status)}
+                            </div>
                         </div>
-                    </div>
-                    <div class="ticket-meta">
-                        <span>Usuario: ${ticket.username}</span>
-                        <span>${new Date(ticket.createdAt).toLocaleString()}</span>
-                    </div>
-                    <div class="ticket-message">
-                        ${ticket.message}
-                    </div>
-                    <div class="ticket-actions">
-                        ${ticket.status !== 'resolved' ? `
-                            <button onclick="updateTicketStatus('${ticket.id}', 'in-progress')" class="btn btn-primary">
-                                En progreso
+                        <div class="ticket-meta">
+                            <span>Usuario: ${ticket.username}</span>
+                            <span>${new Date(ticket.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div class="ticket-message">
+                            ${ticket.message}
+                        </div>
+                        <div class="ticket-actions">
+                            ${ticket.status !== 'resolved' ? `
+                                <button onclick="updateTicketStatus('${ticket.id}', 'in-progress')" class="btn btn-primary">
+                                    En progreso
+                                </button>
+                                <button onclick="updateTicketStatus('${ticket.id}', 'resolved')" class="btn btn-success">
+                                    Resolver
+                                </button>
+                            ` : ''}
+                            <button onclick="viewTicketDetails('${ticket.id}')" class="btn btn-secondary">
+                                Ver detalles
                             </button>
-                            <button onclick="updateTicketStatus('${ticket.id}', 'resolved')" class="btn btn-success">
-                                Resolver
-                            </button>
-                        ` : ''}
-                        <button onclick="viewTicketDetails('${ticket.id}')" class="btn btn-secondary">
-                            Ver detalles
-                        </button>
-                    </div>
-                `;
-                ticketsList.appendChild(ticketElement);
-            });
+                        </div>
+                    `;
+                    ticketsList.appendChild(ticketElement);
+                });
+                
+                showStatus(supportStatus, `Tickets cargados: ${tickets.length}`);
+            } catch (error) {
+                console.error('Error al cargar tickets:', error);
+                showStatus(supportStatus, 'Error al cargar tickets', 'danger');
+            }
         }
         
         // Event listeners para el soporte
@@ -2228,8 +1955,103 @@
             loadSupportTickets(filter);
         });
         
-        // Cargar soporte al inicio
-        loadSupportTickets();
+        // Actualizar estado de ticket
+        window.updateTicketStatus = async function(ticketId, status) {
+            try {
+                const response = await apiRequest(`/support-tickets/${ticketId}/status`, 'PATCH', {
+                    status
+                });
+                
+                if (response && response.success) {
+                    await loadSupportTickets();
+                    alert('Estado del ticket actualizado');
+                } else {
+                    alert('Error al actualizar el estado del ticket');
+                }
+            } catch (error) {
+                console.error('Error al actualizar estado de ticket:', error);
+                alert('Error al actualizar el estado del ticket');
+            }
+        };
+        
+        // Ver detalles de ticket
+        window.viewTicketDetails = async function(ticketId) {
+            try {
+                const ticket = await apiRequest(`/support-tickets/${ticketId}`);
+                
+                if (ticket) {
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.innerHTML = `
+                        <div class="modal-content" style="max-width: 800px;">
+                            <span class="close-modal" onclick="closeModal()">&times;</span>
+                            <h2>Ticket #${ticket.id}</h2>
+                            
+                            <div class="user-details">
+                                <p><strong>Asunto:</strong> ${ticket.subject}</p>
+                                <p><strong>Usuario:</strong> ${ticket.username}</p>
+                                <p><strong>Fecha:</strong> ${new Date(ticket.createdAt).toLocaleString()}</p>
+                                <p><strong>Estado:</strong> ${getStatusLabel(ticket.status)}</p>
+                            </div>
+                            
+                            <div class="ticket-message" style="margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 5px;">
+                                <h3>Mensaje</h3>
+                                <p>${ticket.message}</p>
+                            </div>
+                            
+                            <div id="ticketResponses" style="margin-top: 20px;">
+                                <h3>Respuestas</h3>
+                                ${ticket.responses && ticket.responses.length > 0 ? 
+                                    ticket.responses.map(r => `
+                                        <div style="margin-bottom: 15px; padding: 10px; background: ${r.admin ? '#e6f7ff' : '#f9f9f9'}; border-radius: 5px;">
+                                            <strong>${r.admin ? 'Administrador' : ticket.username}</strong> 
+                                            <span style="font-size: 0.9em; color: #666;">(${new Date(r.date).toLocaleString()})</span>
+                                            <p>${r.message}</p>
+                                        </div>
+                                    `).join('') : 
+                                    '<p>No hay respuestas aún.</p>'}
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <h3>Agregar respuesta</h3>
+                                <textarea id="ticketResponse" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                                <button onclick="addTicketResponse('${ticketId}')" class="btn btn-primary" style="margin-top: 10px;">Enviar respuesta</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    modal.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al ver detalles de ticket:', error);
+                alert('Error al cargar detalles del ticket');
+            }
+        };
+        
+        // Agregar respuesta a ticket
+        window.addTicketResponse = async function(ticketId) {
+            try {
+                const responseText = document.getElementById('ticketResponse').value.trim();
+                if (!responseText) {
+                    alert('Por favor escribe una respuesta');
+                    return;
+                }
+                
+                const response = await apiRequest(`/support-tickets/${ticketId}/response`, 'POST', {
+                    message: responseText
+                });
+                
+                if (response && response.success) {
+                    // Recargar los detalles del ticket
+                    await viewTicketDetails(ticketId);
+                } else {
+                    alert('Error al enviar la respuesta');
+                }
+            } catch (error) {
+                console.error('Error al agregar respuesta:', error);
+                alert('Error al enviar la respuesta');
+            }
+        };
     </script>
 </body>
 </html>
