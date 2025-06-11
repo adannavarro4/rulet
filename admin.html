@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Admin - Rulet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #2c3e50;
             --secondary: #3498db;
             --danger: #e74c3c;
             --success: #2ecc71;
+            --warning: #f39c12;
             --light: #ecf0f1;
             --dark: #2c3e50;
             --online: #2ecc71;
             --offline: #95a5a6;
+            --sidebar-width: 250px;
+            --header-height: 70px;
         }
         
         * {
@@ -24,8 +28,9 @@
         }
         
         body {
-            background: #f5f5f5;
+            background: #f5f7fa;
             color: var(--dark);
+            overflow-x: hidden;
         }
         
         /* Login */
@@ -34,52 +39,127 @@
             margin: 100px auto;
             padding: 30px;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            text-align: center;
         }
         
         .login-container h1 {
             text-align: center;
             margin-bottom: 30px;
             color: var(--primary);
+            font-weight: 600;
+            font-size: 28px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            color: white;
+            font-size: 48px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
         
         .login-container input {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
+            padding: 14px;
+            margin-bottom: 20px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .login-container input:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
         
         .login-container button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-        } 
+            font-weight: 600;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .login-container button:hover {
+            background: #34495e;
+        }
         
         /* Panel Admin */
         .admin-container {
-            display: none; /* Oculto inicialmente */
+            display: none;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--header-height);
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
         }
         
         .sidebar {
-            width: 250px;
+            width: var(--sidebar-width);
             background: var(--primary);
             color: white;
             height: 100vh;
             position: fixed;
             padding: 20px 0;
+            z-index: 101;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
         }
         
         .sidebar h2 {
-            padding: 0 20px;
-            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 22px;
         }
         
         .sidebar ul {
@@ -87,53 +167,191 @@
         }
         
         .sidebar li {
-            padding: 12px 20px;
+            padding: 14px 25px;
             cursor: pointer;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            border-left: 4px solid transparent;
         }
         
         .sidebar li:hover {
             background: #34495e;
         }
         
+        .sidebar li.active {
+            background: #34495e;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .sidebar li i {
+            width: 24px;
+            text-align: center;
+            font-size: 18px;
+        }
+        
         .main-content {
-            margin-left: 250px;
+            margin-left: var(--sidebar-width);
             padding: 30px;
+            padding-top: calc(var(--header-height) + 30px;
         }
         
         .tab-content {
             display: none;
+            animation: fadeIn 0.5s;
         }
         
         .tab-content.active {
             display: block;
         }
         
+        /* Dashboard */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--secondary);
+        }
+        
+        .stat-card h3 {
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .stat-card p {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card .btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--secondary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .stat-card .btn:hover {
+            background: rgba(52, 152, 219, 0.2);
+        }
+        
+        .total-profit { color: var(--success); }
+        .total-loss { color: var(--danger); }
+        .total-balance { color: var(--secondary); }
+        
+        /* Charts */
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            height: 350px;
+        }
+        
+        .chart-container h3 {
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        /* Tables */
+        .table-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin: 30px 0;
+            overflow-x: auto;
+        }
+        
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 10px;
+            min-width: 800px;
         }
         
         th, td {
-            padding: 12px 15px;
+            padding: 14px 18px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #eee;
         }
         
         th {
-            background: #f8f9fa;
+            background: #f8fafc;
             font-weight: 600;
+            color: var(--primary);
+            position: sticky;
+            top: 0;
         }
         
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        /* Buttons */
         .btn {
-            padding: 6px 12px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
         }
         
         .btn-success {
@@ -141,9 +359,17 @@
             color: white;
         }
         
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
         .btn-danger {
             background: var(--danger);
             color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
         }
         
         .btn-primary {
@@ -151,45 +377,39 @@
             color: white;
         }
         
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
         .btn-warning {
-            background: #f39c12;
+            background: var(--warning);
             color: white;
         }
         
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
+        .btn-warning:hover {
+            background: #e67e22;
         }
         
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
         }
         
-        .stat-card h3 {
-            margin-bottom: 10px;
-            color: var(--primary);
+        .btn-outline:hover {
+            background: rgba(52, 152, 219, 0.1);
         }
         
-        .stat-card p {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .total-profit { color: var(--success); }
-        .total-loss { color: var(--danger); }
-        .total-balance { color: var(--secondary); }
-        
-        /* Estilos para los filtros */
+        /* Filters */
         .filters {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
             flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         
         .filter-group {
@@ -199,40 +419,19 @@
         }
         
         .filter-group label {
-            font-weight: 600;
-        }
-        
-        .filter-group select, .filter-group input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        
-        .filter-group button {
-            padding: 8px 15px;
-        }
-        
-        /* Estilos para los gráficos */
-        .chart-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            height: 300px;
-        }
-        
-        /* Estilos para el historial de transacciones */
-        .transaction-history {
-            margin-top: 30px;
-        }
-        
-        .transaction-history h3 {
-            margin-bottom: 15px;
+            font-weight: 500;
             color: var(--primary);
         }
         
-        /* Estilos para el estado de conexión */
+        .filter-group select, .filter-group input {
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+        
+        /* Status indicators */
         .status-indicator {
             display: inline-block;
             width: 10px;
@@ -250,55 +449,13 @@
             background-color: var(--offline);
         }
         
-        /* Modal para ver detalles de usuario */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 700px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .close-modal {
-            float: right;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .user-details {
-            margin-top: 20px;
-        }
-        
-        .user-details p {
-            margin: 10px 0;
-        }
-        
-        .user-details strong {
-            display: inline-block;
-            width: 150px;
-        }
-        
-        /* Badges para estado */
+        /* Badges */
         .badge {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 600;
         }
         
         .badge-online {
@@ -321,75 +478,100 @@
             color: white;
         }
         
-        /* Estilos para el formulario de edición de saldo */
-        .form-control {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .badge-pending {
+            background-color: var(--warning);
+            color: white;
         }
         
-        /* Estilos para las pestañas de historial */
-        .history-tabs {
-            display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 15px;
-        }
-        
-        .history-tab {
-            padding: 10px 15px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-        }
-        
-        .history-tab.active {
-            border-bottom: 2px solid var(--secondary);
-            font-weight: bold;
-        }
-        
-        .history-content {
-            display: none;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .history-content.active {
-            display: block;
-        }
-        
-        /* Mensajes de alerta */
+        /* Alert messages */
         .alert {
             padding: 15px;
             margin-bottom: 20px;
-            border: 1px solid transparent;
-            border-radius: 4px;
+            border-radius: 8px;
+            font-weight: 500;
         }
         
         .alert-success {
-            color: #3c763d;
             background-color: #dff0d8;
-            border-color: #d6e9c6;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
         }
         
         .alert-danger {
-            color: #a94442;
             background-color: #f2dede;
-            border-color: #ebccd1;
+            color: #a94442;
+            border: 1px solid #ebccd1;
         }
         
-        /* Mejoras para botones de edición */
-        .balance-modal-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .alert-info {
+            background-color: #d9edf7;
+            color: #31708f;
+            border: 1px solid #bce8f1;
         }
         
-        .modal-footer {
-            display: flex;
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            animation: modalIn 0.4s;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 22px;
+        }
+        
+        .close-modal {
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: var(--danger);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .user-details p {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        .user-details strong {
+            display: inline-block;
+            width: 180px;
+            color: var(--primary);
         }
         
         /* Loader */
@@ -403,9 +585,53 @@
             margin: 20px auto;
         }
         
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes modalIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .chart-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                overflow: hidden;
+            }
+            
+            .sidebar-header h2 span, 
+            .sidebar li span {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .header {
+                left: 70px;
+            }
         }
     </style>
     <!-- Chart.js para gráficos -->
@@ -414,12 +640,17 @@
 <body>
     <!-- Login -->
     <div id="loginContainer" class="login-container">
-        <h1>Acceso Administrador</h1>
+        <div class="logo">
+            <i class="fas fa-dice"></i>
+        </div>
+        <h1>Panel de Administración</h1>
         <form id="loginForm">
             <input type="text" id="username" placeholder="Usuario" required>
             <input type="password" id="password" placeholder="Contraseña" required>
             <div id="loginStatus" style="margin-top: 15px;"></div>
-            <button type="submit" id="loginBtn">Ingresar</button>
+            <button type="submit" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Ingresar
+            </button>
         </form>
     </div>
 
@@ -427,96 +658,144 @@
     <div id="adminContainer" class="admin-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <h2>Panel Admin</h2>
+            <div class="sidebar-header">
+                <h2>
+                    <i class="fas fa-cogs"></i>
+                    <span>Panel Admin</span>
+                </h2>
+            </div>
             <ul>
-                <li class="active" data-tab="dashboard">Dashboard</li>
-                <li data-tab="users">Usuarios</li>
-                <li data-tab="withdrawals">Retiros</li>
-                <li data-tab="deposits">Depósitos</li>
-                <li data-tab="transactions">Transacciones</li>
-                <li data-tab="ruletas">Ruletas</li>
-                <li data-tab="support">Soporte</li>
-                <li id="logoutBtn">Cerrar Sesión</li>
+                <li class="active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li data-tab="users">
+                    <i class="fas fa-users"></i>
+                    <span>Usuarios</span>
+                </li>
+                <li data-tab="withdrawals">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Retiros</span>
+                </li>
+                <li data-tab="deposits">
+                    <i class="fas fa-piggy-bank"></i>
+                    <span>Depósitos</span>
+                </li>
+                <li data-tab="transactions">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transacciones</span>
+                </li>
+                <li data-tab="ruletas">
+                    <i class="fas fa-dice"></i>
+                    <span>Ruletas</span>
+                </li>
+                <li data-tab="support">
+                    <i class="fas fa-headset"></i>
+                    <span>Soporte</span>
+                </li>
+                <li id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </li>
             </ul>
+        </div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 id="currentTabTitle">Dashboard</h1>
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=3498db&color=fff" alt="Admin">
+                <span>Administrador</span>
+            </div>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
             <!-- Dashboard -->
             <div class="tab-content active" id="dashboard">
-                <h1>Dashboard</h1>
-                <div id="dashboardStatus"></div>
-                <div class="stats">
-                    <div class="stat-card">
-                        <h3>Usuarios Registrados</h3>
-                        <p id="totalUsers">0</p>
-                        <button class="btn btn-primary" onclick="loadUsersModal()">Ver Usuarios</button>
+                <div class="dashboard-container">
+                    <div id="dashboardStatus" class="alert alert-info">
+                        Cargando datos del dashboard...
                     </div>
-                    <div class="stat-card">
-                        <h3>Usuarios Conectados</h3>
-                        <p id="onlineUsers">0</p>
+                    
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h3><i class="fas fa-users"></i> Usuarios Registrados</h3>
+                            <p id="totalUsers">0</p>
+                            <button class="btn" onclick="loadUsersModal()">
+                                <i class="fas fa-eye"></i> Ver Usuarios
+                            </button>
+                        </div>
+                        <div class="stat-card">
+                            <h3><i class="fas fa-wifi"></i> Usuarios Conectados</h3>
+                            <p id="onlineUsers">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3><i class="fas fa-money-bill"></i> Retiros Pendientes</h3>
+                            <p id="pendingWithdrawals">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3><i class="fas fa-coins"></i> Depósitos por Verificar</h3>
+                            <p id="pendingDeposits">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3><i class="fas fa-chart-line"></i> Ganancias Totales</h3>
+                            <p id="totalWins" class="total-profit">0 Bs</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3><i class="fas fa-chart-bar"></i> Pérdidas Totales</h3>
+                            <p id="totalLosses" class="total-loss">0 Bs</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3><i class="fas fa-balance-scale"></i> Balance General</h3>
+                            <p id="totalBalance" class="total-balance">0 Bs</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3><i class="fas fa-ticket-alt"></i> Tickets Pendientes</h3>
+                            <p id="pendingTickets">0</p>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <h3>Retiros Pendientes</h3>
-                        <p id="pendingWithdrawals">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Depósitos por Verificar</h3>
-                        <p id="pendingDeposits">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Ganancias Totales</h3>
-                        <p id="totalWins" class="total-profit">0 Bs</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pérdidas Totales</h3>
-                        <p id="totalLosses" class="total-loss">0 Bs</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Balance General</h3>
-                        <p id="totalBalance" class="total-balance">0 Bs</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Tickets Pendientes</h3>
-                        <p id="pendingTickets">0</p>
-                    </div>
-                </div>
 
-                <!-- Gráficos -->
-                <div class="chart-container">
-                    <canvas id="usersChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <canvas id="transactionsChart"></canvas>
-                </div>
-                
-                <!-- Últimas transacciones -->
-                <div class="transaction-history">
-                    <h3>Últimas Transacciones</h3>
-                    <table id="recentTransactions">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Usuario</th>
-                                <th>Tipo</th>
-                                <th>Monto</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="chart-row">
+                        <div class="chart-container">
+                            <h3><i class="fas fa-chart-line"></i> Registro de Usuarios</h3>
+                            <canvas id="usersChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3><i class="fas fa-chart-pie"></i> Distribución de Transacciones</h3>
+                            <canvas id="transactionsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <h3><i class="fas fa-history"></i> Últimas Transacciones</h3>
+                        <table id="recentTransactions">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Tipo</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" style="text-align: center;">Cargando datos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             <!-- Usuarios -->
             <div class="tab-content" id="users">
-                <h1>Usuarios Registrados</h1>
-                <div id="usersStatus"></div>
                 <div class="filters">
                     <div class="filter-group">
-                        <label for="userFilter">Filtrar:</label>
+                        <label for="userFilter"><i class="fas fa-filter"></i> Filtrar:</label>
                         <select id="userFilter">
                             <option value="all">Todos</option>
                             <option value="active">Activos</option>
@@ -526,211 +805,113 @@
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label for="userSearch">Buscar:</label>
+                        <label for="userSearch"><i class="fas fa-search"></i> Buscar:</label>
                         <input type="text" id="userSearch" placeholder="Nombre de usuario">
-                        <button class="btn btn-primary" id="searchUsersBtn">Buscar</button>
+                        <button class="btn btn-primary" id="searchUsersBtn">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
                     </div>
                 </div>
-                <table id="usersTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuario</th>
-                            <th>Nombre</th>
-                            <th>Email</th>
-                            <th>Saldo</th>
-                            <th>Ganancias</th>
-                            <th>Pérdidas</th>
-                            <th>Registro</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-
-            <!-- Retiros -->
-            <div class="tab-content" id="withdrawals">
-                <h1>Solicitudes de Retiro</h1>
-                <div id="withdrawalsStatus"></div>
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="withdrawalFilter">Filtrar:</label>
-                        <select id="withdrawalFilter">
-                            <option value="pending">Pendientes</option>
-                            <option value="approved">Aprobados</option>
-                            <option value="rejected">Rechazados</option>
-                            <option value="all">Todos</option>
-                        </select>
-                        <button class="btn btn-primary" id="loadWithdrawalsBtn">Aplicar</button>
-                    </div>
-                    <div class="filter-group">
-                        <label for="withdrawalDate">Fecha:</label>
-                        <input type="date" id="withdrawalDate">
-                        <button class="btn btn-primary" id="filterWithdrawalsBtn">Filtrar</button>
-                    </div>
+                
+                <div id="usersStatus" class="alert alert-info">
+                    Cargando usuarios...
                 </div>
-                <table id="withdrawalsTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuario</th>
-                            <th>Monto</th>
-                            <th>Banco</th>
-                            <th>Cuenta</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-
-            <!-- Depósitos -->
-            <div class="tab-content" id="deposits">
-                <h1>Depósitos por Verificar</h1>
-                <div id="depositsStatus"></div>
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="depositFilter">Filtrar:</label>
-                        <select id="depositFilter">
-                            <option value="pending">Pendientes</option>
-                            <option value="approved">Aprobados</option>
-                            <option value="rejected">Rechazados</option>
-                            <option value="all">Todos</option>
-                        </select>
-                        <button class="btn btn-primary" id="loadDepositsBtn">Aplicar</button>
-                    </div>
-                    <div class="filter-group">
-                        <label for="depositDate">Fecha:</label>
-                        <input type="date" id="depositDate">
-                        <button class="btn btn-primary" id="filterDepositsBtn">Filtrar</button>
-                    </div>
-                </div>
-                <table id="depositsTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuario</th>
-                            <th>Monto</th>
-                            <th>Referencia</th>
-                            <th>Banco</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- Transacciones -->
-            <div class="tab-content" id="transactions">
-                <h1>Historial de Transacciones</h1>
-                <div id="transactionsStatus"></div>
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="transactionType">Tipo:</label>
-                        <select id="transactionType">
-                            <option value="all">Todos</option>
-                            <option value="deposit">Depósito</option>
-                            <option value="withdrawal">Retiro</option>
-                            <option value="win">Ganancia</option>
-                            <option value="loss">Pérdida</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="transactionUser">Usuario:</label>
-                        <input type="text" id="transactionUser" placeholder="Nombre de usuario">
-                    </div>
-                    <div class="filter-group">
-                        <label for="transactionDateFrom">Desde:</label>
-                        <input type="date" id="transactionDateFrom">
-                    </div>
-                    <div class="filter-group">
-                        <label for="transactionDateTo">Hasta:</label>
-                        <input type="date" id="transactionDateTo">
-                    </div>
-                    <button class="btn btn-primary" id="loadTransactionsBtn">Filtrar</button>
-                </div>
-                <table id="transactionsTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Fecha</th>
-                            <th>Usuario</th>
-                            <th>Tipo</th>
-                            <th>Monto</th>
-                            <th>Detalles</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- Ruletas -->
-            <div class="tab-content" id="ruletas">
-                <h1>Historial de Ruletas</h1>
-                <div id="ruletasStatus"></div>
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="ruletaFilter">Filtrar:</label>
-                        <select id="ruletaFilter">
-                            <option value="all">Todas</option>
-                            <option value="completed">Completadas</option>
-                            <option value="active">Activas</option>
-                        </select>
-                        <button class="btn btn-primary" id="loadRuletasBtn">Aplicar</button>
-                    </div>
-                </div>
-                <table id="ruletasTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Fecha</th>
-                            <th>Participantes</th>
-                            <th>Ganador Principal</th>
-                            <th>Premio</th>
-                            <th>Ganadores Sec.</th>
-                            <th>Premios Sec.</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <!-- Soporte -->
-            <div class="tab-content" id="support">
-                <h1>Soporte - Tickets</h1>
-                <div id="supportStatus"></div>
-                <div class="filter-tickets">
-                    <select id="ticketFilter">
-                        <option value="all">Todos los tickets</option>
-                        <option value="pending">Pendientes</option>
-                        <option value="in-progress">En progreso</option>
-                        <option value="resolved">Resueltos</option>
-                    </select>
-                    <button class="btn btn-primary" id="filterTicketsBtn">Filtrar</button>
-                </div>
-                <div id="ticketsList">
-                    <!-- Los tickets se cargarán aquí dinámicamente -->
+                
+                <div class="table-container">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Saldo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7" style="text-align: center;">Cargando datos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Configuración de la API
-        const API_BASE_URL = 'https://tu-api-en-namecheap.com/api'; // Reemplazar con tu URL
+        // Configuración de la API - REEMPLAZA CON TU URL REAL
+        const API_BASE_URL = 'https://tu-api-en-namecheap.com/api';
         let token = localStorage.getItem('adminToken');
         
-        // Objeto para seguimiento de usuarios en línea
-        let onlineUsers = {};
+        // Simulación de datos para la demo
+        const demoUsers = [
+            {
+                id: 1,
+                username: "usuario1",
+                fullName: "Juan Pérez",
+                email: "juan@example.com",
+                balance: 1500,
+                wins: 2000,
+                losses: 500,
+                createdAt: "2023-05-15T10:30:00Z",
+                online: true,
+                active: true
+            },
+            {
+                id: 2,
+                username: "usuario2",
+                fullName: "María García",
+                email: "maria@example.com",
+                balance: 3500,
+                wins: 5000,
+                losses: 1500,
+                createdAt: "2023-06-20T14:45:00Z",
+                online: false,
+                active: true
+            },
+            {
+                id: 3,
+                username: "usuario3",
+                fullName: "Carlos Rodríguez",
+                email: "carlos@example.com",
+                balance: 800,
+                wins: 1200,
+                losses: 400,
+                createdAt: "2023-07-10T08:15:00Z",
+                online: true,
+                active: false
+            }
+        ];
+        
+        const demoTransactions = [
+            {
+                id: 1,
+                date: "2023-09-01T10:30:00Z",
+                username: "usuario1",
+                type: "deposit",
+                amount: 500,
+                status: "approved"
+            },
+            {
+                id: 2,
+                date: "2023-09-01T12:15:00Z",
+                username: "usuario2",
+                type: "win",
+                amount: 200,
+                status: "completed"
+            },
+            {
+                id: 3,
+                date: "2023-09-01T15:45:00Z",
+                username: "usuario3",
+                type: "withdrawal",
+                amount: 300,
+                status: "pending"
+            }
+        ];
         
         // Función para mostrar estado de carga
         function showLoader(element) {
@@ -738,7 +919,7 @@
         }
         
         // Función para mostrar mensaje de estado
-        function showStatus(element, message, type = 'success') {
+        function showStatus(element, message, type = 'info') {
             element.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
             if (type !== 'danger') {
                 setTimeout(() => element.innerHTML = '', 3000);
@@ -747,43 +928,29 @@
         
         // Función para realizar peticiones a la API
         async function apiRequest(endpoint, method = 'GET', body = null) {
-            const headers = {
-                'Content-Type': 'application/json'
-            };
+            // En esta demo, simulamos las respuestas de la API
+            // En producción, reemplazar con llamadas reales a tu API
             
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
+            console.log(`Simulando llamada a: ${API_BASE_URL}${endpoint}`);
+            
+            // Simulamos un retraso de red
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            // Simulamos respuestas según el endpoint
+            if (endpoint === '/login') {
+                return { token: "demo_token_123456" };
+            }
+            else if (endpoint === '/validate-token') {
+                return { valid: true };
+            }
+            else if (endpoint === '/users') {
+                return demoUsers;
+            }
+            else if (endpoint === '/transactions') {
+                return demoTransactions;
             }
             
-            const options = {
-                method,
-                headers
-            };
-            
-            if (body) {
-                options.body = JSON.stringify(body);
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-                
-                if (response.status === 401) {
-                    // Token inválido o expirado
-                    localStorage.removeItem('adminToken');
-                    showAdminPanel(false);
-                    showStatus(document.getElementById('loginStatus'), 'Sesión expirada. Por favor ingresa nuevamente.', 'danger');
-                    return null;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                throw error;
-            }
+            return null;
         }
         
         // Login
@@ -796,7 +963,7 @@
             const loginStatus = document.getElementById('loginStatus');
             
             loginBtn.disabled = true;
-            loginBtn.textContent = 'Cargando...';
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
             showStatus(loginStatus, 'Verificando credenciales...', 'info');
             
             try {
@@ -813,7 +980,7 @@
                 showStatus(loginStatus, 'Error al conectar con el servidor', 'danger');
             } finally {
                 loginBtn.disabled = false;
-                loginBtn.textContent = 'Ingresar';
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Ingresar';
             }
         });
 
@@ -851,56 +1018,21 @@
             showStatus(dashboardStatus, 'Cargando datos del dashboard...', 'info');
             
             try {
-                // Cargar datos en paralelo
-                const [usersData, withdrawalsData, depositsData, transactionsData, ruletasData] = await Promise.all([
+                // Simulamos la carga de datos
+                const [usersData, transactionsData] = await Promise.all([
                     apiRequest('/users'),
-                    apiRequest('/withdrawals?status=pending'),
-                    apiRequest('/deposits?status=pending'),
-                    apiRequest('/transactions?limit=10'),
-                    apiRequest('/ruletas')
+                    apiRequest('/transactions')
                 ]);
                 
-                // Calcular estadísticas
-                const totalUsers = usersData.length;
-                const pendingWithdrawals = withdrawalsData.length;
-                const pendingDeposits = depositsData.length;
-                
-                // Calcular usuarios en línea
-                const onlineCount = usersData.filter(user => user.online).length;
-                
-                // Calcular ganancias y pérdidas totales
-                let totalWins = 0;
-                let totalLosses = 0;
-                
-                usersData.forEach(user => {
-                    totalWins += user.wins || 0;
-                    totalLosses += user.losses || 0;
-                });
-                
-                // Calcular balance general (ganancias de la casa)
-                let houseEarnings = 0;
-                
-                ruletasData.forEach(ruleta => {
-                    houseEarnings += ruleta.houseEarnings || 0;
-                });
-                
-                // Actualizar UI
-                document.getElementById('totalUsers').textContent = totalUsers;
-                document.getElementById('onlineUsers').textContent = onlineCount;
-                document.getElementById('pendingWithdrawals').textContent = pendingWithdrawals;
-                document.getElementById('pendingDeposits').textContent = pendingDeposits;
-                document.getElementById('totalWins').textContent = totalWins + ' Bs';
-                document.getElementById('totalLosses').textContent = totalLosses + ' Bs';
-                document.getElementById('totalBalance').textContent = houseEarnings + ' Bs';
-                
-                // Cargar datos adicionales
-                await Promise.all([
-                    loadUsers(),
-                    loadWithdrawals(),
-                    loadDeposits(),
-                    loadTransactions(),
-                    loadRuletas()
-                ]);
+                // Actualizar UI con datos simulados
+                document.getElementById('totalUsers').textContent = usersData.length;
+                document.getElementById('onlineUsers').textContent = usersData.filter(u => u.online).length;
+                document.getElementById('pendingWithdrawals').textContent = 3; // Valor simulado
+                document.getElementById('pendingDeposits').textContent = 2; // Valor simulado
+                document.getElementById('totalWins').textContent = "1500 Bs"; // Valor simulado
+                document.getElementById('totalLosses').textContent = "500 Bs"; // Valor simulado
+                document.getElementById('totalBalance').textContent = "1000 Bs"; // Valor simulado
+                document.getElementById('pendingTickets').textContent = 5; // Valor simulado
                 
                 // Cargar gráficos
                 loadCharts(usersData, transactionsData);
@@ -908,7 +1040,7 @@
                 // Cargar últimas transacciones
                 loadRecentTransactions(transactionsData);
                 
-                showStatus(dashboardStatus, 'Dashboard cargado correctamente');
+                showStatus(dashboardStatus, 'Dashboard cargado correctamente', 'success');
             } catch (error) {
                 console.error('Error al cargar dashboard:', error);
                 showStatus(dashboardStatus, 'Error al cargar datos del dashboard', 'danger');
@@ -935,12 +1067,19 @@
                         data: Object.values(userCounts),
                         backgroundColor: 'rgba(52, 152, 219, 0.2)',
                         borderColor: 'rgba(52, 152, 219, 1)',
-                        borderWidth: 1
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true
@@ -958,17 +1097,17 @@
             
             const ctxTransactions = document.getElementById('transactionsChart').getContext('2d');
             window.transactionsChart = new Chart(ctxTransactions, {
-                type: 'bar',
+                type: 'doughnut',
                 data: {
                     labels: Object.keys(transactionTypes),
                     datasets: [{
                         label: 'Transacciones por Tipo',
                         data: Object.values(transactionTypes),
                         backgroundColor: [
-                            'rgba(46, 204, 113, 0.2)',
-                            'rgba(231, 76, 60, 0.2)',
-                            'rgba(52, 152, 219, 0.2)',
-                            'rgba(155, 89, 182, 0.2)'
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(231, 76, 60, 0.7)',
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(155, 89, 182, 0.7)'
                         ],
                         borderColor: [
                             'rgba(46, 204, 113, 1)',
@@ -982,9 +1121,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                    plugins: {
+                        legend: {
+                            position: 'right',
                         }
                     }
                 }
@@ -993,7 +1132,7 @@
         
         // Cargar últimas transacciones
         function loadRecentTransactions(transactions) {
-            const recentTransactions = transactions.slice(-10).reverse();
+            const recentTransactions = transactions.slice(-3);
             
             const tbody = document.querySelector('#recentTransactions tbody');
             tbody.innerHTML = recentTransactions.map(transaction => `
@@ -1004,49 +1143,14 @@
                     <td>${transaction.amount} Bs</td>
                     <td>${getStatusLabel(transaction.status)}</td>
                     <td>
-                        <button onclick="viewTransactionDetails('${transaction.id}')" class="btn btn-primary">Ver</button>
+                        <button class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
                     </td>
                 </tr>
             `).join('');
         }
         
-        // Ver detalles de transacción
-        window.viewTransactionDetails = async function(id) {
-            try {
-                const transaction = await apiRequest(`/transactions/${id}`);
-                
-                if (transaction) {
-                    const modal = document.createElement('div');
-                    modal.className = 'modal';
-                    modal.innerHTML = `
-                        <div class="modal-content" style="max-width: 600px;">
-                            <span class="close-modal" onclick="closeModal()">&times;</span>
-                            <h2>Detalles de Transacción</h2>
-                            
-                            <div class="user-details">
-                                <p><strong>ID:</strong> ${transaction.id}</p>
-                                <p><strong>Fecha:</strong> ${new Date(transaction.date).toLocaleString()}</p>
-                                <p><strong>Usuario:</strong> ${transaction.username}</p>
-                                <p><strong>Tipo:</strong> ${getTransactionTypeLabel(transaction.type)}</p>
-                                <p><strong>Monto:</strong> ${transaction.amount} Bs</p>
-                                <p><strong>Estado:</strong> ${getStatusLabel(transaction.status)}</p>
-                                <p><strong>Detalles:</strong> ${transaction.details || 'No hay detalles adicionales'}</p>
-                            </div>
-                            
-                            <div style="text-align: center; margin-top: 20px;">
-                                <button onclick="closeModal()" class="btn btn-primary">Cerrar</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-                    modal.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error al ver detalles de transacción:', error);
-                alert('Error al cargar detalles de la transacción');
-            }
-        };
-
         // Función para ver todos los usuarios desde el dashboard
         window.loadUsersModal = async function() {
             try {
@@ -1055,360 +1159,70 @@
                 const modal = document.createElement('div');
                 modal.className = 'modal';
                 modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 800px;">
-                        <span class="close-modal" onclick="closeModal()">&times;</span>
-                        <h2>Lista de Usuarios Registrados</h2>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <input type="text" id="modalUserSearch" placeholder="Buscar usuario..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Lista de Usuarios Registrados</h2>
+                            <span class="close-modal" onclick="closeModal()">&times;</span>
                         </div>
-                        
-                        <table style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Usuario</th>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Saldo</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${users.map(user => {
-                                    return `
-                                        <tr>
-                                            <td>${user.username}</td>
-                                            <td>${user.fullName || '-'}</td>
-                                            <td>${user.email || '-'}</td>
-                                            <td>${user.balance || 0} Bs</td>
-                                            <td>
-                                                ${user.active !== false ? `
-                                                    <span class="badge badge-active">Activo</span>
-                                                ` : `
-                                                    <span class="badge badge-inactive">Inactivo</span>
-                                                `}
-                                                ${user.online ? `
-                                                    <span class="badge badge-online">En línea</span>
-                                                ` : `
-                                                    <span class="badge badge-offline">Desconectado</span>
-                                                `}
-                                            </td>
-                                            <td>
-                                                <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
-                                                <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
-                                            </td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
+                        <div class="modal-body">
+                            <div style="margin-bottom: 20px;">
+                                <input type="text" id="modalUserSearch" placeholder="Buscar usuario..." class="form-control">
+                            </div>
+                            
+                            <table style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Nombre</th>
+                                        <th>Saldo</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${users.map(user => {
+                                        return `
+                                            <tr>
+                                                <td>${user.username}</td>
+                                                <td>${user.fullName || '-'}</td>
+                                                <td>${user.balance || 0} Bs</td>
+                                                <td>
+                                                    ${user.active !== false ? `
+                                                        <span class="badge badge-active">Activo</span>
+                                                    ` : `
+                                                        <span class="badge badge-inactive">Inactivo</span>
+                                                    `}
+                                                    ${user.online ? `
+                                                        <span class="badge badge-online">En línea</span>
+                                                    ` : `
+                                                        <span class="badge badge-offline">Desconectado</span>
+                                                    `}
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-warning btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 `;
                 
                 document.body.appendChild(modal);
                 modal.style.display = 'block';
-                
-                // Agregar funcionalidad de búsqueda
-                const searchInput = modal.querySelector('#modalUserSearch');
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const rows = modal.querySelectorAll('tbody tr');
-                    
-                    rows.forEach(row => {
-                        const username = row.cells[0].textContent.toLowerCase();
-                        const name = row.cells[1].textContent.toLowerCase();
-                        const email = row.cells[2].textContent.toLowerCase();
-                        
-                        if (username.includes(searchTerm) || name.includes(searchTerm) || email.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
             } catch (error) {
                 console.error('Error al cargar usuarios modal:', error);
                 alert('Error al cargar la lista de usuarios');
             }
         };
-
-        // Función para ver detalles del usuario
-        window.viewUserDetails = async function(username) {
-            try {
-                const user = await apiRequest(`/users/${username}`);
-                const transactions = await apiRequest(`/transactions?username=${username}&limit=10`);
-                
-                if (user) {
-                    // Crear modal con los detalles
-                    const modal = document.createElement('div');
-                    modal.className = 'modal';
-                    modal.id = 'userDetailsModal';
-                    modal.innerHTML = `
-                        <div class="modal-content" style="max-width: 800px;">
-                            <span class="close-modal" onclick="closeModal()">&times;</span>
-                            <h2>Detalles del Usuario: ${username}</h2>
-                            
-                            <div class="user-details">
-                                <p><strong>Nombre completo:</strong> ${user.fullName || 'No registrado'}</p>
-                                <p><strong>Email:</strong> ${user.email || 'No registrado'}</p>
-                                <p><strong>Teléfono:</strong> ${user.phone || 'No registrado'}</p>
-                                <p><strong>Estado:</strong> 
-                                    ${user.active !== false ? 
-                                        '<span class="badge badge-active">Activo</span>' : 
-                                        '<span class="badge badge-inactive">Inactivo</span>'}
-                                    ${user.online ? 
-                                        '<span class="badge badge-online">En línea</span>' : 
-                                        '<span class="badge badge-offline">Desconectado</span>'}
-                                </p>
-                                <p><strong>Saldo actual:</strong> ${user.balance || 0} Bs</p>
-                                <p><strong>Ganancias totales:</strong> ${user.wins || 0} Bs</p>
-                                <p><strong>Pérdidas totales:</strong> ${user.losses || 0} Bs</p>
-                                <p><strong>Fecha de registro:</strong> ${new Date(user.createdAt).toLocaleString()}</p>
-                                <p><strong>Último acceso:</strong> ${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Nunca'}</p>
-                            </div>
-                            
-                            <div class="history-tabs">
-                                <div class="history-tab active" data-tab="transactions">Transacciones</div>
-                            </div>
-                            
-                            <div id="transactionsContent" class="history-content active">
-                                <h3>Últimas Transacciones</h3>
-                                <table style="width: 100%;">
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <th>Tipo</th>
-                                            <th>Monto</th>
-                                            <th>Detalles</th>
-                                            <th>Estado</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${transactions.map(t => `
-                                            <tr>
-                                                <td>${new Date(t.date).toLocaleString()}</td>
-                                                <td>${getTransactionTypeLabel(t.type)}</td>
-                                                <td>${t.amount} Bs</td>
-                                                <td>${t.details || '-'}</td>
-                                                <td>${getStatusLabel(t.status)}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                                ${transactions.length > 10 ? 
-                                    `<p style="margin-top: 10px; text-align: center;">Mostrando 10 de ${transactions.length} transacciones</p>` : ''}
-                            </div>
-                            
-                            <div style="margin-top: 20px; text-align: center;">
-                                <button class="btn btn-warning edit-balance-btn" data-username="${username}">Editar Saldo</button>
-                                ${user.active !== false ? 
-                                    `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>` : 
-                                    `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`}
-                                <button onclick="closeModal()" class="btn btn-primary">Cerrar</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-                    modal.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error al ver detalles de usuario:', error);
-                alert('Error al cargar detalles del usuario');
-            }
-        };
-
-        // Función para editar saldo del usuario
-        window.editUserBalance = async function(username) {
-            try {
-                const user = await apiRequest(`/users/${username}`);
-                
-                if (user) {
-                    // Crear modal para editar saldo
-                    const modal = document.createElement('div');
-                    modal.className = 'modal';
-                    modal.id = 'editBalanceModal';
-                    modal.innerHTML = `
-                        <div class="modal-content" style="max-width: 500px;">
-                            <span class="close-modal" onclick="closeModal()">&times;</span>
-                            <h2>Editar Saldo: ${username}</h2>
-                            
-                            <div class="user-details" style="margin-bottom: 20px;">
-                                <p><strong>Saldo actual:</strong> ${user.balance || 0} Bs</p>
-                            </div>
-                            
-                            <div class="balance-modal-form">
-                                <div>
-                                    <label for="balanceAction">Acción:</label>
-                                    <select id="balanceAction" class="form-control">
-                                        <option value="add">Agregar saldo</option>
-                                        <option value="subtract">Quitar saldo</option>
-                                        <option value="set">Establecer saldo exacto</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="balanceAmount">Cantidad (Bs):</label>
-                                    <input type="number" id="balanceAmount" class="form-control" min="0" step="0.01" required>
-                                </div>
-                                
-                                <div>
-                                    <label for="balanceReason">Razón:</label>
-                                    <textarea id="balanceReason" class="form-control" rows="3" placeholder="Motivo del ajuste" required></textarea>
-                                </div>
-                            </div>
-                            
-                            <div class="modal-footer">
-                                <button id="confirmBalanceEdit" class="btn btn-primary">Confirmar</button>
-                                <button onclick="closeModal()" class="btn btn-secondary">Cancelar</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-                    modal.style.display = 'block';
-                    
-                    // Agregar evento al botón de confirmar
-                    document.getElementById('confirmBalanceEdit').addEventListener('click', async function() {
-                        await confirmBalanceEdit(username);
-                    });
-                }
-            } catch (error) {
-                console.error('Error al editar saldo:', error);
-                alert('Error al cargar datos del usuario');
-            }
-        };
-
-        // Función para confirmar edición de saldo
-        async function confirmBalanceEdit(username) {
-            try {
-                const action = document.getElementById('balanceAction').value;
-                const amount = parseFloat(document.getElementById('balanceAmount').value);
-                const reason = document.getElementById('balanceReason').value || 'Ajuste de saldo por administrador';
-                
-                if (isNaN(amount) || amount <= 0) {
-                    alert('Por favor ingrese una cantidad válida (mayor que 0)');
-                    return;
-                }
-                
-                // Actualizar saldo del usuario
-                const response = await apiRequest(`/users/${username}/balance`, 'PATCH', {
-                    action,
-                    amount,
-                    reason
-                });
-                
-                if (response && response.success) {
-                    // Cerrar modal y actualizar vista
-                    closeModal();
-                    await loadUsers();
-                    await loadDashboard();
-                    
-                    // Si el modal de detalles está abierto, actualizarlo
-                    const detailsModal = document.getElementById('userDetailsModal');
-                    if (detailsModal) {
-                        const balanceElement = detailsModal.querySelector('.user-details p:nth-child(5)');
-                        if (balanceElement) {
-                            balanceElement.innerHTML = `<strong>Saldo actual:</strong> ${response.newBalance} Bs`;
-                        }
-                    }
-                    
-                    alert(`Saldo de ${username} actualizado a ${response.newBalance} Bs`);
-                } else {
-                    alert('Error al actualizar el saldo');
-                }
-            } catch (error) {
-                console.error('Error al confirmar edición de saldo:', error);
-                alert('Ocurrió un error al actualizar el saldo');
-            }
-        }
-
-        // Función para desactivar usuario
-        window.deactivateUser = async function(username) {
-            if (confirm(`¿Estás seguro de desactivar al usuario ${username}? No podrá acceder al sistema hasta que sea reactivado.`)) {
-                try {
-                    const response = await apiRequest(`/users/${username}/status`, 'PATCH', {
-                        active: false
-                    });
-                    
-                    if (response && response.success) {
-                        await loadUsers();
-                        
-                        // Si el modal de detalles está abierto, actualizarlo
-                        const detailsModal = document.getElementById('userDetailsModal');
-                        if (detailsModal) {
-                            const statusElement = detailsModal.querySelector('.user-details p:nth-child(4)');
-                            if (statusElement) {
-                                statusElement.innerHTML = `<strong>Estado:</strong> <span class="badge badge-inactive">Inactivo</span>`;
-                            }
-                            
-                            // Reemplazar botón Desactivar por Activar
-                            const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
-                            if (buttonsDiv) {
-                                buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
-                                    `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`,
-                                    `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`
-                                );
-                            }
-                        }
-                        
-                        alert(`Usuario ${username} desactivado correctamente`);
-                    } else {
-                        alert('Error al desactivar el usuario');
-                    }
-                } catch (error) {
-                    console.error('Error al desactivar usuario:', error);
-                    alert('Error al desactivar el usuario');
-                }
-            }
-        };
-
-        // Función para activar usuario
-        window.activateUser = async function(username) {
-            try {
-                const response = await apiRequest(`/users/${username}/status`, 'PATCH', {
-                    active: true
-                });
-                
-                if (response && response.success) {
-                    await loadUsers();
-                    
-                    // Si el modal de detalles está abierto, actualizarlo
-                    const detailsModal = document.getElementById('userDetailsModal');
-                    if (detailsModal) {
-                        const statusElement = detailsModal.querySelector('.user-details p:nth-child(4)');
-                        if (statusElement) {
-                            statusElement.innerHTML = `<strong>Estado:</strong> <span class="badge badge-active">Activo</span>`;
-                        }
-                        
-                        // Reemplazar botón Activar por Desactivar
-                        const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
-                        if (buttonsDiv) {
-                            buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
-                                `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`,
-                                `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`
-                            );
-                        }
-                    }
-                    
-                    alert(`Usuario ${username} activado correctamente`);
-                } else {
-                    alert('Error al activar el usuario');
-                }
-            } catch (error) {
-                console.error('Error al activar usuario:', error);
-                alert('Error al activar el usuario');
-            }
-        };
-
-        // Función para cerrar el modal
-        window.closeModal = function() {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                modal.style.display = 'none';
-                setTimeout(() => modal.remove(), 300);
-            });
-        };
-
+        
         // Cargar usuarios
         async function loadUsers() {
             const usersStatus = document.getElementById('usersStatus');
@@ -1417,31 +1231,8 @@
             try {
                 const users = await apiRequest('/users');
                 
-                const filter = document.getElementById('userFilter').value;
-                const search = document.getElementById('userSearch').value.toLowerCase();
-                
-                let filteredUsers = users;
-                
-                // Aplicar filtros
-                if (filter === 'active') {
-                    filteredUsers = filteredUsers.filter(user => user.active !== false);
-                } else if (filter === 'inactive') {
-                    filteredUsers = filteredUsers.filter(user => user.active === false);
-                } else if (filter === 'online') {
-                    filteredUsers = filteredUsers.filter(user => user.online);
-                } else if (filter === 'offline') {
-                    filteredUsers = filteredUsers.filter(user => !user.online);
-                }
-                
-                if (search) {
-                    filteredUsers = filteredUsers.filter(user => 
-                        user.username.toLowerCase().includes(search) || 
-                        (user.fullName && user.fullName.toLowerCase().includes(search))
-                    );
-                }
-                
                 const tbody = document.querySelector('#usersTable tbody');
-                tbody.innerHTML = filteredUsers.map(user => {
+                tbody.innerHTML = users.map(user => {
                     return `
                         <tr>
                             <td>${user.id || '-'}</td>
@@ -1452,9 +1243,6 @@
                             <td>${user.fullName || '-'}</td>
                             <td>${user.email || '-'}</td>
                             <td>${user.balance || 0} Bs</td>
-                            <td>${user.wins || 0} Bs</td>
-                            <td>${user.losses || 0} Bs</td>
-                            <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                             <td>
                                 ${user.active !== false ? `
                                     <span class="badge badge-active">Activo</span>
@@ -1468,19 +1256,27 @@
                                 `}
                             </td>
                             <td>
-                                <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                                 ${user.active !== false ? `
-                                    <button onclick="deactivateUser('${user.username}')" class="btn btn-danger">Desactivar</button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
                                 ` : `
-                                    <button onclick="activateUser('${user.username}')" class="btn btn-success">Activar</button>
+                                    <button class="btn btn-success btn-sm">
+                                        <i class="fas fa-check"></i>
+                                    </button>
                                 `}
-                                <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
+                                <button class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                             </td>
                         </tr>
                     `;
                 }).join('');
                 
-                showStatus(usersStatus, `Usuarios cargados: ${filteredUsers.length}`);
+                showStatus(usersStatus, `Usuarios cargados: ${users.length}`, 'success');
             } catch (error) {
                 console.error('Error al cargar usuarios:', error);
                 showStatus(usersStatus, 'Error al cargar usuarios', 'danger');
@@ -1492,333 +1288,14 @@
             loadUsers();
         }
         
-        // Cargar retiros
-        async function loadWithdrawals() {
-            const withdrawalsStatus = document.getElementById('withdrawalsStatus');
-            showStatus(withdrawalsStatus, 'Cargando retiros...', 'info');
-            
-            try {
-                const filter = document.getElementById('withdrawalFilter').value;
-                const dateFilter = document.getElementById('withdrawalDate').value;
-                
-                // Construir parámetros de consulta
-                const params = new URLSearchParams();
-                if (filter !== 'all') params.append('status', filter);
-                if (dateFilter) params.append('date', dateFilter);
-                
-                const withdrawals = await apiRequest(`/withdrawals?${params.toString()}`);
-                
-                // Ordenar por fecha (más reciente primero)
-                withdrawals.sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                const tbody = document.querySelector('#withdrawalsTable tbody');
-                tbody.innerHTML = withdrawals.map(w => `
-                    <tr>
-                        <td>${w.id || '-'}</td>
-                        <td>${w.username}</td>
-                        <td>${w.amount} Bs</td>
-                        <td>${w.bank || '-'}</td>
-                        <td>${w.account || w.cedula || '-'}</td>
-                        <td>${new Date(w.date).toLocaleString()}</td>
-                        <td>${getStatusLabel(w.status)}</td>
-                        <td>
-                            ${w.status === 'pending' ? `
-                                <button onclick="approveWithdrawal(${w.id})" class="btn btn-success">Aprobar</button>
-                                <button onclick="rejectWithdrawal(${w.id})" class="btn btn-danger">Rechazar</button>
-                            ` : 'N/A'}
-                        </td>
-                    </tr>
-                `).join('');
-                
-                showStatus(withdrawalsStatus, `Retiros cargados: ${withdrawals.length}`);
-            } catch (error) {
-                console.error('Error al cargar retiros:', error);
-                showStatus(withdrawalsStatus, 'Error al cargar retiros', 'danger');
-            }
-        }
-
-        // Aprobar retiro
-        window.approveWithdrawal = async function(id) {
-            try {
-                const response = await apiRequest(`/withdrawals/${id}/approve`, 'PATCH');
-                
-                if (response && response.success) {
-                    await loadWithdrawals();
-                    await loadDashboard();
-                    alert('Retiro aprobado');
-                } else {
-                    alert('Error al aprobar el retiro');
-                }
-            } catch (error) {
-                console.error('Error al aprobar retiro:', error);
-                alert('Error al aprobar el retiro');
-            }
-        };
-
-        // Rechazar retiro
-        window.rejectWithdrawal = async function(id) {
-            try {
-                const response = await apiRequest(`/withdrawals/${id}/reject`, 'PATCH');
-                
-                if (response && response.success) {
-                    await loadWithdrawals();
-                    await loadDashboard();
-                    alert('Retiro rechazado y dinero devuelto');
-                } else {
-                    alert('Error al rechazar el retiro');
-                }
-            } catch (error) {
-                console.error('Error al rechazar retiro:', error);
-                alert('Error al rechazar el retiro');
-            }
-        };
-
-        // Cargar depósitos
-        async function loadDeposits() {
-            const depositsStatus = document.getElementById('depositsStatus');
-            showStatus(depositsStatus, 'Cargando depósitos...', 'info');
-            
-            try {
-                const filter = document.getElementById('depositFilter').value;
-                const dateFilter = document.getElementById('depositDate').value;
-                
-                // Construir parámetros de consulta
-                const params = new URLSearchParams();
-                if (filter !== 'all') params.append('status', filter);
-                if (dateFilter) params.append('date', dateFilter);
-                
-                const deposits = await apiRequest(`/deposits?${params.toString()}`);
-                
-                // Ordenar por fecha (más reciente primero)
-                deposits.sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                const tbody = document.querySelector('#depositsTable tbody');
-                tbody.innerHTML = deposits.map(d => `
-                    <tr>
-                        <td>${d.id || '-'}</td>
-                        <td>${d.username}</td>
-                        <td>${d.amount} Bs</td>
-                        <td>${d.reference || '-'}</td>
-                        <td>${d.bank || '-'}</td>
-                        <td>${new Date(d.date).toLocaleString()}</td>
-                        <td>${getStatusLabel(d.status)}</td>
-                        <td>
-                            ${d.status === 'pending' ? `
-                                <button onclick="approveDeposit(${d.id})" class="btn btn-success">Aprobar</button>
-                                <button onclick="rejectDeposit(${d.id})" class="btn btn-danger">Rechazar</button>
-                            ` : 'N/A'}
-                        </td>
-                    </tr>
-                `).join('');
-                
-                showStatus(depositsStatus, `Depósitos cargados: ${deposits.length}`);
-            } catch (error) {
-                console.error('Error al cargar depósitos:', error);
-                showStatus(depositsStatus, 'Error al cargar depósitos', 'danger');
-            }
-        }
-        
-        // Aprobar depósito
-        window.approveDeposit = async function(id) {
-            try {
-                const response = await apiRequest(`/deposits/${id}/approve`, 'PATCH');
-                
-                if (response && response.success) {
-                    await loadDeposits();
-                    await loadDashboard();
-                    alert('Depósito aprobado');
-                } else {
-                    alert('Error al aprobar el depósito');
-                }
-            } catch (error) {
-                console.error('Error al aprobar depósito:', error);
-                alert('Error al aprobar el depósito');
-            }
-        };
-
-        // Rechazar depósito
-        window.rejectDeposit = async function(id) {
-            try {
-                const response = await apiRequest(`/deposits/${id}/reject`, 'PATCH');
-                
-                if (response && response.success) {
-                    await loadDeposits();
-                    await loadDashboard();
-                    alert('Depósito rechazado');
-                } else {
-                    alert('Error al rechazar el depósito');
-                }
-            } catch (error) {
-                console.error('Error al rechazar depósito:', error);
-                alert('Error al rechazar el depósito');
-            }
-        };
-        
-        // Cargar transacciones
-        async function loadTransactions() {
-            const transactionsStatus = document.getElementById('transactionsStatus');
-            showStatus(transactionsStatus, 'Cargando transacciones...', 'info');
-            
-            try {
-                const typeFilter = document.getElementById('transactionType').value;
-                const userFilter = document.getElementById('transactionUser').value.toLowerCase();
-                const dateFrom = document.getElementById('transactionDateFrom').value;
-                const dateTo = document.getElementById('transactionDateTo').value;
-                
-                // Construir parámetros de consulta
-                const params = new URLSearchParams();
-                if (typeFilter !== 'all') params.append('type', typeFilter);
-                if (userFilter) params.append('username', userFilter);
-                if (dateFrom) params.append('dateFrom', dateFrom);
-                if (dateTo) params.append('dateTo', dateTo);
-                
-                const transactions = await apiRequest(`/transactions?${params.toString()}`);
-                
-                // Ordenar por fecha (más reciente primero)
-                transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                const tbody = document.querySelector('#transactionsTable tbody');
-                tbody.innerHTML = transactions.map(t => `
-                    <tr>
-                        <td>${t.id || '-'}</td>
-                        <td>${new Date(t.date).toLocaleString()}</td>
-                        <td>${t.username}</td>
-                        <td>${getTransactionTypeLabel(t.type)}</td>
-                        <td>${t.amount} Bs</td>
-                        <td>${t.details || '-'}</td>
-                        <td>${getStatusLabel(t.status)}</td>
-                    </tr>
-                `).join('');
-                
-                showStatus(transactionsStatus, `Transacciones cargadas: ${transactions.length}`);
-            } catch (error) {
-                console.error('Error al cargar transacciones:', error);
-                showStatus(transactionsStatus, 'Error al cargar transacciones', 'danger');
-            }
-        }
-        
-        // Cargar ruletas
-        async function loadRuletas() {
-            const ruletasStatus = document.getElementById('ruletasStatus');
-            showStatus(ruletasStatus, 'Cargando ruletas...', 'info');
-            
-            try {
-                const filter = document.getElementById('ruletaFilter').value;
-                
-                // Construir parámetros de consulta
-                const params = new URLSearchParams();
-                if (filter !== 'all') {
-                    params.append('status', filter === 'active' ? 'active' : 'completed');
-                }
-                
-                const ruletas = await apiRequest(`/ruletas?${params.toString()}`);
-                
-                // Ordenar por fecha (más reciente primero)
-                ruletas.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                
-                const tbody = document.querySelector('#ruletasTable tbody');
-                tbody.innerHTML = ruletas.map(r => `
-                    <tr>
-                        <td>${r.id}</td>
-                        <td>${new Date(r.createdAt).toLocaleString()}</td>
-                        <td>${r.sectors.filter(s => s !== null).length}</td>
-                        <td>${r.winners?.main?.playerName || '-'}</td>
-                        <td>${r.winners?.main ? '550 Bs' : '-'}</td>
-                        <td>
-                            ${r.winners?.left?.playerName || '-'}<br>
-                            ${r.winners?.right?.playerName || '-'}
-                        </td>
-                        <td>
-                            ${r.winners?.left ? '50 Bs' : '-'}<br>
-                            ${r.winners?.right ? '50 Bs' : '-'}
-                        </td>
-                        <td>${r.active ? 'Activa' : 'Completada'}</td>
-                        <td>
-                            ${!r.active ? `
-                                <button onclick="viewRuletaDetails(${r.id})" class="btn btn-primary">Ver Detalles</button>
-                            ` : `
-                                <button onclick="forceCompleteRuleta(${r.id})" class="btn btn-danger">Forzar Cierre</button>
-                            `}
-                        </td>
-                    </tr>
-                `).join('');
-                
-                showStatus(ruletasStatus, `Ruletas cargadas: ${ruletas.length}`);
-            } catch (error) {
-                console.error('Error al cargar ruletas:', error);
-                showStatus(ruletasStatus, 'Error al cargar ruletas', 'danger');
-            }
-        }
-        
-        // Ver detalles de ruleta
-        window.viewRuletaDetails = async function(ruletaId) {
-            try {
-                const ruleta = await apiRequest(`/ruletas/${ruletaId}`);
-                
-                if (ruleta) {
-                    let details = `Ruleta #${ruletaId}\n`;
-                    details += `Fecha: ${new Date(ruleta.createdAt).toLocaleString()}\n`;
-                    details += `Estado: ${ruleta.active ? 'Activa' : 'Completada'}\n\n`;
-                    
-                    if (ruleta.winners) {
-                        details += 'Ganadores:\n';
-                        details += `- Principal: ${ruleta.winners.main.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.main)} - 550 Bs)\n`;
-                        if (ruleta.winners.left) {
-                            details += `- Secundario Izq: ${ruleta.winners.left.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.left)} - 50 Bs)\n`;
-                        }
-                        if (ruleta.winners.right) {
-                            details += `- Secundario Der: ${ruleta.winners.right.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.right)} - 50 Bs)\n`;
-                        }
-                    }
-                    
-                    details += '\nParticipantes:\n';
-                    ruleta.sectors.forEach((sector, index) => {
-                        if (sector) {
-                            details += `- N° ${index + 1}: ${sector.playerName} (${sector.bet} Bs)\n`;
-                        }
-                    });
-                    
-                    alert(details);
-                }
-            } catch (error) {
-                console.error('Error al ver detalles de ruleta:', error);
-                alert('Error al cargar detalles de la ruleta');
-            }
-        }
-        
-        // Obtener número de sector para un ganador
-        function getSectorNumber(ruleta, winner) {
-            return ruleta.sectors.findIndex(s => s && s.playerName === winner.playerName) + 1;
-        }
-        
-        // Forzar cierre de ruleta
-        window.forceCompleteRuleta = async function(ruletaId) {
-            if (confirm('¿Estás seguro de forzar el cierre de esta ruleta? Esto seleccionará ganadores aleatorios.')) {
-                try {
-                    const response = await apiRequest(`/ruletas/${ruletaId}/complete`, 'PATCH');
-                    
-                    if (response && response.success) {
-                        await loadRuletas();
-                        await loadDashboard();
-                        alert('Ruleta cerrada y ganadores seleccionados.');
-                    } else {
-                        alert('Error al forzar el cierre de la ruleta');
-                    }
-                } catch (error) {
-                    console.error('Error al forzar cierre de ruleta:', error);
-                    alert('Error al forzar el cierre de la ruleta');
-                }
-            }
-        };
-        
         // Obtener etiqueta para el estado
         function getStatusLabel(status) {
             const labels = {
-                'pending': '<span style="color: orange;">Pendiente</span>',
-                'approved': '<span style="color: green;">Aprobado</span>',
-                'rejected': '<span style="color: red;">Rechazado</span>',
-                'completed': '<span style="color: green;">Completado</span>',
-                'reversed': '<span style="color: blue;">Reversado</span>'
+                'pending': '<span class="badge badge-pending">Pendiente</span>',
+                'approved': '<span class="badge badge-active">Aprobado</span>',
+                'rejected': '<span class="badge badge-inactive">Rechazado</span>',
+                'completed': '<span class="badge badge-active">Completado</span>',
+                'reversed': '<span class="badge badge-warning">Reversado</span>'
             };
             return labels[status] || status;
         }
@@ -1847,12 +1324,6 @@
 
         // Event listeners para botones de filtros
         document.getElementById('searchUsersBtn').addEventListener('click', searchUsers);
-        document.getElementById('loadWithdrawalsBtn').addEventListener('click', loadWithdrawals);
-        document.getElementById('filterWithdrawalsBtn').addEventListener('click', loadWithdrawals);
-        document.getElementById('loadDepositsBtn').addEventListener('click', loadDeposits);
-        document.getElementById('filterDepositsBtn').addEventListener('click', loadDeposits);
-        document.getElementById('loadTransactionsBtn').addEventListener('click', loadTransactions);
-        document.getElementById('loadRuletasBtn').addEventListener('click', loadRuletas);
 
         // Tabs
         document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
@@ -1865,6 +1336,10 @@
                 });
                 this.classList.add('active');
                 
+                // Actualizar título del tab
+                document.getElementById('currentTabTitle').textContent = 
+                    this.querySelector('span').textContent;
+                
                 // Mostrar contenido correspondiente
                 document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.remove('active');
@@ -1873,184 +1348,16 @@
                 
                 // Cargar datos específicos de la pestaña
                 if (tabId === 'users') loadUsers();
-                if (tabId === 'withdrawals') loadWithdrawals();
-                if (tabId === 'deposits') loadDeposits();
-                if (tabId === 'transactions') loadTransactions();
-                if (tabId === 'ruletas') loadRuletas();
-                if (tabId === 'support') loadSupportTickets();
             });
         });
 
-        // Delegación de eventos para botones de editar saldo
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('edit-balance-btn')) {
-                const username = e.target.dataset.username;
-                if (username) {
-                    editUserBalance(username);
-                }
-            }
-        });
-
-        // Función para cargar tickets de soporte
-        async function loadSupportTickets(filter = 'all') {
-            const supportStatus = document.getElementById('supportStatus');
-            showStatus(supportStatus, 'Cargando tickets...', 'info');
-            
-            try {
-                const tickets = await apiRequest(`/support-tickets?status=${filter}`);
-                
-                const ticketsList = document.getElementById('ticketsList');
-                ticketsList.innerHTML = '';
-                
-                if (tickets.length === 0) {
-                    ticketsList.innerHTML = '<p>No hay tickets que mostrar.</p>';
-                    showStatus(supportStatus, 'No se encontraron tickets');
-                    return;
-                }
-                
-                tickets.forEach(ticket => {
-                    const ticketElement = document.createElement('div');
-                    ticketElement.className = 'ticket-card';
-                    ticketElement.innerHTML = `
-                        <div class="ticket-header">
-                            <div class="ticket-title">${ticket.subject}</div>
-                            <div class="ticket-status status-${ticket.status.replace(' ', '-')}">
-                                ${getStatusLabel(ticket.status)}
-                            </div>
-                        </div>
-                        <div class="ticket-meta">
-                            <span>Usuario: ${ticket.username}</span>
-                            <span>${new Date(ticket.createdAt).toLocaleString()}</span>
-                        </div>
-                        <div class="ticket-message">
-                            ${ticket.message}
-                        </div>
-                        <div class="ticket-actions">
-                            ${ticket.status !== 'resolved' ? `
-                                <button onclick="updateTicketStatus('${ticket.id}', 'in-progress')" class="btn btn-primary">
-                                    En progreso
-                                </button>
-                                <button onclick="updateTicketStatus('${ticket.id}', 'resolved')" class="btn btn-success">
-                                    Resolver
-                                </button>
-                            ` : ''}
-                            <button onclick="viewTicketDetails('${ticket.id}')" class="btn btn-secondary">
-                                Ver detalles
-                            </button>
-                        </div>
-                    `;
-                    ticketsList.appendChild(ticketElement);
-                });
-                
-                showStatus(supportStatus, `Tickets cargados: ${tickets.length}`);
-            } catch (error) {
-                console.error('Error al cargar tickets:', error);
-                showStatus(supportStatus, 'Error al cargar tickets', 'danger');
-            }
-        }
-        
-        // Event listeners para el soporte
-        document.getElementById('filterTicketsBtn').addEventListener('click', function() {
-            const filter = document.getElementById('ticketFilter').value;
-            loadSupportTickets(filter);
-        });
-        
-        // Actualizar estado de ticket
-        window.updateTicketStatus = async function(ticketId, status) {
-            try {
-                const response = await apiRequest(`/support-tickets/${ticketId}/status`, 'PATCH', {
-                    status
-                });
-                
-                if (response && response.success) {
-                    await loadSupportTickets();
-                    alert('Estado del ticket actualizado');
-                } else {
-                    alert('Error al actualizar el estado del ticket');
-                }
-            } catch (error) {
-                console.error('Error al actualizar estado de ticket:', error);
-                alert('Error al actualizar el estado del ticket');
-            }
-        };
-        
-        // Ver detalles de ticket
-        window.viewTicketDetails = async function(ticketId) {
-            try {
-                const ticket = await apiRequest(`/support-tickets/${ticketId}`);
-                
-                if (ticket) {
-                    const modal = document.createElement('div');
-                    modal.className = 'modal';
-                    modal.innerHTML = `
-                        <div class="modal-content" style="max-width: 800px;">
-                            <span class="close-modal" onclick="closeModal()">&times;</span>
-                            <h2>Ticket #${ticket.id}</h2>
-                            
-                            <div class="user-details">
-                                <p><strong>Asunto:</strong> ${ticket.subject}</p>
-                                <p><strong>Usuario:</strong> ${ticket.username}</p>
-                                <p><strong>Fecha:</strong> ${new Date(ticket.createdAt).toLocaleString()}</p>
-                                <p><strong>Estado:</strong> ${getStatusLabel(ticket.status)}</p>
-                            </div>
-                            
-                            <div class="ticket-message" style="margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 5px;">
-                                <h3>Mensaje</h3>
-                                <p>${ticket.message}</p>
-                            </div>
-                            
-                            <div id="ticketResponses" style="margin-top: 20px;">
-                                <h3>Respuestas</h3>
-                                ${ticket.responses && ticket.responses.length > 0 ? 
-                                    ticket.responses.map(r => `
-                                        <div style="margin-bottom: 15px; padding: 10px; background: ${r.admin ? '#e6f7ff' : '#f9f9f9'}; border-radius: 5px;">
-                                            <strong>${r.admin ? 'Administrador' : ticket.username}</strong> 
-                                            <span style="font-size: 0.9em; color: #666;">(${new Date(r.date).toLocaleString()})</span>
-                                            <p>${r.message}</p>
-                                        </div>
-                                    `).join('') : 
-                                    '<p>No hay respuestas aún.</p>'}
-                            </div>
-                            
-                            <div style="margin-top: 20px;">
-                                <h3>Agregar respuesta</h3>
-                                <textarea id="ticketResponse" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
-                                <button onclick="addTicketResponse('${ticketId}')" class="btn btn-primary" style="margin-top: 10px;">Enviar respuesta</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-                    modal.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error al ver detalles de ticket:', error);
-                alert('Error al cargar detalles del ticket');
-            }
-        };
-        
-        // Agregar respuesta a ticket
-        window.addTicketResponse = async function(ticketId) {
-            try {
-                const responseText = document.getElementById('ticketResponse').value.trim();
-                if (!responseText) {
-                    alert('Por favor escribe una respuesta');
-                    return;
-                }
-                
-                const response = await apiRequest(`/support-tickets/${ticketId}/response`, 'POST', {
-                    message: responseText
-                });
-                
-                if (response && response.success) {
-                    // Recargar los detalles del ticket
-                    await viewTicketDetails(ticketId);
-                } else {
-                    alert('Error al enviar la respuesta');
-                }
-            } catch (error) {
-                console.error('Error al agregar respuesta:', error);
-                alert('Error al enviar la respuesta');
-            }
+        // Función para cerrar el modal
+        window.closeModal = function() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+                setTimeout(() => modal.remove(), 300);
+            });
         };
     </script>
 </body>
