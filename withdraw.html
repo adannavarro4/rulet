@@ -217,86 +217,91 @@
     </div>
     
     <script>
-        // Mostrar saldo del usuario
-        const username = localStorage.getItem("loggedInUser");
-        if (!username) {
-            window.location.href = "login.html";
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    try {
+        const response = await fetch('api/user.php', {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        
+        if (response.status === 401) {
+            localStorage.removeItem('authToken');
+            window.location.href = 'login.html';
+            return;
         }
         
-        let users = JSON.parse(localStorage.getItem("users") || "{}");
-        let user = users[username];
-        
+        const user = await response.json();
         document.getElementById("balanceDisplay").textContent = `Saldo disponible: ${user.balance} Bs`;
         
-        // Validar formulario de retiro
-        document.getElementById("withdrawForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            
-            const cedula = document.getElementById("cedula").value.trim();
-            const telefono = document.getElementById("telefono").value.trim();
-            const banco = document.getElementById("banco").value;
-            const monto = parseFloat(document.getElementById("monto").value);
-            const message = document.getElementById("message");
-            
-            // Validaciones
-            if (!cedula || !telefono || !banco || !monto) {
-                showMessage("Por favor complete todos los campos.", "error");
-                return;
-            }
-            
-            if (monto < 150) {
-                showMessage("El monto mínimo para retirar es de 150 Bs.", "error");
-                return;
-            }
-            
-            if (monto > user.balance) {
-                showMessage("No tiene suficiente saldo para realizar este retiro.", "error");
-                return;
-            }
-            
-            // Procesar retiro
-            user.balance -= monto;
-            users[username] = user;
-            localStorage.setItem("users", JSON.stringify(users));
-            
-            // Mostrar mensaje de éxito
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+
+document.getElementById("withdrawForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    const token = localStorage.getItem('authToken');
+    const cedula = document.getElementById("cedula").value.trim();
+    const telefono = document.getElementById("telefono").value.trim();
+    const banco = document.getElementById("banco").value;
+    const monto = parseFloat(document.getElementById("monto").value);
+    
+    if (!cedula || !telefono || !banco || !monto) {
+        showMessage("Por favor complete todos los campos.", "error");
+        return;
+    }
+    
+    try {
+        const response = await fetch('api/withdraw.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                amount: monto,
+                cedula: cedula,
+                phone: telefono,
+                bank: banco
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
             showMessage(`Retiro exitoso por ${monto} Bs. Se ha enviado a su cuenta bancaria.`, "success");
             
             // Actualizar saldo mostrado
-            document.getElementById("balanceDisplay").textContent = `Saldo disponible: ${user.balance} Bs`;
+            const balanceDisplay = document.getElementById("balanceDisplay");
+            const currentBalance = parseFloat(balanceDisplay.textContent.split(":")[1]);
+            balanceDisplay.textContent = `Saldo disponible: ${(currentBalance - monto).toFixed(2)} Bs`;
             
             // Limpiar formulario
             document.getElementById("withdrawForm").reset();
-            
-            // Opcional: guardar historial de retiros
-            saveWithdrawalHistory(username, cedula, telefono, banco, monto);
-        });
-        
-        function showMessage(text, type) {
-            const message = document.getElementById("message");
-            message.textContent = text;
-            message.className = type;
-            message.style.display = "block";
-            
-            // Ocultar mensaje después de 5 segundos
-            setTimeout(() => {
-                message.style.display = "none";
-            }, 5000);
+        } else {
+            showMessage(data.message, "error");
         }
-        
-        function saveWithdrawalHistory(username, cedula, telefono, banco, monto) {
-            let withdrawals = JSON.parse(localStorage.getItem("withdrawals") || []);
-            const withdrawal = {
-                username,
-                cedula,
-                telefono,
-                banco,
-                monto,
-                fecha: new Date().toISOString()
-            };
-            withdrawals.push(withdrawal);
-            localStorage.setItem("withdrawals", JSON.stringify(withdrawals));
-        }
-    </script>
+    } catch (error) {
+        showMessage("Error de conexión con el servidor", "error");
+    }
+});
+
+function showMessage(text, type) {
+    const message = document.getElementById("message");
+    message.textContent = text;
+    message.className = type;
+    message.style.display = "block";
+    
+    setTimeout(() => {
+        message.style.display = "none";
+    }, 5000);
+}
+   </script>
 </body>
 </html>
