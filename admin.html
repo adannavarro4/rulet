@@ -1,7 +1,8 @@
+<!-- admin.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Admin - Rulet</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -644,8 +645,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Login -->
-    <div id="loginContainer" class="login-container">
+     <div id="loginContainer" class="login-container">
         <div class="logo">
             <i class="fas fa-dice"></i>
         </div>
@@ -898,139 +898,49 @@
             </div>
         </div>
     </div>
-
+    
     <script>
-        // Configuración de la API - REEMPLAZA CON TU URL REAL
-        const API_BASE_URL = 'https://tu-api-en-namecheap.com/api';
+        // Configuración real de la API
+        const API_BASE_URL = 'https://tu-dominio-en-namecheap.com/api';
         let token = localStorage.getItem('adminToken');
-        let usersChart = null;
-        let transactionsChart = null;
         
-        // Función para mostrar estado de carga
-        function showLoader(element) {
-            element.innerHTML = '<div class="loader"></div>';
-        }
-        
-        // Función para mostrar mensaje de estado
-        function showStatus(element, message, type = 'info') {
-            element.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            if (type !== 'danger') {
-                setTimeout(() => element.innerHTML = '', 3000);
-            }
-        }
-        
-        // Función para realizar peticiones a la API
+        // Función para realizar peticiones a la API (REAL)
         async function apiRequest(endpoint, method = 'GET', body = null) {
-            // En esta demo, simulamos las respuestas de la API
-            // En producción, reemplazar con llamadas reales a tu API
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
             
-            console.log(`Simulando llamada a: ${API_BASE_URL}${endpoint}`);
+            const config = {
+                method: method,
+                headers: headers
+            };
             
-            // Simulamos un retraso de red
-            await new Promise(resolve => setTimeout(resolve, 800));
-            
-            // Simulamos respuestas según el endpoint
-            if (endpoint === '/login') {
-                return { token: "demo_token_123456" };
-            }
-            else if (endpoint === '/validate-token') {
-                return { valid: true };
-            }
-            else if (endpoint === '/users') {
-                return [
-                    {
-                        id: 1,
-                        username: "usuario1",
-                        fullName: "Juan Pérez",
-                        email: "juan@example.com",
-                        balance: 1500,
-                        wins: 2000,
-                        losses: 500,
-                        createdAt: "2023-05-15T10:30:00Z",
-                        online: true,
-                        active: true
-                    },
-                    {
-                        id: 2,
-                        username: "usuario2",
-                        fullName: "María García",
-                        email: "maria@example.com",
-                        balance: 3500,
-                        wins: 5000,
-                        losses: 1500,
-                        createdAt: "2023-06-20T14:45:00Z",
-                        online: false,
-                        active: true
-                    },
-                    {
-                        id: 3,
-                        username: "usuario3",
-                        fullName: "Carlos Rodríguez",
-                        email: "carlos@example.com",
-                        balance: 800,
-                        wins: 1200,
-                        losses: 400,
-                        createdAt: "2023-07-10T08:15:00Z",
-                        online: true,
-                        active: false
-                    }
-                ];
-            }
-            else if (endpoint === '/transactions') {
-                return [
-                    {
-                        id: 1,
-                        date: "2023-09-01T10:30:00Z",
-                        username: "usuario1",
-                        type: "deposit",
-                        amount: 500,
-                        status: "approved"
-                    },
-                    {
-                        id: 2,
-                        date: "2023-09-01T12:15:00Z",
-                        username: "usuario2",
-                        type: "win",
-                        amount: 200,
-                        status: "completed"
-                    },
-                    {
-                        id: 3,
-                        date: "2023-09-01T15:45:00Z",
-                        username: "usuario3",
-                        type: "withdrawal",
-                        amount: 300,
-                        status: "pending"
-                    }
-                ];
-            }
-            else if (endpoint === '/withdrawals') {
-                return [
-                    {
-                        id: 1,
-                        username: "usuario1",
-                        amount: 500,
-                        bank: "Banco Nacional",
-                        account: "1234-5678-9012-3456",
-                        date: "2023-09-01T10:30:00Z",
-                        status: "pending"
-                    },
-                    {
-                        id: 2,
-                        username: "usuario2",
-                        amount: 1200,
-                        bank: "Banco Mercantil",
-                        account: "5678-9012-3456-1234",
-                        date: "2023-09-02T14:20:00Z",
-                        status: "approved"
-                    }
-                ];
+            if (body) {
+                config.body = JSON.stringify(body);
             }
             
-            return null;
+            try {
+                const response = await fetch(API_BASE_URL + endpoint, config);
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('adminToken');
+                    window.location.reload();
+                    return null;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API request failed:', error);
+                return null;
+            }
         }
-        
-        // Login
+
+        // Login corregido
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -1041,10 +951,9 @@
             
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
-            showStatus(loginStatus, 'Verificando credenciales...', 'info');
             
             try {
-                const response = await apiRequest('/login', 'POST', { username, password });
+                const response = await apiRequest('/admin/login', 'POST', { username, password });
                 
                 if (response && response.token) {
                     token = response.token;
@@ -1061,256 +970,7 @@
             }
         });
 
-        // Mostrar panel admin si ya está logueado
-        if (token) {
-            document.addEventListener('DOMContentLoaded', function() {
-                showAdminPanel();
-                initEventListeners();
-            });
-        }
-
-        async function showAdminPanel() {
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('adminContainer').style.display = 'block';
-            
-            try {
-                // Verificar token
-                const validToken = await apiRequest('/validate-token');
-                if (!validToken || !validToken.valid) {
-                    localStorage.removeItem('adminToken');
-                    document.getElementById('loginContainer').style.display = 'block';
-                    document.getElementById('adminContainer').style.display = 'none';
-                    showStatus(document.getElementById('loginStatus'), 'Sesión expirada. Por favor ingresa nuevamente.', 'danger');
-                    return;
-                }
-                
-                // Cargar datos del dashboard
-                await loadDashboard();
-            } catch (error) {
-                console.error('Error al mostrar panel admin:', error);
-                showStatus(document.getElementById('dashboardStatus'), 'Error al cargar datos del dashboard', 'danger');
-            }
-        }
-
-        // Cargar datos del dashboard
-        async function loadDashboard() {
-            const dashboardStatus = document.getElementById('dashboardStatus');
-            showStatus(dashboardStatus, 'Cargando datos del dashboard...', 'info');
-            
-            try {
-                // Simulamos la carga de datos
-                const [usersData, transactionsData] = await Promise.all([
-                    apiRequest('/users'),
-                    apiRequest('/transactions')
-                ]);
-                
-                // Actualizar UI con datos simulados
-                document.getElementById('totalUsers').textContent = usersData.length;
-                document.getElementById('onlineUsers').textContent = usersData.filter(u => u.online).length;
-                document.getElementById('pendingWithdrawals').textContent = 3; // Valor simulado
-                document.getElementById('pendingDeposits').textContent = 2; // Valor simulado
-                document.getElementById('totalWins').textContent = "1500 Bs"; // Valor simulado
-                document.getElementById('totalLosses').textContent = "500 Bs"; // Valor simulado
-                document.getElementById('totalBalance').textContent = "1000 Bs"; // Valor simulado
-                document.getElementById('pendingTickets').textContent = 5; // Valor simulado
-                
-                // Cargar gráficos
-                loadCharts(usersData, transactionsData);
-                
-                // Cargar últimas transacciones
-                loadRecentTransactions(transactionsData);
-                
-                showStatus(dashboardStatus, 'Dashboard cargado correctamente', 'success');
-            } catch (error) {
-                console.error('Error al cargar dashboard:', error);
-                showStatus(dashboardStatus, 'Error al cargar datos del dashboard', 'danger');
-            }
-        }
-        
-        // Cargar gráficos
-        function loadCharts(usersData, transactionsData) {
-            // Destruir gráficos anteriores si existen
-            if (usersChart) usersChart.destroy();
-            if (transactionsChart) transactionsChart.destroy();
-            
-            // Gráfico de usuarios por fecha
-            const userDates = usersData.map(user => new Date(user.createdAt).toLocaleDateString());
-            const userCounts = {};
-            
-            userDates.forEach(date => {
-                userCounts[date] = (userCounts[date] || 0) + 1;
-            });
-            
-            const ctxUsers = document.getElementById('usersChart').getContext('2d');
-            usersChart = new Chart(ctxUsers, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(userCounts),
-                    datasets: [{
-                        label: 'Usuarios Registrados',
-                        data: Object.values(userCounts),
-                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                        borderColor: 'rgba(52, 152, 219, 1)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-            
-            // Gráfico de transacciones por tipo
-            const transactionTypes = {};
-            
-            transactionsData.forEach(transaction => {
-                transactionTypes[transaction.type] = (transactionTypes[transaction.type] || 0) + 1;
-            });
-            
-            const ctxTransactions = document.getElementById('transactionsChart').getContext('2d');
-            transactionsChart = new Chart(ctxTransactions, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(transactionTypes),
-                    datasets: [{
-                        label: 'Transacciones por Tipo',
-                        data: Object.values(transactionTypes),
-                        backgroundColor: [
-                            'rgba(46, 204, 113, 0.7)',
-                            'rgba(231, 76, 60, 0.7)',
-                            'rgba(52, 152, 219, 0.7)',
-                            'rgba(155, 89, 182, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(46, 204, 113, 1)',
-                            'rgba(231, 76, 60, 1)',
-                            'rgba(52, 152, 219, 1)',
-                            'rgba(155, 89, 182, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Cargar últimas transacciones
-        function loadRecentTransactions(transactions) {
-            const recentTransactions = transactions.slice(-3);
-            
-            const tbody = document.querySelector('#recentTransactions tbody');
-            tbody.innerHTML = recentTransactions.map(transaction => `
-                <tr>
-                    <td>${new Date(transaction.date).toLocaleString()}</td>
-                    <td>${transaction.username}</td>
-                    <td>${getTransactionTypeLabel(transaction.type)}</td>
-                    <td>${transaction.amount} Bs</td>
-                    <td>${getStatusLabel(transaction.status)}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm">
-                            <i class="fas fa-eye"></i> Ver
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        // Función para ver todos los usuarios desde el dashboard
-        window.loadUsersModal = async function() {
-            try {
-                const users = await apiRequest('/users');
-                
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2>Lista de Usuarios Registrados</h2>
-                            <span class="close-modal" onclick="closeModal()">&times;</span>
-                        </div>
-                        <div class="modal-body">
-                            <div style="margin-bottom: 20px;">
-                                <input type="text" id="modalUserSearch" placeholder="Buscar usuario..." class="form-control">
-                            </div>
-                            
-                            <table style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Usuario</th>
-                                        <th>Nombre</th>
-                                        <th>Saldo</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${users.map(user => {
-                                        return `
-                                            <tr>
-                                                <td>${user.username}</td>
-                                                <td>${user.fullName || '-'}</td>
-                                                <td>${user.balance || 0} Bs</td>
-                                                <td>
-                                                    ${user.active !== false ? `
-                                                        <span class="badge badge-active">Activo</span>
-                                                    ` : `
-                                                        <span class="badge badge-inactive">Inactivo</span>
-                                                    `}
-                                                    ${user.online ? `
-                                                        <span class="badge badge-online">En línea</span>
-                                                    ` : `
-                                                        <span class="badge badge-offline">Desconectado</span>
-                                                    `}
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-primary btn-sm">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                    <button class="btn btn-warning btn-sm">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        `;
-                                    }).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(modal);
-                modal.style.display = 'block';
-                
-                // Agregar evento para cerrar modal
-                modal.querySelector('.close-modal').addEventListener('click', closeModal);
-            } catch (error) {
-                console.error('Error al cargar usuarios modal:', error);
-                alert('Error al cargar la lista de usuarios');
-            }
-        };
-        
-        // Cargar usuarios
+        // Función para cargar usuarios (REAL)
         async function loadUsers() {
             const usersStatus = document.getElementById('usersStatus');
             showStatus(usersStatus, 'Cargando usuarios...', 'info');
@@ -1322,46 +982,48 @@
                 tbody.innerHTML = users.map(user => {
                     return `
                         <tr>
-                            <td>${user.id || '-'}</td>
-                            <td>
-                                <span class="status-indicator ${user.online ? 'online' : 'offline'}"></span>
-                                ${user.username}
-                            </td>
-                            <td>${user.fullName || '-'}</td>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.full_name || '-'}</td>
                             <td>${user.email || '-'}</td>
-                            <td>${user.balance || 0} Bs</td>
+                            <td><input type="number" class="user-balance" data-userid="${user.id}" value="${user.balance}"></td>
                             <td>
-                                ${user.active !== false ? `
-                                    <span class="badge badge-active">Activo</span>
-                                ` : `
-                                    <span class="badge badge-inactive">Inactivo</span>
-                                `}
-                                ${user.online ? `
-                                    <span class="badge badge-online">En línea</span>
-                                ` : `
-                                    <span class="badge badge-offline">Desconectado</span>
-                                `}
+                                <select class="user-status" data-userid="${user.id}">
+                                    <option value="1" ${user.status == 1 ? 'selected' : ''}>Activo</option>
+                                    <option value="0" ${user.status == 0 ? 'selected' : ''}>Inactivo</option>
+                                </select>
                             </td>
                             <td>
-                                <button class="btn btn-primary btn-sm">
+                                <button class="btn btn-primary btn-sm" onclick="viewUserDetails(${user.id})">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                ${user.active !== false ? `
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fas fa-ban"></i>
-                                    </button>
-                                ` : `
-                                    <button class="btn btn-success btn-sm">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                `}
-                                <button class="btn btn-warning btn-sm">
+                                <button class="btn btn-warning btn-sm" onclick="editUser(${user.id})">
                                     <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </td>
                         </tr>
                     `;
                 }).join('');
+                
+                // Event listeners para cambios en tiempo real
+                document.querySelectorAll('.user-balance').forEach(input => {
+                    input.addEventListener('change', async function() {
+                        const userId = this.dataset.userid;
+                        const newBalance = this.value;
+                        await updateUserBalance(userId, newBalance);
+                    });
+                });
+                
+                document.querySelectorAll('.user-status').forEach(select => {
+                    select.addEventListener('change', async function() {
+                        const userId = this.dataset.userid;
+                        const newStatus = this.value;
+                        await updateUserStatus(userId, newStatus);
+                    });
+                });
                 
                 showStatus(usersStatus, `Usuarios cargados: ${users.length}`, 'success');
             } catch (error) {
@@ -1369,119 +1031,42 @@
                 showStatus(usersStatus, 'Error al cargar usuarios', 'danger');
             }
         }
-        
-        // Cargar retiros
-        async function loadWithdrawals() {
-            const withdrawalsStatus = document.getElementById('withdrawalsStatus');
-            showStatus(withdrawalsStatus, 'Cargando solicitudes de retiro...', 'info');
-            
+
+        // Funciones CRUD para usuarios
+        async function updateUserBalance(userId, newBalance) {
             try {
-                const withdrawals = await apiRequest('/withdrawals');
-                
-                const tbody = document.querySelector('#withdrawalsTable tbody');
-                tbody.innerHTML = withdrawals.map(w => {
-                    return `
-                        <tr>
-                            <td>${w.id || '-'}</td>
-                            <td>${w.username}</td>
-                            <td>${w.amount} Bs</td>
-                            <td>${w.bank || '-'}</td>
-                            <td>${w.account || '-'}</td>
-                            <td>${new Date(w.date).toLocaleString()}</td>
-                            <td>${getStatusLabel(w.status)}</td>
-                            <td>
-                                ${w.status === 'pending' ? `
-                                    <button class="btn btn-success btn-sm">
-                                        <i class="fas fa-check"></i> Aprobar
-                                    </button>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fas fa-times"></i> Rechazar
-                                    </button>
-                                ` : 'N/A'}
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-                
-                showStatus(withdrawalsStatus, `Solicitudes de retiro cargadas: ${withdrawals.length}`, 'success');
+                const response = await apiRequest(`/users/${userId}/balance`, 'PUT', { balance: newBalance });
+                if (response && response.success) {
+                    showStatus(document.getElementById('usersStatus'), 'Saldo actualizado correctamente', 'success');
+                }
             } catch (error) {
-                console.error('Error al cargar retiros:', error);
-                showStatus(withdrawalsStatus, 'Error al cargar solicitudes de retiro', 'danger');
+                console.error('Error al actualizar saldo:', error);
+                showStatus(document.getElementById('usersStatus'), 'Error al actualizar saldo', 'danger');
             }
         }
-        
-        // Buscar usuarios
-        function searchUsers() {
-            loadUsers();
-        }
-        
-        // Obtener etiqueta para el estado
-        function getStatusLabel(status) {
-            const labels = {
-                'pending': '<span class="badge badge-pending">Pendiente</span>',
-                'approved': '<span class="badge badge-active">Aprobado</span>',
-                'rejected': '<span class="badge badge-inactive">Rechazado</span>',
-                'completed': '<span class="badge badge-active">Completado</span>',
-                'reversed': '<span class="badge badge-warning">Reversado</span>'
-            };
-            return labels[status] || status;
-        }
-        
-        // Obtener etiqueta para el tipo de transacción
-        function getTransactionTypeLabel(type) {
-            const labels = {
-                'deposit': 'Depósito',
-                'withdrawal': 'Retiro',
-                'win': 'Ganancia',
-                'loss': 'Pérdida',
-                'balance_adjustment': 'Ajuste de Saldo',
-                'user_status': 'Estado de Usuario'
-            };
-            return labels[type] || type;
-        }
-        
-        // Función para cerrar el modal
-        window.closeModal = function() {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                modal.style.display = 'none';
-                setTimeout(() => modal.remove(), 300);
-            });
-        };
 
-        // Inicializar event listeners
-        function initEventListeners() {
-            // Tabs
-            document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
-                item.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
-                    
-                    // Actualizar active tab
-                    document.querySelectorAll('.sidebar li[data-tab]').forEach(li => {
-                        li.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                    
-                    // Actualizar título del tab
-                    document.getElementById('currentTabTitle').textContent = 
-                        this.querySelector('span').textContent;
-                    
-                    // Mostrar contenido correspondiente
-                    document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    document.getElementById(tabId).classList.add('active');
-                    
-                    // Cargar datos específicos de la pestaña
-                    if (tabId === 'users') {
-                        loadUsers();
-                    } else if (tabId === 'withdrawals') {
-                        loadWithdrawals();
-                    }
-                });
-            });
+        async function updateUserStatus(userId, newStatus) {
+            try {
+                const response = await apiRequest(`/users/${userId}/status`, 'PUT', { status: newStatus });
+                if (response && response.success) {
+                    showStatus(document.getElementById('usersStatus'), 'Estado actualizado correctamente', 'success');
+                }
+            } catch (error) {
+                console.error('Error al actualizar estado:', error);
+                showStatus(document.getElementById('usersStatus'), 'Error al actualizar estado', 'danger');
+            }
+        }
 
-            // Botón de búsqueda de usuarios
+        async function editUser(userId) {
+            // Implementar lógica de edición completa
+            const user = await apiRequest(`/users/${userId}`);
+            if (user) {
+                // Mostrar modal de edición con los datos del usuario
+                showEditUserModal(user);
+            }
+        }
+
+         // Botón de búsqueda de usuarios
             document.getElementById('searchUsersBtn').addEventListener('click', searchUsers);
 
             // Logout
