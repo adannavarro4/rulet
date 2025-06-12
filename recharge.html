@@ -283,155 +283,93 @@
     </div>
 
     <script>
-        // Obtener usuario logueado
-        const loggedInUser = localStorage.getItem("loggedInUser");
-        if (!loggedInUser) {
-            window.location.href = "login.html";
-        }
-        
-        // Obtener datos del usuario
-        const users = JSON.parse(localStorage.getItem("users")) || {};
-        const currentUser = users[loggedInUser];
-        
-        // Mostrar información del usuario
-        document.getElementById("usernameDisplay").textContent = loggedInUser;
-        document.getElementById("fullNameDisplay").textContent = currentUser?.fullName || "No registrado";
-        document.getElementById("currentBalance").textContent = currentUser?.balance || 0;
-        document.getElementById("usernameConfirm").value = loggedInUser;
-        
-        // Variables para la imagen
-        let receiptImage = null;
-        let receiptImageBase64 = null;
-        
-        // Manejar selección de archivo
-        document.getElementById("receipt").addEventListener("change", function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                // Validar tipo de archivo
-                if (!file.type.match("image.*")) {
-                    showMessage("Por favor seleccione un archivo de imagen válido", "error");
-                    return;
-                }
-                
-                // Validar tamaño (max 2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    showMessage("La imagen no debe exceder los 2MB", "error");
-                    return;
-                }
-                
-                // Mostrar nombre del archivo
-                document.getElementById("fileName").textContent = `Archivo seleccionado: ${file.name}`;
-                document.getElementById("fileLabel").textContent = "Cambiar imagen";
-                
-                // Habilitar botón de envío
-                document.getElementById("submitDeposit").disabled = false;
-                
-                // Mostrar vista previa
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const preview = document.getElementById("previewImage");
-                    preview.src = event.target.result;
-                    preview.style.display = "block";
-                    receiptImage = file;
-                    receiptImageBase64 = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    try {
+        const response = await fetch('api/user.php', {
+            headers: {'Authorization': `Bearer ${token}`}
         });
         
-        // Obtener o inicializar recargas en localStorage
-        if (!localStorage.getItem("deposits")) {
-            localStorage.setItem("deposits", JSON.stringify([]));
+        if (response.status === 401) {
+            localStorage.removeItem('authToken');
+            window.location.href = 'login.html';
+            return;
         }
         
-        // Manejar envío de recarga
-        document.getElementById("submitDeposit").addEventListener("click", function() {
-            const username = document.getElementById("usernameConfirm").value;
-            const amount = parseFloat(document.getElementById("amount").value);
-            const reference = document.getElementById("reference").value.trim();
-            const bank = document.getElementById("bank").value;
-            const messageDiv = document.getElementById("message");
-            
-            // Validaciones
-            if (!amount || amount < 50) {
-                showMessage("El monto mínimo de recarga es 50 Bs", "error");
-                return;
-            }
-            
-            if (!reference) {
-                showMessage("Por favor ingrese el número de referencia", "error");
-                return;
-            }
-            
-            if (!bank) {
-                showMessage("Por favor seleccione el banco de origen", "error");
-                return;
-            }
-            
-            if (!receiptImage) {
-                showMessage("Por favor suba el comprobante de transferencia", "error");
-                return;
-            }
-            
-            // Crear objeto de recarga para enviar a administración
-            const deposit = {
-                id: Date.now(), // ID único basado en timestamp
-                username: username,
-                fullName: currentUser?.fullName || "No registrado",
+        const user = await response.json();
+        document.getElementById("usernameDisplay").textContent = user.username;
+        document.getElementById("fullNameDisplay").textContent = user.full_name || "No registrado";
+        document.getElementById("currentBalance").textContent = user.balance;
+        document.getElementById("usernameConfirm").value = user.username;
+        
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+
+document.getElementById("submitDeposit").addEventListener("click", async function() {
+    const token = localStorage.getItem('authToken');
+    const username = document.getElementById("usernameConfirm").value;
+    const amount = parseFloat(document.getElementById("amount").value);
+    const reference = document.getElementById("reference").value.trim();
+    const bank = document.getElementById("bank").value;
+    
+    if (!amount || !reference || !bank) {
+        showMessage("Por favor complete todos los campos", "error");
+        return;
+    }
+    
+    try {
+        const response = await fetch('api/deposit.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
                 amount: amount,
                 reference: reference,
-                bank: bank,
-                receiptImage: receiptImageBase64, // Imagen en base64
-                receiptFileName: receiptImage.name,
-                status: "pending", // Estado inicial
-                date: new Date().toISOString(), // Fecha en formato ISO
-                verified: false // Para control del admin
-            };
+                bank: bank
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage(`Solicitud de recarga enviada: ${amount} Bs`, "success");
             
-            // Guardar recarga en el almacenamiento local
-            const deposits = JSON.parse(localStorage.getItem("deposits"));
-            deposits.push(deposit);
-            localStorage.setItem("deposits", JSON.stringify(deposits));
-            
-            // Mostrar mensaje de éxito con resumen
-            showMessage(`
-                <strong>Solicitud de recarga enviada a administración:</strong><br><br>
-                <strong>Usuario:</strong> ${username}<br>
-                <strong>Nombre:</strong> ${currentUser?.fullName || "No registrado"}<br>
-                <strong>Monto:</strong> ${amount} Bs<br>
-                <strong>Referencia:</strong> ${reference}<br>
-                <strong>Banco:</strong> ${bank}<br>
-                <strong>Comprobante:</strong> ${receiptImage.name}<br><br>
-                Tu saldo será actualizado una vez verificado por el administrador.
-            `, "success");
+            // Actualizar saldo mostrado
+            const balanceElement = document.getElementById("currentBalance");
+            const currentBalance = parseFloat(balanceElement.textContent);
+            balanceElement.textContent = (currentBalance).toFixed(2);
             
             // Limpiar formulario
             document.getElementById("amount").value = "";
             document.getElementById("reference").value = "";
             document.getElementById("bank").value = "";
-            document.getElementById("receipt").value = "";
-            document.getElementById("fileName").textContent = "";
-            document.getElementById("fileLabel").textContent = "Haz clic para subir imagen del comprobante";
-            document.getElementById("previewImage").style.display = "none";
-            document.getElementById("submitDeposit").disabled = true;
-            receiptImage = null;
-            receiptImageBase64 = null;
-        });
-        
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById("message");
-            messageDiv.innerHTML = text;
-            messageDiv.className = type;
-            messageDiv.style.display = "block";
-            
-            // Desplazarse al mensaje
-            messageDiv.scrollIntoView({ behavior: 'smooth' });
-            
-            // Ocultar mensaje después de 8 segundos
-            setTimeout(() => {
-                messageDiv.style.display = "none";
-            }, 8000);
+        } else {
+            showMessage(data.message, "error");
         }
-    </script>
+    } catch (error) {
+        showMessage("Error de conexión con el servidor", "error");
+    }
+});
+
+function showMessage(text, type) {
+    const message = document.getElementById("message");
+    message.innerHTML = text;
+    message.className = type;
+    message.style.display = "block";
+    
+    setTimeout(() => {
+        message.style.display = "none";
+    }, 5000);
+}
+   </script>
 </body>
 </html>
