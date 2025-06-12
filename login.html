@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
+     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar Sesión - Rulet</title>
     <style>
@@ -227,7 +227,7 @@
     </style>
 </head>
 <body>
-    <div class="container">
+     <div class="container">
         <h1>Iniciar Sesión</h1>
         <form id="loginForm">
             <div class="form-group">
@@ -280,34 +280,43 @@
     </div>
     
     <script>
-document.getElementById("loginForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    
-    try {
-        const response = await fetch('api/login.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({username, password})
+        // URL de la API real
+        const API_BASE_URL = 'https://tu-dominio-en-namecheap.com/api';
+        
+        document.getElementById("loginForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+            
+            try {
+                const response = await fetch(API_BASE_URL + '/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+                
+                // Manejar errores HTTP
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error en las credenciales');
+                }
+                
+                const data = await response.json();
+                
+                if (data.token) {
+                    localStorage.setItem('authToken', data.token);
+                    showMessage("Inicio de sesión exitoso! Redirigiendo...", "success");
+                    setTimeout(() => window.location.href = "dashboard.html", 1000);
+                } else {
+                    showMessage("Credenciales incorrectas", "error");
+                }
+            } catch (error) {
+                showMessage(error.message || "Error de conexión", "error");
+            }
         });
         
-        const data = await response.json();
-        
-        if (data.success) {
-            localStorage.setItem('authToken', data.token);
-            showMessage("Inicio de sesión exitoso! Redirigiendo...", "success");
-            setTimeout(() => window.location.href = "dashboard.html", 1000);
-        } else {
-            showMessage(data.message, "error");
-        }
-    } catch (error) {
-        showMessage("Error de conexión con el servidor", "error");
-    }
-});
-
-function showMessage(text, type) {
+        function showMessage(text, type) {
     const message = document.getElementById("message");
     message.textContent = text;
     message.className = type;
@@ -317,6 +326,6 @@ function showMessage(text, type) {
         message.style.display = "none";
     }, 5000);
 }
-</script>
+    </script>
 </body>
 </html>
