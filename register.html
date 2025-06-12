@@ -431,38 +431,95 @@
     </div>
     
     <script>
-document.getElementById("registerForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    
-    const formData = {
-        username: document.getElementById("username").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        password: document.getElementById("password").value,
-        fullName: document.getElementById("fullName").value.trim(),
-        phone: document.getElementById("phone").value.trim()
-    };
-    
-    try {
-        const response = await fetch('api/register.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(formData)
+        // Variables globales
+        let currentSection = 1;
+        
+        // Función para navegar entre secciones
+        function nextSection() {
+            if (currentSection === 1) {
+                // Validar sección 1
+                const username = document.getElementById('username').value.trim();
+                const email = document.getElementById('email').value.trim();
+                
+                if (!username || !email) {
+                    showMessage('Por favor complete todos los campos', 'error');
+                    return;
+                }
+                
+                document.getElementById('section1').classList.remove('active');
+                document.getElementById('section2').classList.add('active');
+                document.getElementById('step2').classList.add('active');
+                currentSection = 2;
+                
+            } else if (currentSection === 2) {
+                // Validar sección 2
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password.length < 8) {
+                    showMessage('La contraseña debe tener al menos 8 caracteres', 'error');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showMessage('Las contraseñas no coinciden', 'error');
+                    return;
+                }
+                
+                document.getElementById('section2').classList.remove('active');
+                document.getElementById('section3').classList.add('active');
+                document.getElementById('step3').classList.add('active');
+                currentSection = 3;
+            }
+        }
+        
+        function prevSection() {
+            if (currentSection === 2) {
+                document.getElementById('section2').classList.remove('active');
+                document.getElementById('section1').classList.add('active');
+                document.getElementById('step2').classList.remove('active');
+                currentSection = 1;
+            } else if (currentSection === 3) {
+                document.getElementById('section3').classList.remove('active');
+                document.getElementById('section2').classList.add('active');
+                document.getElementById('step3').classList.remove('active');
+                currentSection = 2;
+            }
+        }
+        
+        // Registro corregido
+        document.getElementById("registerForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                username: document.getElementById("username").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                password: document.getElementById("password").value,
+                full_name: document.getElementById("fullName").value.trim(),
+                phone: document.getElementById("phone").value.trim() || null
+            };
+            
+            try {
+                const response = await fetch(API_BASE_URL + '/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage("¡Registro exitoso! Redirigiendo...", "success");
+                    setTimeout(() => window.location.href = "login.html", 2000);
+                } else {
+                    showMessage(data.message, "error");
+                }
+            } catch (error) {
+                showMessage("Error de conexión con el servidor", "error");
+            }
         });
         
-        const data = await response.json();
-        
-        if (data.success) {
-            showMessage("¡Registro exitoso! Redirigiendo...", "success");
-            setTimeout(() => window.location.href = "login.html", 2000);
-        } else {
-            showMessage(data.message, "error");
-        }
-    } catch (error) {
-        showMessage("Error de conexión con el servidor", "error");
-    }
-});
-
-function showMessage(text, type) {
+        function showMessage(text, type) {
     const message = document.getElementById("message");
     message.textContent = text;
     message.className = type;
@@ -472,6 +529,6 @@ function showMessage(text, type) {
         message.style.display = "none";
     }, 5000);
 }
-   </script>
+    </script>
 </body>
 </html>
