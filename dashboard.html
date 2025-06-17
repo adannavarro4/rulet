@@ -270,40 +270,48 @@
         <div id="supportMessageDiv" class="support-message"></div>
     </div>
 
-      <script>
-document.addEventListener('DOMContentLoaded', async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    try {
-        const response = await fetch('api/user.php', {
-            headers: {'Authorization': `Bearer ${token}`}
-        });
-        
-        if (response.status === 401) {
-            localStorage.removeItem('authToken');
-            window.location.href = 'login.html';
-            return;
+    <script>
+        // Obtener usuario logueado
+        const username = localStorage.getItem("loggedInUser");
+        if (!username) {
+            window.location.href = "login.html";
         }
         
-        const user = await response.json();
+        // Obtener datos del usuario
+        const users = JSON.parse(localStorage.getItem("users")) || {};
+        const currentUser = users[username];
         
-        // Mostrar información del usuario
-        document.getElementById("usernameDisplay").textContent = user.username;
-        document.getElementById("fullNameDisplay").textContent = user.full_name || "No registrado";
-        document.getElementById("currentBalance").textContent = user.balance;
+        // Calcula el total neto (Ganancias - Pérdidas)
+        let total = currentUser.wins - currentUser.losses;
         
-        // Calcular y mostrar total
-        const total = (user.wins || 0) - (user.losses || 0);
-        document.querySelector(".total p").textContent = `${total} Bs`;
+        document.getElementById("userInfo").innerHTML = `
+            <div class="info-item">
+                <h3>Usuario</h3>
+                <p>${username}</p>
+            </div>
+            <div class="info-item balance">
+                <h3>Saldo</h3>
+                <p>${currentUser.balance} Bs</p>
+            </div>
+            <div class="info-item wins">
+                <h3>Ganancias</h3>
+                <p>${currentUser.wins} Bs</p>
+            </div>
+            <div class="info-item losses">
+                <h3>Pérdidas</h3>
+                <p>${currentUser.losses} Bs</p>
+            </div>
+            <div class="info-item total">
+                <h3>Total</h3>
+                <p>${total} Bs</p>
+            </div>
+        `;
         
-    } catch (error) {
-        console.error('Error:', error);
-    }
-});
+        function logout() {
+            localStorage.removeItem("loggedInUser");
+            window.location.href = "index.html";
+        }
+
         // Mostrar/ocultar modal de soporte
         function toggleSupportModal() {
             const modal = document.getElementById('supportModal');
@@ -339,6 +347,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 replies: []
             };
             
-    </script>   
+            // Guardar en localStorage
+            let tickets = JSON.parse(localStorage.getItem('supportTickets') || '[]');
+            tickets.push(newTicket);
+            localStorage.setItem('supportTickets', JSON.stringify(tickets));
+            
+            // Mostrar mensaje de éxito
+            messageDiv.textContent = 'Tu ticket ha sido enviado. Nos pondremos en contacto contigo pronto.';
+            messageDiv.className = 'support-message support-success';
+            messageDiv.style.display = 'block';
+            
+            // Limpiar formulario después de 2 segundos
+            setTimeout(() => {
+                document.getElementById('supportForm').reset();
+                messageDiv.style.display = 'none';
+                toggleSupportModal();
+            }, 3000);
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('supportModal');
+            const icon = document.querySelector('.support-icon');
+            
+            if (modal.style.display === 'block' && 
+                !modal.contains(e.target) && 
+                !icon.contains(e.target)) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
