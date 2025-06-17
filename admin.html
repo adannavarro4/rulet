@@ -418,7 +418,7 @@
                     <div class="stat-card">
                         <h3>Usuarios Registrados</h3>
                         <p id="totalUsers">0</p>
-                        <button class="btn btn-primary" onclick="loadUsersModal()">Ver Usuarios</button>
+                        <button class="btn btn-primary" id="viewUsersBtn">Ver Usuarios</button>
                     </div>
                     <div class="stat-card">
                         <h3>Usuarios Conectados</h3>
@@ -444,14 +444,12 @@
                         <h3>Balance General</h3>
                         <p id="totalBalance" class="total-balance">0 Bs</p>
                     </div>
-                </div>
-
                     <div class="stat-card">
                         <h3>Tickets Pendientes</h3>
                         <p id="pendingTickets">0</p>
+                    </div>
                 </div>
-            
-        
+
                 <!-- Gráficos -->
                 <div class="chart-container">
                     <canvas id="usersChart"></canvas>
@@ -668,33 +666,23 @@
                     <tbody></tbody>
                 </table>
             </div>
-        </div>
-    </div>
-
-     <!-- Main Content - Agregada sección de Soporte -->
-     <div class="main-content">
-        <!-- ... (otras secciones sin cambios) ... -->
-        
-        <!-- Soporte -->
-        <div class="tab-content" id="support">
-            <h1>Soporte - Tickets</h1>
             
-            <div class="filter-tickets">
-                <select id="ticketFilter">
-                    <option value="all">Todos los tickets</option>
-                    <option value="pending">Pendientes</option>
-                    <option value="in-progress">En progreso</option>
-                    <option value="resolved">Resueltos</option>
-                </select>
-                <button class="btn btn-primary" id="filterTicketsBtn">Filtrar</button>
-            </div>
-            
-            <div id="ticketsList">
-                <!-- Los tickets se cargarán aquí dinámicamente -->
+            <!-- Soporte -->
+            <div class="tab-content" id="support">
+                <h1>Soporte - Tickets</h1>
+                <div class="filter-tickets">
+                    <select id="ticketFilter">
+                        <option value="all">Todos los tickets</option>
+                        <option value="pending">Pendientes</option>
+                        <option value="in-progress">En progreso</option>
+                        <option value="resolved">Resueltos</option>
+                    </select>
+                    <button class="btn btn-primary" id="filterTicketsBtn">Filtrar</button>
+                </div>
+                <div id="ticketsList"></div>
             </div>
         </div>
     </div>
-</div>
 
     <script>
         // Datos de ejemplo en localStorage si no existen
@@ -867,6 +855,10 @@
                     'usuario1': Date.now()
                 }));
             }
+            
+            if (!localStorage.getItem('supportTickets')) {
+                localStorage.setItem('supportTickets', JSON.stringify([]));
+            }
         }
         
         // Llamar a la función de inicialización al inicio
@@ -999,9 +991,9 @@
             });
             
             const ctxUsers = document.getElementById('usersChart').getContext('2d');
-           /* if (window.usersChart) {
+            if (window.usersChart) {
                 window.usersChart.destroy();
-            }*/
+            }
             window.usersChart = new Chart(ctxUsers, {
                 type: 'line',
                 data: {
@@ -1034,7 +1026,7 @@
             
             const ctxTransactions = document.getElementById('transactionsChart').getContext('2d');
             if (window.transactionsChart) {
-              /*  window.transactionsChart.destroy();*/
+                window.transactionsChart.destroy();
             }
             window.transactionsChart = new Chart(ctxTransactions, {
                 type: 'bar',
@@ -1084,47 +1076,14 @@
                     <td>${transaction.amount} Bs</td>
                     <td>${getStatusLabel(transaction.status)}</td>
                     <td>
-                        <button onclick="viewTransactionDetails('${transaction.id}')" class="btn btn-primary">Ver</button>
+                        <button class="btn btn-primary view-transaction-btn" data-id="${transaction.id}">Ver</button>
                     </td>
                 </tr>
             `).join('');
         }
-        
-        // Ver detalles de transacción
-        window.viewTransactionDetails = function(id) {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const transaction = transactions.find(t => t.id === id);
-            
-            if (transaction) {
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 600px;">
-                        <span class="close-modal" onclick="closeModal()">&times;</span>
-                        <h2>Detalles de Transacción</h2>
-                        
-                        <div class="user-details">
-                            <p><strong>ID:</strong> ${transaction.id}</p>
-                            <p><strong>Fecha:</strong> ${new Date(transaction.date).toLocaleString()}</p>
-                            <p><strong>Usuario:</strong> ${transaction.username}</p>
-                            <p><strong>Tipo:</strong> ${getTransactionTypeLabel(transaction.type)}</p>
-                            <p><strong>Monto:</strong> ${transaction.amount} Bs</p>
-                            <p><strong>Estado:</strong> ${getStatusLabel(transaction.status)}</p>
-                            <p><strong>Detalles:</strong> ${transaction.details || 'No hay detalles adicionales'}</p>
-                        </div>
-                        
-                        <div style="text-align: center; margin-top: 20px;">
-                            <button onclick="closeModal()" class="btn btn-primary">Cerrar</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.style.display = 'block';
-            }
-        };
 
         // Función para ver todos los usuarios desde el dashboard
-        window.loadUsersModal = function() {
+        function loadUsersModal() {
             const users = JSON.parse(localStorage.getItem('users')) || {};
             const now = Date.now();
             
@@ -1132,7 +1091,7 @@
             modal.className = 'modal';
             modal.innerHTML = `
                 <div class="modal-content" style="max-width: 800px;">
-                    <span class="close-modal" onclick="closeModal()">&times;</span>
+                    <span class="close-modal">&times;</span>
                     <h2>Lista de Usuarios Registrados</h2>
                     
                     <div style="margin-bottom: 20px;">
@@ -1172,8 +1131,8 @@
                                             `}
                                         </td>
                                         <td>
-                                            <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
-                                            <button onclick="editUserBalance('${user.username}')" class="btn btn-warning">Editar Saldo</button>
+                                            <button class="btn btn-primary view-user-btn" data-username="${user.username}">Ver</button>
+                                            <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
                                         </td>
                                     </tr>
                                 `;
@@ -1204,10 +1163,16 @@
                     }
                 });
             });
-        };
+            
+            // Eventos para cerrar modal
+            modal.querySelector('.close-modal').addEventListener('click', function() {
+                modal.style.display = 'none';
+                modal.remove();
+            });
+        }
 
         // Función para ver detalles del usuario
-        window.viewUserDetails = function(username) {
+        function viewUserDetails(username) {
             const users = JSON.parse(localStorage.getItem('users')) || {};
             const user = users[username];
             const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
@@ -1245,10 +1210,9 @@
                 // Crear modal con los detalles
                 const modal = document.createElement('div');
                 modal.className = 'modal';
-                modal.id = 'userDetailsModal';
                 modal.innerHTML = `
                     <div class="modal-content" style="max-width: 800px;">
-                        <span class="close-modal" onclick="closeModal()">&times;</span>
+                        <span class="close-modal">&times;</span>
                         <h2>Detalles del Usuario: ${username}</h2>
                         
                         <div class="user-details">
@@ -1336,11 +1300,11 @@
                         </div>
                         
                         <div style="margin-top: 20px; text-align: center;">
-                            <button onclick="editUserBalance('${username}')" class="btn btn-warning">Editar Saldo</button>
+                            <button class="btn btn-warning edit-balance-btn" data-username="${username}">Editar Saldo</button>
                             ${user.active !== false ? 
-                                `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>` : 
-                                `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`}
-                            <button onclick="closeModal()" class="btn btn-primary">Cerrar</button>
+                                `<button class="btn btn-danger deactivate-user-btn" data-username="${username}">Desactivar</button>` : 
+                                `<button class="btn btn-success activate-user-btn" data-username="${username}">Activar</button>`}
+                            <button class="btn btn-primary close-modal-btn">Cerrar</button>
                         </div>
                     </div>
                 `;
@@ -1358,14 +1322,25 @@
                         // Agregar clase active a la pestaña y contenido seleccionado
                         this.classList.add('active');
                         const tabId = this.getAttribute('data-tab');
-                        document.getElementById(`${tabId}Content`).classList.add('active');
+                        modal.querySelector(`#${tabId}Content`).classList.add('active');
                     });
+                });
+                
+                // Eventos para cerrar modal
+                modal.querySelector('.close-modal').addEventListener('click', function() {
+                    modal.style.display = 'none';
+                    modal.remove();
+                });
+                
+                modal.querySelector('.close-modal-btn').addEventListener('click', function() {
+                    modal.style.display = 'none';
+                    modal.remove();
                 });
             }
         };
 
         // Función para editar saldo del usuario
-        window.editUserBalance = function(username) {
+        function editUserBalance(username) {
             const users = JSON.parse(localStorage.getItem('users')) || {};
             const user = users[username];
             
@@ -1373,10 +1348,9 @@
                 // Crear modal para editar saldo
                 const modal = document.createElement('div');
                 modal.className = 'modal';
-                modal.id = 'editBalanceModal';
                 modal.innerHTML = `
                     <div class="modal-content" style="max-width: 500px;">
-                        <span class="close-modal" onclick="closeModal()">&times;</span>
+                        <span class="close-modal">&times;</span>
                         <h2>Editar Saldo: ${username}</h2>
                         
                         <div class="user-details" style="margin-bottom: 20px;">
@@ -1403,18 +1377,29 @@
                         </div>
                         
                         <div style="text-align: center;">
-                            <button onclick="confirmBalanceEdit('${username}')" class="btn btn-primary">Confirmar</button>
-                            <button onclick="closeModal()" class="btn btn-secondary">Cancelar</button>
+                            <button class="btn btn-primary confirm-balance-btn" data-username="${username}">Confirmar</button>
+                            <button class="btn btn-secondary close-modal-btn">Cancelar</button>
                         </div>
                     </div>
                 `;
                 document.body.appendChild(modal);
                 modal.style.display = 'block';
+                
+                // Eventos para cerrar modal
+                modal.querySelector('.close-modal').addEventListener('click', function() {
+                    modal.style.display = 'none';
+                    modal.remove();
+                });
+                
+                modal.querySelector('.close-modal-btn').addEventListener('click', function() {
+                    modal.style.display = 'none';
+                    modal.remove();
+                });
             }
         };
 
         // Función para confirmar edición de saldo
-        window.confirmBalanceEdit = function(username) {
+        function confirmBalanceEdit(username) {
             const users = JSON.parse(localStorage.getItem('users')) || {};
             const user = users[username];
             
@@ -1462,23 +1447,18 @@
                     status: 'completed'
                 });
                 
-                // Cerrar modal y actualizar vista
-                closeModal();
-                loadUsers();
+                // Cerrar modal
+                document.querySelectorAll('.modal').forEach(modal => modal.remove());
                 
-                // Si el modal de detalles está abierto, actualizarlo
-                const detailsModal = document.getElementById('userDetailsModal');
-                if (detailsModal) {
-                    detailsModal.querySelector('.user-details p:nth-child(5)').innerHTML = 
-                        `<strong>Saldo actual:</strong> ${user.balance || 0} Bs`;
-                }
+                // Actualizar vista
+                loadUsers();
                 
                 alert(`Saldo de ${username} actualizado a ${newBalance} Bs`);
             }
-        };
+        }
 
         // Función para desactivar usuario
-        window.deactivateUser = function(username) {
+        function deactivateUser(username) {
             if (confirm(`¿Estás seguro de desactivar al usuario ${username}? No podrá acceder al sistema hasta que sea reactivado.`)) {
                 const users = JSON.parse(localStorage.getItem('users')) || {};
                 if (users[username]) {
@@ -1495,27 +1475,13 @@
                     });
                     
                     loadUsers();
-                    
-                    // Si el modal de detalles está abierto, actualizarlo
-                    const detailsModal = document.getElementById('userDetailsModal');
-                    if (detailsModal) {
-                        detailsModal.querySelector('.user-details p:nth-child(4)').innerHTML = 
-                            `<strong>Estado:</strong> <span class="badge badge-inactive">Inactivo</span>`;
-                        // Reemplazar botón Desactivar por Activar
-                        const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
-                        buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
-                            `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`,
-                            `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`
-                        );
-                    }
-                    
                     alert(`Usuario ${username} desactivado correctamente`);
                 }
             }
-        };
+        }
 
         // Función para activar usuario
-        window.activateUser = function(username) {
+        function activateUser(username) {
             const users = JSON.parse(localStorage.getItem('users')) || {};
             if (users[username]) {
                 users[username].active = true;
@@ -1531,32 +1497,9 @@
                 });
                 
                 loadUsers();
-                
-                // Si el modal de detalles está abierto, actualizarlo
-                const detailsModal = document.getElementById('userDetailsModal');
-                if (detailsModal) {
-                    detailsModal.querySelector('.user-details p:nth-child(4)').innerHTML = 
-                        `<strong>Estado:</strong> <span class="badge badge-active">Activo</span>`;
-                    // Reemplazar botón Activar por Desactivar
-                    const buttonsDiv = detailsModal.querySelector('div[style*="text-align: center"]');
-                    buttonsDiv.innerHTML = buttonsDiv.innerHTML.replace(
-                        `<button onclick="activateUser('${username}')" class="btn btn-success">Activar</button>`,
-                        `<button onclick="deactivateUser('${username}')" class="btn btn-danger">Desactivar</button>`
-                    );
-                }
-                
                 alert(`Usuario ${username} activado correctamente`);
             }
-        };
-
-        // Función para cerrar el modal
-        window.closeModal = function() {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                modal.style.display = 'none';
-                setTimeout(() => modal.remove(), 300);
-            });
-        };
+        }
 
         // Cargar usuarios
         function loadUsers() {
@@ -1623,13 +1566,13 @@
                             `}
                         </td>
                         <td>
-                            <button onclick="viewUserDetails('${user.username}')" class="btn btn-primary">Ver</button>
+                            <button class="btn btn-primary view-user-btn" data-username="${user.username}">Ver</button>
                             ${user.active !== false ? `
-                                <button onclick="deactivateUser('${user.username}')" class="btn btn-danger">Desactivar</button>
+                                <button class="btn btn-danger deactivate-user-btn" data-username="${user.username}">Desactivar</button>
                             ` : `
-                                <button onclick="activateUser('${user.username}')" class="btn btn-success">Activar</button>
+                                <button class="btn btn-success activate-user-btn" data-username="${user.username}">Activar</button>
                             `}
-                            <button onclick="editUserBalance('${user.username}')" class="btn btn-warning">Editar Saldo</button>
+                            <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
                         </td>
                     </tr>
                 `;
@@ -1676,8 +1619,8 @@
                     <td>${getStatusLabel(w.status)}</td>
                     <td>
                         ${w.status === 'pending' ? `
-                            <button onclick="approveWithdrawal(${w.id})" class="btn btn-success">Aprobar</button>
-                            <button onclick="rejectWithdrawal(${w.id})" class="btn btn-danger">Rechazar</button>
+                            <button class="btn btn-success approve-withdrawal-btn" data-id="${w.id}">Aprobar</button>
+                            <button class="btn btn-danger reject-withdrawal-btn" data-id="${w.id}">Rechazar</button>
                         ` : 'N/A'}
                     </td>
                 </tr>
@@ -1685,7 +1628,7 @@
         }
 
         // Aprobar retiro
-        window.approveWithdrawal = function(id) {
+        function approveWithdrawal(id) {
             const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
             const withdrawal = withdrawals.find(w => w.id === id);
             
@@ -1707,10 +1650,10 @@
                 loadWithdrawals();
                 loadDashboard();
             }
-        };
+        }
 
         // Rechazar retiro
-        window.rejectWithdrawal = function(id) {
+        function rejectWithdrawal(id) {
             const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
             const withdrawal = withdrawals.find(w => w.id === id);
             
@@ -1740,7 +1683,7 @@
                 loadWithdrawals();
                 loadDashboard();
             }
-        };
+        }
 
         // Cargar depósitos
         function loadDeposits() {
@@ -1777,8 +1720,8 @@
                     <td>${getStatusLabel(d.status)}</td>
                     <td>
                         ${d.status === 'pending' ? `
-                            <button onclick="approveDeposit(${d.id})" class="btn btn-success">Aprobar</button>
-                            <button onclick="rejectDeposit(${d.id})" class="btn btn-danger">Rechazar</button>
+                            <button class="btn btn-success approve-deposit-btn" data-id="${d.id}">Aprobar</button>
+                            <button class="btn btn-danger reject-deposit-btn" data-id="${d.id}">Rechazar</button>
                         ` : 'N/A'}
                     </td>
                 </tr>
@@ -1786,7 +1729,7 @@
         }
         
         // Aprobar depósito
-        window.approveDeposit = function(id) {
+        function approveDeposit(id) {
             const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
             const deposit = deposits.find(d => d.id === id);
             
@@ -1816,10 +1759,10 @@
                 loadDeposits();
                 loadDashboard();
             }
-        };
+        }
 
         // Rechazar depósito
-        window.rejectDeposit = function(id) {
+        function rejectDeposit(id) {
             const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
             const deposit = deposits.find(d => d.id === id);
             
@@ -1841,7 +1784,7 @@
                 loadDeposits();
                 loadDashboard();
             }
-        };
+        }
         
         // Cargar transacciones
         function loadTransactions() {
@@ -1931,9 +1874,9 @@
                     <td>${r.active ? 'Activa' : 'Completada'}</td>
                     <td>
                         ${!r.active ? `
-                            <button onclick="viewRuletaDetails(${r.id})" class="btn btn-primary">Ver Detalles</button>
+                            <button class="btn btn-primary view-ruleta-btn" data-id="${r.id}">Ver Detalles</button>
                         ` : `
-                            <button onclick="forceCompleteRuleta(${r.id})" class="btn btn-danger">Forzar Cierre</button>
+                            <button class="btn btn-danger force-ruleta-btn" data-id="${r.id}">Forzar Cierre</button>
                         `}
                     </td>
                 </tr>
@@ -1941,7 +1884,7 @@
         }
         
         // Ver detalles de ruleta
-        window.viewRuletaDetails = function(ruletaId) {
+        function viewRuletaDetails(ruletaId) {
             const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
             const ruleta = ruletasData.ruletas[ruletaId];
             
@@ -1978,7 +1921,7 @@
         }
         
         // Forzar cierre de ruleta
-        window.forceCompleteRuleta = function(ruletaId) {
+        function forceCompleteRuleta(ruletaId) {
             if (confirm('¿Estás seguro de forzar el cierre de esta ruleta? Esto seleccionará ganadores aleatorios.')) {
                 const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
                 const ruleta = ruletasData.ruletas[ruletaId];
@@ -2095,7 +2038,7 @@
                     }
                 }
             }
-        };
+        }
 
         // Función para agregar una transacción
         function addTransaction(transaction) {
@@ -2138,11 +2081,8 @@
             return labels[type] || type;
         }
 
-        // Logout - Corregido
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
             const adminUser = JSON.parse(localStorage.getItem('adminUser'));
             if (adminUser) {
                 updateOnlineStatus(adminUser.username, false);
@@ -2161,10 +2101,91 @@
         document.getElementById('filterDepositsBtn').addEventListener('click', loadDeposits);
         document.getElementById('loadTransactionsBtn').addEventListener('click', loadTransactions);
         document.getElementById('loadRuletasBtn').addEventListener('click', loadRuletas);
+        document.getElementById('viewUsersBtn').addEventListener('click', loadUsersModal);
 
-        // Tabs - Corregido para excluir el botón de logout
+        // Delegación de eventos para botones dinámicos
+        document.addEventListener('click', function(e) {
+            // Ver usuario
+            if (e.target.classList.contains('view-user-btn')) {
+                const username = e.target.getAttribute('data-username');
+                viewUserDetails(username);
+            }
+            
+            // Editar saldo
+            if (e.target.classList.contains('edit-balance-btn')) {
+                const username = e.target.getAttribute('data-username');
+                editUserBalance(username);
+            }
+            
+            // Activar usuario
+            if (e.target.classList.contains('activate-user-btn')) {
+                const username = e.target.getAttribute('data-username');
+                activateUser(username);
+            }
+            
+            // Desactivar usuario
+            if (e.target.classList.contains('deactivate-user-btn')) {
+                const username = e.target.getAttribute('data-username');
+                deactivateUser(username);
+            }
+            
+            // Aprobar retiro
+            if (e.target.classList.contains('approve-withdrawal-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                approveWithdrawal(id);
+            }
+            
+            // Rechazar retiro
+            if (e.target.classList.contains('reject-withdrawal-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                rejectWithdrawal(id);
+            }
+            
+            // Aprobar depósito
+            if (e.target.classList.contains('approve-deposit-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                approveDeposit(id);
+            }
+            
+            // Rechazar depósito
+            if (e.target.classList.contains('reject-deposit-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                rejectDeposit(id);
+            }
+            
+            // Ver detalles de ruleta
+            if (e.target.classList.contains('view-ruleta-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                viewRuletaDetails(id);
+            }
+            
+            // Forzar cierre de ruleta
+            if (e.target.classList.contains('force-ruleta-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                forceCompleteRuleta(id);
+            }
+            
+            // Ver transacción
+            if (e.target.classList.contains('view-transaction-btn')) {
+                const id = e.target.getAttribute('data-id');
+                viewTransactionDetails(id);
+            }
+            
+            // Confirmar edición de saldo
+            if (e.target.classList.contains('confirm-balance-btn')) {
+                const username = e.target.getAttribute('data-username');
+                confirmBalanceEdit(username);
+            }
+            
+            // Cerrar modal
+            if (e.target.classList.contains('close-modal-btn')) {
+                e.target.closest('.modal').style.display = 'none';
+                e.target.closest('.modal').remove();
+            }
+        });
+
+        // Tabs
         document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
-            console.log("aqui")
             item.addEventListener('click', function() {
                 const tabId = this.getAttribute('data-tab');
                 
@@ -2186,20 +2207,10 @@
                 if (tabId === 'deposits') loadDeposits();
                 if (tabId === 'transactions') loadTransactions();
                 if (tabId === 'ruletas') loadRuletas();
+                if (tabId === 'support') loadSupportTickets();
             });
         });
 
-        // Inicializar localStorage para tickets si no existe
-        function initializeLocalStorage() {
-            if (!localStorage.getItem('users')) {
-                // ... (código anterior sin cambios) ... 
-            }
-            
-            if (!localStorage.getItem('supportTickets')) {
-                localStorage.setItem('supportTickets', JSON.stringify([]));
-            }
-        }
-        
         // Función para cargar tickets de soporte
         function loadSupportTickets(filter = 'all') {
             const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
@@ -2240,14 +2251,14 @@
                     </div>
                     <div class="ticket-actions">
                         ${ticket.status !== 'resolved' ? `
-                            <button onclick="updateTicketStatus('${ticket.id}', 'in-progress')" class="btn btn-primary">
+                            <button class="btn btn-primary update-ticket-btn" data-id="${ticket.id}" data-status="in-progress">
                                 En progreso
                             </button>
-                            <button onclick="updateTicketStatus('${ticket.id}', 'resolved')" class="btn btn-success">
+                            <button class="btn btn-success update-ticket-btn" data-id="${ticket.id}" data-status="resolved">
                                 Resolver
                             </button>
                         ` : ''}
-                        <button onclick="viewTicketDetails('${ticket.id}')" class="btn btn-secondary">
+                        <button class="btn btn-secondary view-ticket-btn" data-id="${ticket.id}">
                             Ver detalles
                         </button>
                     </div>
@@ -2256,159 +2267,10 @@
             });
         }
         
-        // Función para ver detalles del ticket
-        window.viewTicketDetails = function(ticketId) {
-            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
-            const ticket = tickets.find(t => t.id === ticketId);
-            
-            if (ticket) {
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 700px;">
-                        <span class="close-modal" onclick="closeModal()">&times;</span>
-                        <h2>Detalles del Ticket</h2>
-                        
-                        <div class="ticket-header">
-                            <div class="ticket-title">${ticket.subject}</div>
-                            <div class="ticket-status status-${ticket.status.replace(' ', '-')}">
-                                ${getStatusLabel(ticket.status)}
-                            </div>
-                        </div>
-                        
-                        <div class="ticket-meta">
-                            <div>
-                                <strong>Usuario:</strong> ${ticket.username}<br>
-                                <strong>Fecha:</strong> ${new Date(ticket.createdAt).toLocaleString()}<br>
-                                <strong>Categoría:</strong> ${ticket.category || 'General'}
-                            </div>
-                        </div>
-                        
-                        <div class="ticket-message">
-                            <h4>Mensaje:</h4>
-                            <p>${ticket.message}</p>
-                        </div>
-                        
-                        <div class="replies-list">
-                            <h4>Respuestas:</h4>
-                            ${ticket.replies && ticket.replies.length > 0 ? 
-                                ticket.replies.map(reply => `
-                                    <div class="reply-item ${reply.isAdmin ? 'admin-reply' : 'user-reply'}">
-                                        <div class="reply-meta">
-                                            <span>${reply.isAdmin ? 'Administrador' : ticket.username}</span>
-                                            <span>${new Date(reply.date).toLocaleString()}</span>
-                                        </div>
-                                        <div class="reply-content">
-                                            ${reply.message}
-                                        </div>
-                                    </div>
-                                `).join('') : 
-                                '<p>No hay respuestas aún.</p>'}
-                        </div>
-                        
-                        <div class="reply-form">
-                            <h4>Responder:</h4>
-                            <textarea id="replyMessage" rows="4" placeholder="Escribe tu respuesta aquí..."></textarea>
-                            <button onclick="addReplyToTicket('${ticket.id}')" class="btn btn-primary">Enviar respuesta</button>
-                        </div>
-                        
-                        <div style="margin-top: 20px;">
-                            ${ticket.status !== 'resolved' ? `
-                                <button onclick="updateTicketStatus('${ticket.id}', 'resolved', true)" class="btn btn-success">
-                                    Marcar como resuelto
-                                </button>
-                            ` : ''}
-                            <button onclick="closeModal()" class="btn btn-secondary">Cerrar</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.style.display = 'block';
-            }
-        };
-        
-        // Función para agregar una respuesta a un ticket
-        window.addReplyToTicket = function(ticketId) {
-            const replyMessage = document.getElementById('replyMessage').value.trim();
-            if (!replyMessage) {
-                alert('Por favor escribe un mensaje');
-                return;
-            }
-            
-            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
-            const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-            
-            if (ticketIndex !== -1) {
-                if (!tickets[ticketIndex].replies) {
-                    tickets[ticketIndex].replies = [];
-                }
-                
-                tickets[ticketIndex].replies.push({
-                    message: replyMessage,
-                    isAdmin: true,
-                    date: new Date().toISOString()
-                });
-                
-                // Si estaba pendiente, cambiar a "en progreso"
-                if (tickets[ticketIndex].status === 'pending') {
-                    tickets[ticketIndex].status = 'in-progress';
-                }
-                
-                localStorage.setItem('supportTickets', JSON.stringify(tickets));
-                document.getElementById('replyMessage').value = '';
-                
-                // Recargar la vista del ticket
-                viewTicketDetails(ticketId);
-                loadSupportTickets(document.getElementById('ticketFilter').value);
-            }
-        };
-        
-        // Función para actualizar el estado de un ticket
-        window.updateTicketStatus = function(ticketId, newStatus, closeModalAfter = false) {
-            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
-            const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-            
-            if (ticketIndex !== -1) {
-                tickets[ticketIndex].status = newStatus;
-                localStorage.setItem('supportTickets', JSON.stringify(tickets));
-                
-                if (closeModalAfter) {
-                    closeModal();
-                }
-                
-                loadSupportTickets(document.getElementById('ticketFilter').value);
-            }
-        };
-        
-        // Obtener etiqueta para el estado del ticket
-        function getStatusLabel(status) {
-            const labels = {
-                'pending': 'Pendiente',
-                'in-progress': 'En progreso',
-                'resolved': 'Resuelto'
-            };
-            return labels[status] || status;
-        }
-        
         // Event listeners para el soporte
         document.getElementById('filterTicketsBtn').addEventListener('click', function() {
             const filter = document.getElementById('ticketFilter').value;
             loadSupportTickets(filter);
-        });
-        
-        // En el manejador de pestañas, agregar soporte
-        document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
-            item.addEventListener('click', function() {
-                // ... (código anterior sin cambios) ...
-                
-                // Cargar datos específicos de la pestaña
-                if (tabId === 'users') loadUsers();
-                if (tabId === 'withdrawals') loadWithdrawals();
-                if (tabId === 'deposits') loadDeposits();
-                if (tabId === 'transactions') loadTransactions();
-                if (tabId === 'ruletas') loadRuletas();
-                if (tabId === 'support') loadSupportTickets();
-            });
         });
     </script>
 </body>
