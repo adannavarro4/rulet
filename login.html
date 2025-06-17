@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-     <meta charset="UTF-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar Sesión - Rulet</title>
     <style>
@@ -227,7 +227,7 @@
     </style>
 </head>
 <body>
-     <div class="container">
+    <div class="container">
         <h1>Iniciar Sesión</h1>
         <form id="loginForm">
             <div class="form-group">
@@ -280,52 +280,171 @@
     </div>
     
     <script>
-        // URL de la API real
-        const API_BASE_URL = 'https://tu-dominio-en-namecheap.com/api';
+        // Mostrar modal de recuperación
+        function showRecoveryModal() {
+            document.getElementById('recoveryModal').style.display = 'flex';
+            document.getElementById('recoveryInitial').style.display = 'block';
+            document.getElementById('recoveryForm').style.display = 'none';
+            document.getElementById('recoveryMessage').style.display = 'none';
+            recoveryType = '';
+        }
         
-        document.getElementById("loginForm").addEventListener("submit", async function(e) {
-            e.preventDefault();
+        // Ocultar modal de recuperación
+        function hideRecoveryModal() {
+            document.getElementById('recoveryModal').style.display = 'none';
+        }
+        
+        let recoveryType = ''; // 'username' o 'password'
+        
+        // Mostrar formulario de recuperación específico
+        function showRecoveryForm(type) {
+            recoveryType = type;
+            document.getElementById('recoveryInitial').style.display = 'none';
+            document.getElementById('recoveryForm').style.display = 'block';
             
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value;
-            
-            try {
-                const response = await fetch(API_BASE_URL + '/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username, password})
-                });
-                
-                // Manejar errores HTTP
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Error en las credenciales');
-                }
-                
-                const data = await response.json();
-                
-                if (data.token) {
-                    localStorage.setItem('authToken', data.token);
-                    showMessage("Inicio de sesión exitoso! Redirigiendo...", "success");
-                    setTimeout(() => window.location.href = "dashboard.html", 1000);
-                } else {
-                    showMessage("Credenciales incorrectas", "error");
-                }
-            } catch (error) {
-                showMessage(error.message || "Error de conexión", "error");
+            if (type === 'username') {
+                document.getElementById('recoveryLabel').textContent = 'Correo electrónico:';
+                document.getElementById('recoveryEmail').placeholder = 'Ingresa tu correo electrónico';
+                document.getElementById('recoveryEmail').type = 'email';
+            } else {
+                document.getElementById('recoveryLabel').textContent = 'Correo electrónico o nombre de usuario:';
+                document.getElementById('recoveryEmail').placeholder = 'Ingresa tu correo o nombre de usuario';
+                document.getElementById('recoveryEmail').type = 'text';
             }
+        }
+        
+        // Volver a las opciones de recuperación
+        function backToRecoveryOptions() {
+            document.getElementById('recoveryInitial').style.display = 'block';
+            document.getElementById('recoveryForm').style.display = 'none';
+            document.getElementById('recoveryMessage').style.display = 'none';
+            recoveryType = '';
+        }
+        
+        // Procesar la solicitud de recuperación
+        function processRecovery() {
+            const recoveryEmail = document.getElementById('recoveryEmail').value.trim();
+            const recoveryMessage = document.getElementById('recoveryMessage');
+            
+            if (!recoveryEmail) {
+                recoveryMessage.textContent = 'Por favor ingresa el dato solicitado';
+                recoveryMessage.style.display = 'block';
+                recoveryMessage.style.color = 'var(--danger-color)';
+                return;
+            }
+            
+            // Obtener usuarios del localStorage
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            let foundUser = null;
+            
+            if (recoveryType === 'username') {
+                // Buscar por email
+                for (const username in users) {
+                    if (users[username].email === recoveryEmail) {
+                        foundUser = { username, ...users[username] };
+                        break;
+                    }
+                }
+                
+                if (foundUser) {
+                    recoveryMessage.innerHTML = `Tu nombre de usuario es: <strong>${foundUser.username}</strong>`;
+                    recoveryMessage.style.color = 'var(--success-color)';
+                    recoveryMessage.style.display = 'block';
+                    
+                    // Simular envío de email (en un caso real se enviaría un email)
+                    console.log(`Email enviado a ${foundUser.email} con el nombre de usuario: ${foundUser.username}`);
+                } else {
+                    recoveryMessage.textContent = 'No se encontró una cuenta con ese correo electrónico';
+                    recoveryMessage.style.color = 'var(--danger-color)';
+                    recoveryMessage.style.display = 'block';
+                }
+            } else {
+                // Recuperación de contraseña
+                // Buscar por email o username
+                for (const username in users) {
+                    if (users[username].email === recoveryEmail || username === recoveryEmail) {
+                        foundUser = { username, ...users[username] };
+                        break;
+                    }
+                }
+                
+                if (foundUser) {
+                    // Generar contraseña temporal (en un caso real sería más seguro)
+                    const tempPassword = generateTempPassword();
+                    
+                    // Actualizar la contraseña en el almacenamiento (simulado)
+                    users[foundUser.username].password = tempPassword;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    recoveryMessage.innerHTML = `Se ha enviado una contraseña temporal a tu correo electrónico registrado.`;
+                    recoveryMessage.style.color = 'var(--success-color)';
+                    recoveryMessage.style.display = 'block';
+                    
+                    // Simular envío de email (en un caso real se enviaría un email)
+                    console.log(`Email enviado a ${foundUser.email} con la contraseña temporal: ${tempPassword}`);
+                } else {
+                    recoveryMessage.textContent = 'No se encontró una cuenta con ese correo o nombre de usuario';
+                    recoveryMessage.style.color = 'var(--danger-color)';
+                    recoveryMessage.style.display = 'block';
+                }
+            }
+        }
+        
+        // Generar contraseña temporal
+        function generateTempPassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 10; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        document.getElementById("loginForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const message = document.getElementById("message");
+            
+            // Reset message
+            message.style.display = "none";
+            message.className = "";
+            
+            if (!username || !password) {
+                showMessage("Por favor complete todos los campos.", "error");
+                return;
+            }
+            
+            // Obtener usuarios del localStorage
+            let users = JSON.parse(localStorage.getItem("users") || "{}");
+            
+            // Verificar credenciales
+            if (!users[username] || users[username].password !== password) {
+                showMessage("Usuario o contraseña incorrectos.", "error");
+                return;
+            }
+            
+            // Login exitoso
+            localStorage.setItem("loggedInUser", username);
+            showMessage("Inicio de sesión exitoso! Redirigiendo...", "success");
+            
+            // Redirigir después de 1 segundo
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
         });
         
         function showMessage(text, type) {
-    const message = document.getElementById("message");
-    message.textContent = text;
-    message.className = type;
-    message.style.display = "block";
-    
-    setTimeout(() => {
-        message.style.display = "none";
-    }, 5000);
-}
+            const message = document.getElementById("message");
+            message.textContent = text;
+            message.className = type;
+            message.style.display = "block";
+            
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                message.style.display = "none";
+            }, 5000);
+        }
     </script>
 </body>
 </html>
