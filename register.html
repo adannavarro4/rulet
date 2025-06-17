@@ -431,106 +431,330 @@
     </div>
     
     <script>
-        const API_BASE_URL = 'https://ruletplay.com/api'; // CAMBIA ESTO
-        
-        // Variables globales
+        // Variables para el formulario multi-paso
         let currentSection = 1;
+        const totalSections = 3;
+        let recoveryType = ''; // 'username' o 'password'
         
-        // Función para navegar entre secciones
-        function nextSection() {
-            if (currentSection === 1) {
-                // Validar sección 1
-                const username = document.getElementById('username').value.trim();
-                const email = document.getElementById('email').value.trim();
+        // Mostrar modal de recuperación
+        function showRecoveryModal() {
+            document.getElementById('recoveryModal').style.display = 'flex';
+            document.getElementById('recoveryInitial').style.display = 'block';
+            document.getElementById('recoveryForm').style.display = 'none';
+            document.getElementById('recoveryMessage').style.display = 'none';
+            recoveryType = '';
+        }
+        
+        // Ocultar modal de recuperación
+        function hideRecoveryModal() {
+            document.getElementById('recoveryModal').style.display = 'none';
+        }
+        
+        // Mostrar formulario de recuperación específico
+        function showRecoveryForm(type) {
+            recoveryType = type;
+            document.getElementById('recoveryInitial').style.display = 'none';
+            document.getElementById('recoveryForm').style.display = 'block';
+            
+            if (type === 'username') {
+                document.getElementById('recoveryLabel').textContent = 'Correo electrónico:';
+                document.getElementById('recoveryEmail').placeholder = 'Ingresa tu correo electrónico';
+            } else {
+                document.getElementById('recoveryLabel').textContent = 'Correo electrónico o nombre de usuario:';
+                document.getElementById('recoveryEmail').placeholder = 'Ingresa tu correo o nombre de usuario';
+            }
+        }
+        
+        // Volver a las opciones de recuperación
+        function backToRecoveryOptions() {
+            document.getElementById('recoveryInitial').style.display = 'block';
+            document.getElementById('recoveryForm').style.display = 'none';
+            document.getElementById('recoveryMessage').style.display = 'none';
+            recoveryType = '';
+        }
+        
+        // Procesar la solicitud de recuperación
+        function processRecovery() {
+            const recoveryEmail = document.getElementById('recoveryEmail').value.trim();
+            const recoveryMessage = document.getElementById('recoveryMessage');
+            
+            if (!recoveryEmail) {
+                recoveryMessage.textContent = 'Por favor ingresa el dato solicitado';
+                recoveryMessage.style.display = 'block';
+                recoveryMessage.style.color = 'var(--danger-color)';
+                return;
+            }
+            
+            // Obtener usuarios del localStorage
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            let foundUser = null;
+            
+            if (recoveryType === 'username') {
+                // Buscar por email
+                for (const username in users) {
+                    if (users[username].email === recoveryEmail) {
+                        foundUser = { username, ...users[username] };
+                        break;
+                    }
+                }
+                
+                if (foundUser) {
+                    recoveryMessage.innerHTML = `Tu nombre de usuario es: <strong>${foundUser.username}</strong>`;
+                    recoveryMessage.style.color = 'var(--success-color)';
+                    recoveryMessage.style.display = 'block';
+                    
+                    // Simular envío de email (en un caso real se enviaría un email)
+                    console.log(`Email enviado a ${foundUser.email} con el nombre de usuario: ${foundUser.username}`);
+                } else {
+                    recoveryMessage.textContent = 'No se encontró una cuenta con ese correo electrónico';
+                    recoveryMessage.style.color = 'var(--danger-color)';
+                    recoveryMessage.style.display = 'block';
+                }
+            } else {
+                // Recuperación de contraseña
+                // Buscar por email o username
+                for (const username in users) {
+                    if (users[username].email === recoveryEmail || username === recoveryEmail) {
+                        foundUser = { username, ...users[username] };
+                        break;
+                    }
+                }
+                
+                if (foundUser) {
+                    // Generar contraseña temporal (en un caso real sería más seguro)
+                    const tempPassword = generateTempPassword();
+                    
+                    // Actualizar la contraseña en el almacenamiento (simulado)
+                    users[foundUser.username].password = tempPassword;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    recoveryMessage.innerHTML = `Se ha enviado una contraseña temporal a tu correo electrónico registrado.`;
+                    recoveryMessage.style.color = 'var(--success-color)';
+                    recoveryMessage.style.display = 'block';
+                    
+                    // Simular envío de email (en un caso real se enviaría un email)
+                    console.log(`Email enviado a ${foundUser.email} con la contraseña temporal: ${tempPassword}`);
+                } else {
+                    recoveryMessage.textContent = 'No se encontró una cuenta con ese correo o nombre de usuario';
+                    recoveryMessage.style.color = 'var(--danger-color)';
+                    recoveryMessage.style.display = 'block';
+                }
+            }
+        }
+        
+        // Generar contraseña temporal
+        function generateTempPassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 10; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Función para avanzar a la siguiente sección
+        function nextSection(sectionNum) {
+            // Validar campos antes de avanzar
+            if (sectionNum === 1) {
+                const username = document.getElementById("username").value.trim();
+                const email = document.getElementById("email").value.trim();
                 
                 if (!username || !email) {
-                    showMessage('Por favor complete todos los campos', 'error');
+                    showMessage("Por favor complete todos los campos", "error");
                     return;
                 }
                 
-                document.getElementById('section1').classList.remove('active');
-                document.getElementById('section2').classList.add('active');
-                document.getElementById('step2').classList.add('active');
-                currentSection = 2;
+                if (username.length < 4) {
+                    showMessage("El nombre de usuario debe tener al menos 4 caracteres", "error");
+                    return;
+                }
                 
-            } else if (currentSection === 2) {
-                // Validar sección 2
-                const password = document.getElementById('password').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
+                if (!validateEmail(email)) {
+                    showMessage("Por favor ingrese un correo electrónico válido", "error");
+                    return;
+                }
+                
+                // Verificar si el usuario ya existe
+                if (checkUserExists(username)) {
+                    showMessage("El nombre de usuario ya está en uso", "error");
+                    return;
+                }
+            }
+            
+            if (sectionNum === 2) {
+                const password = document.getElementById("password").value;
+                const confirmPassword = document.getElementById("confirmPassword").value;
+                
+                if (!password || !confirmPassword) {
+                    showMessage("Por favor complete todos los campos", "error");
+                    return;
+                }
                 
                 if (password.length < 8) {
-                    showMessage('La contraseña debe tener al menos 8 caracteres', 'error');
+                    showMessage("La contraseña debe tener al menos 8 caracteres", "error");
                     return;
                 }
                 
                 if (password !== confirmPassword) {
-                    showMessage('Las contraseñas no coinciden', 'error');
+                    document.getElementById("passwordMatch").style.display = "block";
                     return;
+                } else {
+                    document.getElementById("passwordMatch").style.display = "none";
                 }
-                
-                document.getElementById('section2').classList.remove('active');
-                document.getElementById('section3').classList.add('active');
-                document.getElementById('step3').classList.add('active');
-                currentSection = 3;
+            }
+            
+            // Cambiar a la siguiente sección
+            document.getElementById(`section${currentSection}`).classList.remove("active");
+            document.getElementById(`step${currentSection}`).classList.remove("active");
+            document.getElementById(`step${currentSection}`).classList.add("completed");
+            
+            currentSection++;
+            
+            document.getElementById(`section${currentSection}`).classList.add("active");
+            document.getElementById(`step${currentSection}`).classList.add("active");
+        }
+        
+        // Función para retroceder a la sección anterior
+        function prevSection(sectionNum) {
+            document.getElementById(`section${currentSection}`).classList.remove("active");
+            document.getElementById(`step${currentSection}`).classList.remove("active");
+            
+            currentSection--;
+            
+            document.getElementById(`section${currentSection}`).classList.add("active");
+            document.getElementById(`step${currentSection}`).classList.add("active");
+        }
+        
+        // Validar email
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // Verificar si el usuario ya existe
+        function checkUserExists(username) {
+            let users = JSON.parse(localStorage.getItem("users") || "{}");
+            return users.hasOwnProperty(username);
+        }
+        
+        // Mostrar fortaleza de la contraseña
+        function checkPasswordStrength(password) {
+            const strengthMeter = document.getElementById("passwordStrength");
+            const tips = document.getElementById("passwordTips");
+            
+            // Reset
+            strengthMeter.className = "strength-meter";
+            tips.style.display = "none";
+            
+            if (!password) return;
+            
+            // Mostrar tips
+            tips.style.display = "block";
+            
+            // Calcular fortaleza
+            let strength = 0;
+            
+            // Longitud
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            
+            // Caracteres mezclados
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            
+            // Números
+            if (/\d/.test(password)) strength++;
+            
+            // Caracteres especiales
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            // Actualizar visualización
+            if (strength <= 2) {
+                strengthMeter.className = "strength-meter weak";
+            } else if (strength <= 4) {
+                strengthMeter.className = "strength-meter medium";
+            } else {
+                strengthMeter.className = "strength-meter strong";
             }
         }
         
-        function prevSection() {
-            if (currentSection === 2) {
-                document.getElementById('section2').classList.remove('active');
-                document.getElementById('section1').classList.add('active');
-                document.getElementById('step2').classList.remove('active');
-                currentSection = 1;
-            } else if (currentSection === 3) {
-                document.getElementById('section3').classList.remove('active');
-                document.getElementById('section2').classList.add('active');
-                document.getElementById('step3').classList.remove('active');
-                currentSection = 2;
-            }
-        }
-        
-        // Registro corregido
-        document.getElementById("registerForm").addEventListener("submit", async function(e) {
+        // Manejar envío del formulario
+        document.getElementById("registerForm").addEventListener("submit", function(e) {
             e.preventDefault();
             
-            const formData = {
-                username: document.getElementById("username").value.trim(),
-                email: document.getElementById("email").value.trim(),
-                password: document.getElementById("password").value,
-                full_name: document.getElementById("fullName").value.trim(),
-                phone: document.getElementById("phone").value.trim() || null
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const fullName = document.getElementById("fullName").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const message = document.getElementById("message");
+            
+            // Validación final
+            if (!fullName) {
+                showMessage("Por favor ingrese su nombre completo", "error");
+                return;
+            }
+            
+            // Obtener usuarios del localStorage o inicializar objeto vacío
+            let users = JSON.parse(localStorage.getItem("users")) || {};
+            
+            // Verificar si el usuario ya existe (por si acaso)
+            if (users[username]) {
+                showMessage("El usuario ya existe", "error");
+                return;
+            }
+            
+            // Verificar si el correo ya está registrado
+            if (checkEmailExists(email)) {
+                showMessage("El correo electrónico ya está registrado", "error");
+                return;
+            }
+            
+            // Crear nuevo usuario
+            users[username] = {
+                email: email,
+                password: password,
+                fullName: fullName,
+                phone: phone || null,
+                balance: 0,      // Saldo inicial 0 (sin saldo hasta recargar)
+                wins: 0,         // Ganancias acumuladas
+                losses: 0,       // Pérdidas acumuladas
+                createdAt: new Date().toISOString(),
+                lastLogin: null
             };
             
-            try {
-                const response = await fetch(API_BASE_URL + '/register', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage("¡Registro exitoso! Redirigiendo...", "success");
-                    setTimeout(() => window.location.href = "login.html", 2000);
-                } else {
-                    showMessage(data.message, "error");
-                }
-            } catch (error) {
-                showMessage("Error de conexión con el servidor", "error");
-            }
+            // Guardar en localStorage
+            localStorage.setItem("users", JSON.stringify(users));
+            
+            // Mostrar mensaje de éxito
+            showMessage("¡Registro exitoso! Serás redirigido para iniciar sesión...", "success");
+            
+            // Redirigir después de 2 segundos
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 2000);
         });
         
+        // Verificar si el correo ya existe
+        function checkEmailExists(email) {
+            let users = JSON.parse(localStorage.getItem("users") || "{}");
+            return Object.values(users).some(user => user.email === email);
+        }
+        
+        // Mostrar mensajes
         function showMessage(text, type) {
-    const message = document.getElementById("message");
-    message.textContent = text;
-    message.className = type;
-    message.style.display = "block";
-    
-    setTimeout(() => {
-        message.style.display = "none";
-    }, 5000);
-}
+            const message = document.getElementById("message");
+            message.textContent = text;
+            message.className = type;
+            message.style.display = "block";
+            
+            // Desplazarse al mensaje
+            message.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                message.style.display = "none";
+            }, 5000);
+        }
     </script>
 </body>
 </html>
