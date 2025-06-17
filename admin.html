@@ -96,6 +96,11 @@
             background: #34495e;
         }
         
+        .sidebar li.active {
+            background: #1a2530;
+            border-left: 4px solid var(--secondary);
+        }
+        
         .main-content {
             margin-left: 250px;
             padding: 30px;
@@ -679,7 +684,9 @@
                     </select>
                     <button class="btn btn-primary" id="filterTicketsBtn">Filtrar</button>
                 </div>
-                <div id="ticketsList"></div>
+                <div id="ticketsList">
+                    <p>Lista de tickets de soporte aparecerá aquí.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -917,6 +924,79 @@
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('adminContainer').style.display = 'block';
             loadDashboard();
+            setupNavigation();
+        }
+
+        // Configurar navegación entre pestañas
+        function setupNavigation() {
+            // Eventos para las pestañas
+            document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
+                item.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+            
+            // Evento para cerrar sesión
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                const adminUser = JSON.parse(localStorage.getItem('adminUser'));
+                if (adminUser) {
+                    updateOnlineStatus(adminUser.username, false);
+                }
+                
+                localStorage.removeItem('adminLoggedIn');
+                localStorage.removeItem('adminUser');
+                location.reload();
+            });
+            
+            // Evento para el botón "Ver Usuarios" en el dashboard
+            document.getElementById('viewUsersBtn').addEventListener('click', function() {
+                switchTab('users');
+            });
+        }
+
+        // Cambiar entre pestañas
+        function switchTab(tabId) {
+            // Actualizar la pestaña activa en el menú
+            document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-tab') === tabId) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Mostrar el contenido correspondiente
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+                if (content.id === tabId) {
+                    content.classList.add('active');
+                }
+            });
+            
+            // Cargar datos específicos de la pestaña
+            switch(tabId) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'withdrawals':
+                    loadWithdrawals();
+                    break;
+                case 'deposits':
+                    loadDeposits();
+                    break;
+                case 'transactions':
+                    loadTransactions();
+                    break;
+                case 'ruletas':
+                    loadRuletas();
+                    break;
+                case 'support':
+                    loadSupportTickets();
+                    break;
+            }
         }
 
         // Cargar datos del dashboard
@@ -962,13 +1042,6 @@
             document.getElementById('totalWins').textContent = totalWins + ' Bs';
             document.getElementById('totalLosses').textContent = totalLosses + ' Bs';
             document.getElementById('totalBalance').textContent = houseEarnings + ' Bs';
-            
-            // Cargar datos adicionales
-            loadUsers();
-            loadWithdrawals();
-            loadDeposits();
-            loadTransactions();
-            loadRuletas();
             
             // Cargar gráficos
             loadCharts();
@@ -1081,424 +1154,30 @@
                 </tr>
             `).join('');
         }
-
-        // Función para ver todos los usuarios desde el dashboard
-        function loadUsersModal() {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const now = Date.now();
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 800px;">
-                    <span class="close-modal">&times;</span>
-                    <h2>Lista de Usuarios Registrados</h2>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <input type="text" id="modalUserSearch" placeholder="Buscar usuario..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    
-                    <table style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th>Usuario</th>
-                                <th>Nombre</th>
-                                <th>Email</th>
-                                <th>Saldo</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.values(users).map(user => {
-                                const isOnline = onlineUsers[user.username] && (now - onlineUsers[user.username]) < 300000;
-                                return `
-                                    <tr>
-                                        <td>${user.username}</td>
-                                        <td>${user.fullName || '-'}</td>
-                                        <td>${user.email || '-'}</td>
-                                        <td>${user.balance || 0} Bs</td>
-                                        <td>
-                                            ${user.active !== false ? `
-                                                <span class="badge badge-active">Activo</span>
-                                            ` : `
-                                                <span class="badge badge-inactive">Inactivo</span>
-                                            `}
-                                            ${isOnline ? `
-                                                <span class="badge badge-online">En línea</span>
-                                            ` : `
-                                                <span class="badge badge-offline">Desconectado</span>
-                                            `}
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-primary view-user-btn" data-username="${user.username}">Ver</button>
-                                            <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            modal.style.display = 'block';
-            
-            // Agregar funcionalidad de búsqueda
-            const searchInput = modal.querySelector('#modalUserSearch');
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = modal.querySelectorAll('tbody tr');
-                
-                rows.forEach(row => {
-                    const username = row.cells[0].textContent.toLowerCase();
-                    const name = row.cells[1].textContent.toLowerCase();
-                    const email = row.cells[2].textContent.toLowerCase();
-                    
-                    if (username.includes(searchTerm) || name.includes(searchTerm) || email.includes(searchTerm)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-            
-            // Eventos para cerrar modal
-            modal.querySelector('.close-modal').addEventListener('click', function() {
-                modal.style.display = 'none';
-                modal.remove();
-            });
+        
+        // Obtener etiqueta para el estado
+        function getStatusLabel(status) {
+            const labels = {
+                'pending': '<span style="color: orange;">Pendiente</span>',
+                'approved': '<span style="color: green;">Aprobado</span>',
+                'rejected': '<span style="color: red;">Rechazado</span>',
+                'completed': '<span style="color: green;">Completado</span>',
+                'reversed': '<span style="color: blue;">Reversado</span>'
+            };
+            return labels[status] || status;
         }
-
-        // Función para ver detalles del usuario
-        function viewUserDetails(username) {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const user = users[username];
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
-            
-            if (user) {
-                // Filtrar transacciones del usuario
-                const userTransactions = transactions
-                    .filter(t => t.username === username)
-                    .sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                // Filtrar participaciones en ruletas
-                const userRuletas = [];
-                Object.values(ruletasData.ruletas).forEach(ruleta => {
-                    ruleta.sectors.forEach((sector, index) => {
-                        if (sector && sector.playerName === username) {
-                            userRuletas.push({
-                                ruletaId: ruleta.id,
-                                sector: index + 1,
-                                bet: sector.bet,
-                                date: ruleta.createdAt,
-                                isWinner: ruleta.winners && 
-                                         (ruleta.winners.main.playerName === username ||
-                                          ruleta.winners.left.playerName === username ||
-                                          ruleta.winners.right.playerName === username)
-                            });
-                        }
-                    });
-                });
-
-                // Verificar estado de conexión
-                const now = Date.now();
-                const isOnline = onlineUsers[username] && (now - onlineUsers[username]) < 300000;
-                
-                // Crear modal con los detalles
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 800px;">
-                        <span class="close-modal">&times;</span>
-                        <h2>Detalles del Usuario: ${username}</h2>
-                        
-                        <div class="user-details">
-                            <p><strong>Nombre completo:</strong> ${user.fullName || 'No registrado'}</p>
-                            <p><strong>Email:</strong> ${user.email || 'No registrado'}</p>
-                            <p><strong>Teléfono:</strong> ${user.phone || 'No registrado'}</p>
-                            <p><strong>Estado:</strong> 
-                                ${user.active !== false ? 
-                                    '<span class="badge badge-active">Activo</span>' : 
-                                    '<span class="badge badge-inactive">Inactivo</span>'}
-                                ${isOnline ? 
-                                    '<span class="badge badge-online">En línea</span>' : 
-                                    '<span class="badge badge-offline">Desconectado</span>'}
-                            </p>
-                            <p><strong>Saldo actual:</strong> ${user.balance || 0} Bs</p>
-                            <p><strong>Ganancias totales:</strong> ${user.wins || 0} Bs</p>
-                            <p><strong>Pérdidas totales:</strong> ${user.losses || 0} Bs</p>
-                            <p><strong>Fecha de registro:</strong> ${new Date(user.createdAt).toLocaleString()}</p>
-                            <p><strong>Último acceso:</strong> ${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Nunca'}</p>
-                        </div>
-                        
-                        <div class="history-tabs">
-                            <div class="history-tab active" data-tab="transactions">Transacciones</div>
-                            <div class="history-tab" data-tab="ruletas">Participaciones</div>
-                        </div>
-                        
-                        <div id="transactionsContent" class="history-content active">
-                            <h3>Últimas Transacciones</h3>
-                            <table style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Tipo</th>
-                                        <th>Monto</th>
-                                        <th>Detalles</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${userTransactions.slice(0, 10).map(t => `
-                                        <tr>
-                                            <td>${new Date(t.date).toLocaleString()}</td>
-                                            <td>${getTransactionTypeLabel(t.type)}</td>
-                                            <td>${t.amount} Bs</td>
-                                            <td>${t.details || '-'}</td>
-                                            <td>${getStatusLabel(t.status)}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                            ${userTransactions.length > 10 ? 
-                                `<p style="margin-top: 10px; text-align: center;">Mostrando 10 de ${userTransactions.length} transacciones</p>` : ''}
-                        </div>
-                        
-                        <div id="ruletasContent" class="history-content">
-                            <h3>Participaciones en Ruletas</h3>
-                            <table style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Ruleta</th>
-                                        <th>Número</th>
-                                        <th>Apuesta</th>
-                                        <th>Fecha</th>
-                                        <th>Resultado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${userRuletas.slice(0, 10).map(r => `
-                                        <tr>
-                                            <td>#${r.ruletaId}</td>
-                                            <td>${r.sector}</td>
-                                            <td>${r.bet} Bs</td>
-                                            <td>${new Date(r.date).toLocaleDateString()}</td>
-                                            <td>
-                                                ${r.isWinner ? 
-                                                    '<span style="color: green;">Ganador</span>' : 
-                                                    '<span style="color: red;">No ganó</span>'}
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                            ${userRuletas.length > 10 ? 
-                                `<p style="margin-top: 10px; text-align: center;">Mostrando 10 de ${userRuletas.length} participaciones</p>` : ''}
-                        </div>
-                        
-                        <div style="margin-top: 20px; text-align: center;">
-                            <button class="btn btn-warning edit-balance-btn" data-username="${username}">Editar Saldo</button>
-                            ${user.active !== false ? 
-                                `<button class="btn btn-danger deactivate-user-btn" data-username="${username}">Desactivar</button>` : 
-                                `<button class="btn btn-success activate-user-btn" data-username="${username}">Activar</button>`}
-                            <button class="btn btn-primary close-modal-btn">Cerrar</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.style.display = 'block';
-                
-                // Configurar pestañas
-                const tabs = modal.querySelectorAll('.history-tab');
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        // Remover clase active de todas las pestañas y contenidos
-                        tabs.forEach(t => t.classList.remove('active'));
-                        modal.querySelectorAll('.history-content').forEach(c => c.classList.remove('active'));
-                        
-                        // Agregar clase active a la pestaña y contenido seleccionado
-                        this.classList.add('active');
-                        const tabId = this.getAttribute('data-tab');
-                        modal.querySelector(`#${tabId}Content`).classList.add('active');
-                    });
-                });
-                
-                // Eventos para cerrar modal
-                modal.querySelector('.close-modal').addEventListener('click', function() {
-                    modal.style.display = 'none';
-                    modal.remove();
-                });
-                
-                modal.querySelector('.close-modal-btn').addEventListener('click', function() {
-                    modal.style.display = 'none';
-                    modal.remove();
-                });
-            }
-        };
-
-        // Función para editar saldo del usuario
-        function editUserBalance(username) {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const user = users[username];
-            
-            if (user) {
-                // Crear modal para editar saldo
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 500px;">
-                        <span class="close-modal">&times;</span>
-                        <h2>Editar Saldo: ${username}</h2>
-                        
-                        <div class="user-details" style="margin-bottom: 20px;">
-                            <p><strong>Saldo actual:</strong> ${user.balance || 0} Bs</p>
-                        </div>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <label for="balanceAction">Acción:</label>
-                            <select id="balanceAction" class="form-control" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-                                <option value="add">Agregar saldo</option>
-                                <option value="subtract">Quitar saldo</option>
-                                <option value="set">Establecer saldo exacto</option>
-                            </select>
-                        </div>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <label for="balanceAmount">Cantidad (Bs):</label>
-                            <input type="number" id="balanceAmount" class="form-control" style="width: 100%; padding: 8px;" min="0" step="0.01">
-                        </div>
-                        
-                        <div style="margin-bottom: 20px;">
-                            <label for="balanceReason">Razón:</label>
-                            <textarea id="balanceReason" class="form-control" style="width: 100%; padding: 8px;" rows="3" placeholder="Motivo del ajuste"></textarea>
-                        </div>
-                        
-                        <div style="text-align: center;">
-                            <button class="btn btn-primary confirm-balance-btn" data-username="${username}">Confirmar</button>
-                            <button class="btn btn-secondary close-modal-btn">Cancelar</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.style.display = 'block';
-                
-                // Eventos para cerrar modal
-                modal.querySelector('.close-modal').addEventListener('click', function() {
-                    modal.style.display = 'none';
-                    modal.remove();
-                });
-                
-                modal.querySelector('.close-modal-btn').addEventListener('click', function() {
-                    modal.style.display = 'none';
-                    modal.remove();
-                });
-            }
-        };
-
-        // Función para confirmar edición de saldo
-        function confirmBalanceEdit(username) {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const user = users[username];
-            
-            if (user) {
-                const action = document.getElementById('balanceAction').value;
-                const amount = parseFloat(document.getElementById('balanceAmount').value);
-                const reason = document.getElementById('balanceReason').value || 'Ajuste de saldo por administrador';
-                
-                if (isNaN(amount) || amount <= 0) {
-                    alert('Por favor ingrese una cantidad válida (mayor que 0)');
-                    return;
-                }
-                
-                let newBalance = user.balance || 0;
-                let transactionAmount = amount;
-                
-                switch(action) {
-                    case 'add':
-                        newBalance += amount;
-                        break;
-                    case 'subtract':
-                        if (amount > newBalance) {
-                            alert('El usuario no tiene suficiente saldo para esta operación');
-                            return;
-                        }
-                        newBalance -= amount;
-                        transactionAmount = -amount;
-                        break;
-                    case 'set':
-                        newBalance = amount;
-                        transactionAmount = amount - (user.balance || 0);
-                        break;
-                }
-                
-                // Actualizar saldo del usuario
-                user.balance = newBalance;
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                // Registrar transacción
-                addTransaction({
-                    type: 'balance_adjustment',
-                    username: username,
-                    amount: transactionAmount,
-                    details: reason,
-                    status: 'completed'
-                });
-                
-                // Cerrar modal
-                document.querySelectorAll('.modal').forEach(modal => modal.remove());
-                
-                // Actualizar vista
-                loadUsers();
-                
-                alert(`Saldo de ${username} actualizado a ${newBalance} Bs`);
-            }
-        }
-
-        // Función para desactivar usuario
-        function deactivateUser(username) {
-            if (confirm(`¿Estás seguro de desactivar al usuario ${username}? No podrá acceder al sistema hasta que sea reactivado.`)) {
-                const users = JSON.parse(localStorage.getItem('users')) || {};
-                if (users[username]) {
-                    users[username].active = false;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    // Registrar transacción
-                    addTransaction({
-                        type: 'user_status',
-                        username: username,
-                        amount: 0,
-                        details: 'Usuario desactivado por administrador',
-                        status: 'completed'
-                    });
-                    
-                    loadUsers();
-                    alert(`Usuario ${username} desactivado correctamente`);
-                }
-            }
-        }
-
-        // Función para activar usuario
-        function activateUser(username) {
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            if (users[username]) {
-                users[username].active = true;
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                // Registrar transacción
-                addTransaction({
-                    type: 'user_status',
-                    username: username,
-                    amount: 0,
-                    details: 'Usuario activado por administrador',
-                    status: 'completed'
-                });
-                
-                loadUsers();
-                alert(`Usuario ${username} activado correctamente`);
-            }
+        
+        // Obtener etiqueta para el tipo de transacción
+        function getTransactionTypeLabel(type) {
+            const labels = {
+                'deposit': 'Depósito',
+                'withdrawal': 'Retiro',
+                'win': 'Ganancia',
+                'loss': 'Pérdida',
+                'balance_adjustment': 'Ajuste de Saldo',
+                'user_status': 'Estado de Usuario'
+            };
+            return labels[type] || type;
         }
 
         // Cargar usuarios
@@ -1567,11 +1246,6 @@
                         </td>
                         <td>
                             <button class="btn btn-primary view-user-btn" data-username="${user.username}">Ver</button>
-                            ${user.active !== false ? `
-                                <button class="btn btn-danger deactivate-user-btn" data-username="${user.username}">Desactivar</button>
-                            ` : `
-                                <button class="btn btn-success activate-user-btn" data-username="${user.username}">Activar</button>
-                            `}
                             <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
                         </td>
                     </tr>
@@ -1627,64 +1301,6 @@
             `).join('');
         }
 
-        // Aprobar retiro
-        function approveWithdrawal(id) {
-            const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
-            const withdrawal = withdrawals.find(w => w.id === id);
-            
-            if (withdrawal) {
-                withdrawal.status = 'approved';
-                withdrawal.approvedAt = new Date().toISOString();
-                localStorage.setItem('withdrawals', JSON.stringify(withdrawals));
-                
-                // Registrar transacción
-                addTransaction({
-                    type: 'withdrawal',
-                    username: withdrawal.username,
-                    amount: -withdrawal.amount,
-                    details: `Retiro aprobado a ${withdrawal.bank}`,
-                    status: 'completed'
-                });
-                
-                alert('Retiro aprobado');
-                loadWithdrawals();
-                loadDashboard();
-            }
-        }
-
-        // Rechazar retiro
-        function rejectWithdrawal(id) {
-            const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
-            const withdrawal = withdrawals.find(w => w.id === id);
-            
-            if (withdrawal) {
-                withdrawal.status = 'rejected';
-                withdrawal.rejectedAt = new Date().toISOString();
-                
-                // Devolver el dinero al usuario
-                const users = JSON.parse(localStorage.getItem('users')) || {};
-                const user = users[withdrawal.username];
-                if (user) {
-                    user.balance += withdrawal.amount;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    // Registrar transacción
-                    addTransaction({
-                        type: 'withdrawal',
-                        username: withdrawal.username,
-                        amount: withdrawal.amount,
-                        details: `Retiro rechazado - Dinero devuelto`,
-                        status: 'reversed'
-                    });
-                }
-                
-                localStorage.setItem('withdrawals', JSON.stringify(withdrawals));
-                alert('Retiro rechazado y dinero devuelto');
-                loadWithdrawals();
-                loadDashboard();
-            }
-        }
-
         // Cargar depósitos
         function loadDeposits() {
             const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
@@ -1726,64 +1342,6 @@
                     </td>
                 </tr>
             `).join('');
-        }
-        
-        // Aprobar depósito
-        function approveDeposit(id) {
-            const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
-            const deposit = deposits.find(d => d.id === id);
-            
-            if (deposit) {
-                deposit.status = 'approved';
-                deposit.approvedAt = new Date().toISOString();
-                
-                // Añadir dinero al usuario
-                const users = JSON.parse(localStorage.getItem('users')) || {};
-                const user = users[deposit.username];
-                if (user) {
-                    user.balance += deposit.amount;
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    // Registrar transacción
-                    addTransaction({
-                        type: 'deposit',
-                        username: deposit.username,
-                        amount: deposit.amount,
-                        details: `Depósito aprobado desde ${deposit.bank}`,
-                        status: 'completed'
-                    });
-                }
-                
-                localStorage.setItem('deposits', JSON.stringify(deposits));
-                alert('Depósito aprobado');
-                loadDeposits();
-                loadDashboard();
-            }
-        }
-
-        // Rechazar depósito
-        function rejectDeposit(id) {
-            const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
-            const deposit = deposits.find(d => d.id === id);
-            
-            if (deposit) {
-                deposit.status = 'rejected';
-                deposit.rejectedAt = new Date().toISOString();
-                localStorage.setItem('deposits', JSON.stringify(deposits));
-                
-                // Registrar transacción
-                addTransaction({
-                    type: 'deposit',
-                    username: deposit.username,
-                    amount: -deposit.amount,
-                    details: `Depósito rechazado`,
-                    status: 'rejected'
-                });
-                
-                alert('Depósito rechazado');
-                loadDeposits();
-                loadDashboard();
-            }
         }
         
         // Cargar transacciones
@@ -1883,334 +1441,6 @@
             `).join('');
         }
         
-        // Ver detalles de ruleta
-        function viewRuletaDetails(ruletaId) {
-            const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
-            const ruleta = ruletasData.ruletas[ruletaId];
-            
-            if (ruleta) {
-                let details = `Ruleta #${ruletaId}\n`;
-                details += `Fecha: ${new Date(ruleta.createdAt).toLocaleString()}\n`;
-                details += `Estado: ${ruleta.active ? 'Activa' : 'Completada'}\n\n`;
-                
-                if (ruleta.winners) {
-                    details += 'Ganadores:\n';
-                    details += `- Principal: ${ruleta.winners.main.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.main)} - 550 Bs)\n`;
-                    if (ruleta.winners.left) {
-                        details += `- Secundario Izq: ${ruleta.winners.left.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.left)} - 50 Bs)\n`;
-                    }
-                    if (ruleta.winners.right) {
-                        details += `- Secundario Der: ${ruleta.winners.right.playerName} (N° ${getSectorNumber(ruleta, ruleta.winners.right)} - 50 Bs)\n`;
-                    }
-                }
-                
-                details += '\nParticipantes:\n';
-                ruleta.sectors.forEach((sector, index) => {
-                    if (sector) {
-                        details += `- N° ${index + 1}: ${sector.playerName} (${sector.bet} Bs)\n`;
-                    }
-                });
-                
-                alert(details);
-            }
-        }
-        
-        // Obtener número de sector para un ganador
-        function getSectorNumber(ruleta, winner) {
-            return ruleta.sectors.findIndex(s => s && s.playerName === winner.playerName) + 1;
-        }
-        
-        // Forzar cierre de ruleta
-        function forceCompleteRuleta(ruletaId) {
-            if (confirm('¿Estás seguro de forzar el cierre de esta ruleta? Esto seleccionará ganadores aleatorios.')) {
-                const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
-                const ruleta = ruletasData.ruletas[ruletaId];
-                
-                if (ruleta && ruleta.active) {
-                    // Seleccionar ganadores aleatorios
-                    const occupiedSectors = ruleta.sectors
-                        .map((sector, index) => sector ? index : null)
-                        .filter(index => index !== null);
-                    
-                    if (occupiedSectors.length >= 3) {
-                        // Mezclar sectores ocupados
-                        const shuffled = [...occupiedSectors].sort(() => 0.5 - Math.random());
-                        
-                        // Seleccionar ganadores
-                        ruleta.winners = {
-                            main: ruleta.sectors[shuffled[0]],
-                            left: ruleta.sectors[shuffled[1]],
-                            right: ruleta.sectors[shuffled[2]]
-                        };
-                        
-                        // Calcular premios
-                        const premioPrincipal = 550;
-                        const premioSecundario = 50;
-                        
-                        // Actualizar saldos de los ganadores
-                        const users = JSON.parse(localStorage.getItem('users')) || {};
-                        
-                        // Premio principal
-                        if (users[ruleta.winners.main.playerName]) {
-                            users[ruleta.winners.main.playerName].wins = 
-                                (users[ruleta.winners.main.playerName].wins || 0) + premioPrincipal;
-                            users[ruleta.winners.main.playerName].balance = 
-                                (users[ruleta.winners.main.playerName].balance || 0) + premioPrincipal + ruleta.winners.main.bet;
-                            
-                            // Registrar transacción
-                            addTransaction({
-                                type: 'win',
-                                username: ruleta.winners.main.playerName,
-                                amount: premioPrincipal,
-                                details: `Ganador principal ruleta #${ruletaId}`,
-                                status: 'completed'
-                            });
-                        }
-                        
-                        // Premios secundarios
-                        if (users[ruleta.winners.left.playerName]) {
-                            users[ruleta.winners.left.playerName].wins = 
-                                (users[ruleta.winners.left.playerName].wins || 0) + premioSecundario;
-                            users[ruleta.winners.left.playerName].balance = 
-                                (users[ruleta.winners.left.playerName].balance || 0) + premioSecundario + ruleta.winners.left.bet;
-                            
-                            // Registrar transacción
-                            addTransaction({
-                                type: 'win',
-                                username: ruleta.winners.left.playerName,
-                                amount: premioSecundario,
-                                details: `Ganador secundario ruleta #${ruletaId}`,
-                                status: 'completed'
-                            });
-                        }
-                        
-                        if (users[ruleta.winners.right.playerName]) {
-                            users[ruleta.winners.right.playerName].wins = 
-                                (users[ruleta.winners.right.playerName].wins || 0) + premioSecundario;
-                            users[ruleta.winners.right.playerName].balance = 
-                                (users[ruleta.winners.right.playerName].balance || 0) + premioSecundario + ruleta.winners.right.bet;
-                            
-                            // Registrar transacción
-                            addTransaction({
-                                type: 'win',
-                                username: ruleta.winners.right.playerName,
-                                amount: premioSecundario,
-                                details: `Ganador secundario ruleta #${ruletaId}`,
-                                status: 'completed'
-                            });
-                        }
-                        
-                        // Actualizar ganancias de la casa (100 Bs fijos)
-                        ruleta.houseEarnings = 100;
-                        
-                        // Marcar ruleta como completada
-                        ruleta.active = false;
-                        ruleta.completedAt = new Date().toISOString();
-                        
-                        // Guardar cambios
-                        ruletasData.ruletas[ruletaId] = ruleta;
-                        localStorage.setItem('ruletasData', JSON.stringify(ruletasData));
-                        localStorage.setItem('users', JSON.stringify(users));
-                        
-                        // Crear nueva ruleta si es la actual
-                        if (ruletaId === ruletasData.currentRuletaId) {
-                            const newId = ruletasData.currentRuletaId + 1;
-                            
-                            ruletasData.ruletas[newId] = {
-                                id: newId,
-                                sectors: new Array(15).fill(null),
-                                spinning: false,
-                                winners: null,
-                                houseEarnings: 0,
-                                active: true,
-                                createdAt: new Date().toISOString()
-                            };
-                            
-                            ruletasData.currentRuletaId = newId;
-                            localStorage.setItem('ruletasData', JSON.stringify(ruletasData));
-                        }
-                        
-                        loadRuletas();
-                        loadDashboard();
-                        alert('Ruleta cerrada y ganadores seleccionados.');
-                    } else {
-                        alert('No hay suficientes participantes para seleccionar ganadores.');
-                    }
-                }
-            }
-        }
-
-        // Función para agregar una transacción
-        function addTransaction(transaction) {
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            
-            const newTransaction = {
-                id: Date.now(),
-                date: new Date().toISOString(),
-                ...transaction
-            };
-            
-            transactions.push(newTransaction);
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            
-            return newTransaction;
-        }
-        
-        // Obtener etiqueta para el estado
-        function getStatusLabel(status) {
-            const labels = {
-                'pending': '<span style="color: orange;">Pendiente</span>',
-                'approved': '<span style="color: green;">Aprobado</span>',
-                'rejected': '<span style="color: red;">Rechazado</span>',
-                'completed': '<span style="color: green;">Completado</span>',
-                'reversed': '<span style="color: blue;">Reversado</span>'
-            };
-            return labels[status] || status;
-        }
-        
-        // Obtener etiqueta para el tipo de transacción
-        function getTransactionTypeLabel(type) {
-            const labels = {
-                'deposit': 'Depósito',
-                'withdrawal': 'Retiro',
-                'win': 'Ganancia',
-                'loss': 'Pérdida',
-                'balance_adjustment': 'Ajuste de Saldo',
-                'user_status': 'Estado de Usuario'
-            };
-            return labels[type] || type;
-        }
-
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            const adminUser = JSON.parse(localStorage.getItem('adminUser'));
-            if (adminUser) {
-                updateOnlineStatus(adminUser.username, false);
-            }
-            
-            localStorage.removeItem('adminLoggedIn');
-            localStorage.removeItem('adminUser');
-            location.reload();
-        });
-
-        // Event listeners para botones de filtros
-        document.getElementById('searchUsersBtn').addEventListener('click', searchUsers);
-        document.getElementById('loadWithdrawalsBtn').addEventListener('click', loadWithdrawals);
-        document.getElementById('filterWithdrawalsBtn').addEventListener('click', loadWithdrawals);
-        document.getElementById('loadDepositsBtn').addEventListener('click', loadDeposits);
-        document.getElementById('filterDepositsBtn').addEventListener('click', loadDeposits);
-        document.getElementById('loadTransactionsBtn').addEventListener('click', loadTransactions);
-        document.getElementById('loadRuletasBtn').addEventListener('click', loadRuletas);
-        document.getElementById('viewUsersBtn').addEventListener('click', loadUsersModal);
-
-        // Delegación de eventos para botones dinámicos
-        document.addEventListener('click', function(e) {
-            // Ver usuario
-            if (e.target.classList.contains('view-user-btn')) {
-                const username = e.target.getAttribute('data-username');
-                viewUserDetails(username);
-            }
-            
-            // Editar saldo
-            if (e.target.classList.contains('edit-balance-btn')) {
-                const username = e.target.getAttribute('data-username');
-                editUserBalance(username);
-            }
-            
-            // Activar usuario
-            if (e.target.classList.contains('activate-user-btn')) {
-                const username = e.target.getAttribute('data-username');
-                activateUser(username);
-            }
-            
-            // Desactivar usuario
-            if (e.target.classList.contains('deactivate-user-btn')) {
-                const username = e.target.getAttribute('data-username');
-                deactivateUser(username);
-            }
-            
-            // Aprobar retiro
-            if (e.target.classList.contains('approve-withdrawal-btn')) {
-                const id = parseInt(e.target.getAttribute('data-id'));
-                approveWithdrawal(id);
-            }
-            
-            // Rechazar retiro
-            if (e.target.classList.contains('reject-withdrawal-btn')) {
-                const id = parseInt(e.target.getAttribute('data-id'));
-                rejectWithdrawal(id);
-            }
-            
-            // Aprobar depósito
-            if (e.target.classList.contains('approve-deposit-btn')) {
-                const id = parseInt(e.target.getAttribute('data-id'));
-                approveDeposit(id);
-            }
-            
-            // Rechazar depósito
-            if (e.target.classList.contains('reject-deposit-btn')) {
-                const id = parseInt(e.target.getAttribute('data-id'));
-                rejectDeposit(id);
-            }
-            
-            // Ver detalles de ruleta
-            if (e.target.classList.contains('view-ruleta-btn')) {
-                const id = parseInt(e.target.getAttribute('data-id'));
-                viewRuletaDetails(id);
-            }
-            
-            // Forzar cierre de ruleta
-            if (e.target.classList.contains('force-ruleta-btn')) {
-                const id = parseInt(e.target.getAttribute('data-id'));
-                forceCompleteRuleta(id);
-            }
-            
-            // Ver transacción
-            if (e.target.classList.contains('view-transaction-btn')) {
-                const id = e.target.getAttribute('data-id');
-                viewTransactionDetails(id);
-            }
-            
-            // Confirmar edición de saldo
-            if (e.target.classList.contains('confirm-balance-btn')) {
-                const username = e.target.getAttribute('data-username');
-                confirmBalanceEdit(username);
-            }
-            
-            // Cerrar modal
-            if (e.target.classList.contains('close-modal-btn')) {
-                e.target.closest('.modal').style.display = 'none';
-                e.target.closest('.modal').remove();
-            }
-        });
-
-        // Tabs
-        document.querySelectorAll('.sidebar li[data-tab]').forEach(item => {
-            item.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
-                
-                // Actualizar active tab
-                document.querySelectorAll('.sidebar li[data-tab]').forEach(li => {
-                    li.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Mostrar contenido correspondiente
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(tabId).classList.add('active');
-                
-                // Cargar datos específicos de la pestaña
-                if (tabId === 'users') loadUsers();
-                if (tabId === 'withdrawals') loadWithdrawals();
-                if (tabId === 'deposits') loadDeposits();
-                if (tabId === 'transactions') loadTransactions();
-                if (tabId === 'ruletas') loadRuletas();
-                if (tabId === 'support') loadSupportTickets();
-            });
-        });
-
         // Función para cargar tickets de soporte
         function loadSupportTickets(filter = 'all') {
             const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
@@ -2249,25 +1479,19 @@
                     <div class="ticket-message">
                         ${ticket.message}
                     </div>
-                    <div class="ticket-actions">
-                        ${ticket.status !== 'resolved' ? `
-                            <button class="btn btn-primary update-ticket-btn" data-id="${ticket.id}" data-status="in-progress">
-                                En progreso
-                            </button>
-                            <button class="btn btn-success update-ticket-btn" data-id="${ticket.id}" data-status="resolved">
-                                Resolver
-                            </button>
-                        ` : ''}
-                        <button class="btn btn-secondary view-ticket-btn" data-id="${ticket.id}">
-                            Ver detalles
-                        </button>
-                    </div>
                 `;
                 ticketsList.appendChild(ticketElement);
             });
         }
         
-        // Event listeners para el soporte
+        // Event listeners para botones de filtros
+        document.getElementById('searchUsersBtn').addEventListener('click', searchUsers);
+        document.getElementById('loadWithdrawalsBtn').addEventListener('click', loadWithdrawals);
+        document.getElementById('filterWithdrawalsBtn').addEventListener('click', loadWithdrawals);
+        document.getElementById('loadDepositsBtn').addEventListener('click', loadDeposits);
+        document.getElementById('filterDepositsBtn').addEventListener('click', loadDeposits);
+        document.getElementById('loadTransactionsBtn').addEventListener('click', loadTransactions);
+        document.getElementById('loadRuletasBtn').addEventListener('click', loadRuletas);
         document.getElementById('filterTicketsBtn').addEventListener('click', function() {
             const filter = document.getElementById('ticketFilter').value;
             loadSupportTickets(filter);
