@@ -629,60 +629,75 @@
             }
         }
         
-        // Función para mostrar mensajes
-        function showMessage(text, type) {
+        // Maneja el botón de apostar
+        document.getElementById("betBtn").addEventListener("click", () => {
             const messagesDiv = document.getElementById("messages");
-            messagesDiv.textContent = text;
-            messagesDiv.className = type;
-            messagesDiv.style.display = "block";
+            messagesDiv.style.display = "none";
             
-            setTimeout(() => {
-                messagesDiv.style.display = "none";
-            }, 5000);
-        }
-        
-        // Nuevo evento de clic para el botón de apuesta (con llamada a la API)
-        document.getElementById("betBtn").addEventListener("click", async () => {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                window.location.href = 'login.html';
+            let ruletasData = getRuletasData();
+            let currentRuleta = getCurrentRuleta();
+            
+            // Verificar si la ruleta actual está llena (15 jugadores)
+            if (isRuletaLlena(currentRuleta.id)) {
+                // Crear nueva ruleta automáticamente
+                const newRuletaId = crearNuevaRuleta();
+                currentRuleta = ruletasData.ruletas[newRuletaId];
+            }
+            
+            if (currentRuleta.spinning) {
+                messagesDiv.textContent = "La ruleta está girando, no se pueden hacer más apuestas.";
+                messagesDiv.style.display = "block";
+                messagesDiv.className = "error";
                 return;
             }
             
             if (selectedSector === null) {
-                showMessage("Por favor, selecciona un número en la ruleta.", "error");
+                messagesDiv.textContent = "Por favor, selecciona un número en la ruleta.";
+                messagesDiv.style.display = "block";
+                messagesDiv.className = "error";
                 return;
             }
             
-            try {
-                const response = await fetch('api/ruleta.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        action: 'bet',
-                        sector: selectedSector
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage(`Apuesta registrada en el número ${selectedSector + 1}`, "success");
-                    
-                    // Aquí podríamos actualizar la visualización de apuestas
-                    // Si la ruleta está llena, iniciar el giro
-                    const currentRuleta = getCurrentRuleta();
-                    if (isRuletaLlena(currentRuleta.id)) {
-                        spinWheel(currentRuleta.id);
-                    }
-                } else {
-                    showMessage(data.message, "error");
-                }
-            } catch (error) {
-                showMessage("Error de conexión con el servidor", "error");
+            const playerName = loggedUserName;
+            const bet = 50; // Apuesta fija de 50 Bs
+            
+            if (hasPlayerBet(playerName, currentRuleta.id)) {
+                messagesDiv.textContent = "Ya has apostado en esta ruleta. Solo se permite una apuesta por usuario por ruleta.";
+                messagesDiv.style.display = "block";
+                messagesDiv.className = "error";
+                return;
+            }
+            
+            // Obtener datos del usuario
+            let users = JSON.parse(localStorage.getItem("users") || "{}");
+            if (!users[playerName] || users[playerName].balance < bet) {
+                messagesDiv.textContent = "No tienes fondos suficientes en tu panel para esa apuesta.";
+                messagesDiv.style.display = "block";
+                messagesDiv.className = "error";
+                return;
+            }
+            
+            // Actualizar balance del usuario
+            users[playerName].balance -= bet;
+            localStorage.setItem("users", JSON.stringify(users));
+            
+            // Registrar apuesta
+            currentRuleta.sectors[selectedSector] = { playerName, bet };
+            ruletasData.ruletas[currentRuleta.id] = currentRuleta;
+            updateRuletasData(ruletasData);
+            
+            messagesDiv.textContent = `Jugador ${playerName} eligió el número ${selectedSector + 1} con apuesta de ${bet} bolívares.`;
+            messagesDiv.style.display = "block";
+            messagesDiv.className = "success";
+            
+            selectedSector = null;
+            drawWheel();
+            updateBetsDisplay();
+            
+            // Iniciar el sorteo si todos los números están ocupados (15 jugadores)
+            if (currentRuleta.sectors.every(sector => sector !== null)) {
+                messagesDiv.textContent += " Todos los números han sido elegidos. Se inicia el sorteo...";
+                spinWheel(currentRuleta.id);
             }
         });
         
