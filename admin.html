@@ -335,34 +335,6 @@
             border-radius: 4px;
         }
         
-        /* Estilos para las pestañas de historial */
-        .history-tabs {
-            display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 15px;
-        }
-        
-        .history-tab {
-            padding: 10px 15px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-        }
-        
-        .history-tab.active {
-            border-bottom: 2px solid var(--secondary);
-            font-weight: bold;
-        }
-        
-        .history-content {
-            display: none;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .history-content.active {
-            display: block;
-        }
-        
         /* Mensajes de alerta */
         .alert {
             padding: 15px;
@@ -399,7 +371,7 @@
 
     <!-- Panel Admin -->
     <div id="adminContainer" class="admin-container">
-        <!-- Sidebar - Agregado item de Soporte -->
+        <!-- Sidebar -->
         <div class="sidebar">
             <h2>Panel Admin</h2>
             <ul>
@@ -953,6 +925,16 @@
             document.getElementById('viewUsersBtn').addEventListener('click', function() {
                 switchTab('users');
             });
+            
+            // Eventos para botones de filtros
+            document.getElementById('searchUsersBtn').addEventListener('click', loadUsers);
+            document.getElementById('loadWithdrawalsBtn').addEventListener('click', loadWithdrawals);
+            document.getElementById('filterWithdrawalsBtn').addEventListener('click', loadWithdrawals);
+            document.getElementById('loadDepositsBtn').addEventListener('click', loadDeposits);
+            document.getElementById('filterDepositsBtn').addEventListener('click', loadDeposits);
+            document.getElementById('loadTransactionsBtn').addEventListener('click', loadTransactions);
+            document.getElementById('loadRuletasBtn').addEventListener('click', loadRuletas);
+            document.getElementById('filterTicketsBtn').addEventListener('click', loadSupportTickets);
         }
 
         // Cambiar entre pestañas
@@ -1149,7 +1131,7 @@
                     <td>${transaction.amount} Bs</td>
                     <td>${getStatusLabel(transaction.status)}</td>
                     <td>
-                        <button class="btn btn-primary view-transaction-btn" data-id="${transaction.id}">Ver</button>
+                        <button class="btn btn-primary">Ver</button>
                     </td>
                 </tr>
             `).join('');
@@ -1245,17 +1227,12 @@
                             `}
                         </td>
                         <td>
-                            <button class="btn btn-primary view-user-btn" data-username="${user.username}">Ver</button>
-                            <button class="btn btn-warning edit-balance-btn" data-username="${user.username}">Editar Saldo</button>
+                            <button class="btn btn-primary">Ver</button>
+                            <button class="btn btn-warning">Editar Saldo</button>
                         </td>
                     </tr>
                 `;
             }).join('');
-        }
-        
-        // Buscar usuarios
-        function searchUsers() {
-            loadUsers();
         }
         
         // Cargar retiros
@@ -1293,8 +1270,8 @@
                     <td>${getStatusLabel(w.status)}</td>
                     <td>
                         ${w.status === 'pending' ? `
-                            <button class="btn btn-success approve-withdrawal-btn" data-id="${w.id}">Aprobar</button>
-                            <button class="btn btn-danger reject-withdrawal-btn" data-id="${w.id}">Rechazar</button>
+                            <button class="btn btn-success">Aprobar</button>
+                            <button class="btn btn-danger">Rechazar</button>
                         ` : 'N/A'}
                     </td>
                 </tr>
@@ -1336,8 +1313,8 @@
                     <td>${getStatusLabel(d.status)}</td>
                     <td>
                         ${d.status === 'pending' ? `
-                            <button class="btn btn-success approve-deposit-btn" data-id="${d.id}">Aprobar</button>
-                            <button class="btn btn-danger reject-deposit-btn" data-id="${d.id}">Rechazar</button>
+                            <button class="btn btn-success">Aprobar</button>
+                            <button class="btn btn-danger">Rechazar</button>
                         ` : 'N/A'}
                     </td>
                 </tr>
@@ -1432,9 +1409,9 @@
                     <td>${r.active ? 'Activa' : 'Completada'}</td>
                     <td>
                         ${!r.active ? `
-                            <button class="btn btn-primary view-ruleta-btn" data-id="${r.id}">Ver Detalles</button>
+                            <button class="btn btn-primary">Ver Detalles</button>
                         ` : `
-                            <button class="btn btn-danger force-ruleta-btn" data-id="${r.id}">Forzar Cierre</button>
+                            <button class="btn btn-danger">Forzar Cierre</button>
                         `}
                     </td>
                 </tr>
@@ -1468,7 +1445,7 @@
                 ticketElement.innerHTML = `
                     <div class="ticket-header">
                         <div class="ticket-title">${ticket.subject}</div>
-                        <div class="ticket-status status-${ticket.status.replace(' ', '-')}">
+                        <div class="ticket-status">
                             ${getStatusLabel(ticket.status)}
                         </div>
                     </div>
@@ -1483,19 +1460,6 @@
                 ticketsList.appendChild(ticketElement);
             });
         }
-        
-        // Event listeners para botones de filtros
-        document.getElementById('searchUsersBtn').addEventListener('click', searchUsers);
-        document.getElementById('loadWithdrawalsBtn').addEventListener('click', loadWithdrawals);
-        document.getElementById('filterWithdrawalsBtn').addEventListener('click', loadWithdrawals);
-        document.getElementById('loadDepositsBtn').addEventListener('click', loadDeposits);
-        document.getElementById('filterDepositsBtn').addEventListener('click', loadDeposits);
-        document.getElementById('loadTransactionsBtn').addEventListener('click', loadTransactions);
-        document.getElementById('loadRuletasBtn').addEventListener('click', loadRuletas);
-        document.getElementById('filterTicketsBtn').addEventListener('click', function() {
-            const filter = document.getElementById('ticketFilter').value;
-            loadSupportTickets(filter);
-        });
     </script>
 </body>
 </html>
