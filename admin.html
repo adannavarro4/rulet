@@ -26,6 +26,12 @@
         body {
             background: #f5f5f5;
             color: var(--dark);
+            transition: background-color 0.3s;
+        }
+        
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #f0f0f0;
         }
         
         /* Login */
@@ -36,6 +42,13 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .login-container {
+            background: #16213e;
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         
         .login-container h1 {
@@ -44,12 +57,23 @@
             color: var(--primary);
         }
         
+        .dark-mode .login-container h1 {
+            color: #e94560;
+        }
+        
         .login-container input {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .login-container input {
+            background: #1f4068;
+            color: #fff;
+            border: 1px solid #0f3460;
         }
         
         .login-container button {
@@ -61,7 +85,12 @@
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.3s;
         } 
+        
+        .dark-mode .login-container button {
+            background: #e94560;
+        }
         
         /* Panel Admin */
         .admin-container {
@@ -75,11 +104,21 @@
             height: 100vh;
             position: fixed;
             padding: 20px 0;
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .sidebar {
+            background: #16213e;
         }
         
         .sidebar h2 {
             padding: 0 20px;
             margin-bottom: 30px;
+            color: #fff;
+        }
+        
+        .dark-mode .sidebar h2 {
+            color: #e94560;
         }
         
         .sidebar ul {
@@ -90,10 +129,16 @@
             padding: 12px 20px;
             cursor: pointer;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
         }
         
         .sidebar li:hover {
             background: #34495e;
+        }
+        
+        .dark-mode .sidebar li:hover {
+            background: #1f4068;
         }
         
         .sidebar li.active {
@@ -101,9 +146,19 @@
             border-left: 4px solid var(--secondary);
         }
         
+        .dark-mode .sidebar li.active {
+            background: #0f3460;
+            border-left: 4px solid #e94560;
+        }
+        
         .main-content {
             margin-left: 250px;
             padding: 30px;
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .main-content {
+            background: #1a1a2e;
         }
         
         .tab-content {
@@ -120,6 +175,12 @@
             margin-top: 20px;
             background: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .dark-mode table {
+            background: #16213e;
+            color: #fff;
         }
         
         th, td {
@@ -128,9 +189,17 @@
             border-bottom: 1px solid #ddd;
         }
         
+        .dark-mode th, .dark-mode td {
+            border-bottom: 1px solid #1f4068;
+        }
+        
         th {
             background: #f8f9fa;
             font-weight: 600;
+        }
+        
+        .dark-mode th {
+            background: #0f3460;
         }
         
         .btn {
@@ -139,6 +208,13 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 5px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
         }
         
         .btn-success {
@@ -161,6 +237,11 @@
             color: white;
         }
         
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -173,11 +254,20 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .stat-card {
+            background: #16213e;
         }
         
         .stat-card h3 {
             margin-bottom: 10px;
             color: var(--primary);
+        }
+        
+        .dark-mode .stat-card h3 {
+            color: #e94560;
         }
         
         .stat-card p {
@@ -195,6 +285,15 @@
             gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .filters {
+            background: #16213e;
         }
         
         .filter-group {
@@ -207,10 +306,22 @@
             font-weight: 600;
         }
         
+        .dark-mode .filter-group label {
+            color: #fff;
+        }
+        
         .filter-group select, .filter-group input {
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .filter-group select, 
+        .dark-mode .filter-group input {
+            background: #1f4068;
+            color: #fff;
+            border: 1px solid #0f3460;
         }
         
         .filter-group button {
@@ -225,6 +336,11 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 30px;
             height: 300px;
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .chart-container {
+            background: #16213e;
         }
         
         /* Estilos para el historial de transacciones */
@@ -235,6 +351,10 @@
         .transaction-history h3 {
             margin-bottom: 15px;
             color: var(--primary);
+        }
+        
+        .dark-mode .transaction-history h3 {
+            color: #e94560;
         }
         
         /* Estilos para el estado de conexión */
@@ -275,6 +395,12 @@
             width: 80%;
             max-width: 700px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .modal-content {
+            background: #16213e;
+            color: #fff;
         }
         
         .close-modal {
@@ -282,6 +408,11 @@
             font-size: 24px;
             font-weight: bold;
             cursor: pointer;
+            color: #000;
+        }
+        
+        .dark-mode .close-modal {
+            color: #fff;
         }
         
         .user-details {
@@ -304,6 +435,7 @@
             border-radius: 12px;
             font-size: 12px;
             font-weight: bold;
+            margin-right: 5px;
         }
         
         .badge-online {
@@ -333,6 +465,13 @@
             margin-bottom: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .form-control {
+            background: #1f4068;
+            color: #fff;
+            border: 1px solid #0f3460;
         }
         
         /* Mensajes de alerta */
@@ -354,11 +493,144 @@
             background-color: #f2dede;
             border-color: #ebccd1;
         }
+        
+        /* Theme toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .theme-toggle {
+            background: #e94560;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .dark-mode .header {
+            border-bottom: 1px solid #1f4068;
+        }
+        
+        .header h1 {
+            color: var(--primary);
+        }
+        
+        .dark-mode .header h1 {
+            color: #e94560;
+        }
+        
+        /* Ticket card */
+        .ticket-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .ticket-card {
+            background: #16213e;
+        }
+        
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .ticket-title {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .ticket-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .ticket-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .dark-mode .ticket-meta {
+            color: #aaa;
+        }
+        
+        .ticket-message {
+            line-height: 1.6;
+        }
+        
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar h2 {
+                font-size: 0;
+                position: relative;
+            }
+            
+            .sidebar h2:after {
+                content: "A";
+                font-size: 20px;
+                position: absolute;
+                top: 0;
+                left: 25px;
+            }
+            
+            .sidebar li span {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+        }
     </style>
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <!-- Botón de modo oscuro -->
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+    
     <!-- Login -->
     <div id="loginContainer" class="login-container">
         <h1>Acceso Administrador</h1>
@@ -375,14 +647,14 @@
         <div class="sidebar">
             <h2>Panel Admin</h2>
             <ul>
-                <li class="active" data-tab="dashboard">Dashboard</li>
-                <li data-tab="users">Usuarios</li>
-                <li data-tab="withdrawals">Retiros</li>
-                <li data-tab="deposits">Depósitos</li>
-                <li data-tab="transactions">Transacciones</li>
-                <li data-tab="ruletas">Ruletas</li>
-                <li data-tab="support">Soporte</li>
-                <li id="logoutBtn">Cerrar Sesión</li>
+                <li class="active" data-tab="dashboard"><span>Dashboard</span></li>
+                <li data-tab="users"><span>Usuarios</span></li>
+                <li data-tab="withdrawals"><span>Retiros</span></li>
+                <li data-tab="deposits"><span>Depósitos</span></li>
+                <li data-tab="transactions"><span>Transacciones</span></li>
+                <li data-tab="ruletas"><span>Ruletas</span></li>
+                <li data-tab="support"><span>Soporte</span></li>
+                <li id="logoutBtn"><span>Cerrar Sesión</span></li>
             </ul>
         </div>
 
@@ -390,7 +662,10 @@
         <div class="main-content">
             <!-- Dashboard -->
             <div class="tab-content active" id="dashboard">
-                <h1>Dashboard</h1>
+                <div class="header">
+                    <h1>Dashboard</h1>
+                    <div id="currentDateTime"></div>
+                </div>
                 <div class="stats">
                     <div class="stat-card">
                         <h3>Usuarios Registrados</h3>
@@ -647,14 +922,17 @@
             <!-- Soporte -->
             <div class="tab-content" id="support">
                 <h1>Soporte - Tickets</h1>
-                <div class="filter-tickets">
-                    <select id="ticketFilter">
-                        <option value="all">Todos los tickets</option>
-                        <option value="pending">Pendientes</option>
-                        <option value="in-progress">En progreso</option>
-                        <option value="resolved">Resueltos</option>
-                    </select>
-                    <button class="btn btn-primary" id="filterTicketsBtn">Filtrar</button>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="ticketFilter">Filtrar:</label>
+                        <select id="ticketFilter">
+                            <option value="all">Todos los tickets</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="in-progress">En progreso</option>
+                            <option value="resolved">Resueltos</option>
+                        </select>
+                        <button class="btn btn-primary" id="filterTicketsBtn">Filtrar</button>
+                    </div>
                 </div>
                 <div id="ticketsList">
                     <p>Lista de tickets de soporte aparecerá aquí.</p>
@@ -788,6 +1066,24 @@
                         details: 'Depósito inicial',
                         status: 'pending',
                         date: new Date().toISOString()
+                    },
+                    {
+                        id: 4,
+                        username: 'usuario1',
+                        type: 'withdrawal',
+                        amount: 100,
+                        details: 'Retiro solicitado',
+                        status: 'pending',
+                        date: new Date().toISOString()
+                    },
+                    {
+                        id: 5,
+                        username: 'usuario2',
+                        type: 'loss',
+                        amount: 50,
+                        details: 'Pérdida en ruleta #2',
+                        status: 'completed',
+                        date: new Date().toISOString()
                     }
                 ]));
             }
@@ -822,6 +1118,25 @@
                             houseEarnings: 0,
                             active: true,
                             createdAt: new Date().toISOString()
+                        },
+                        3: {
+                            id: 3,
+                            sectors: [
+                                { playerName: 'usuario1', bet: 50 },
+                                { playerName: 'usuario2', bet: 100 },
+                                null, null, null, null, null, null,
+                                null, null, null, null, null, null
+                            ],
+                            spinning: false,
+                            winners: {
+                                main: { playerName: 'usuario2', bet: 100 },
+                                left: { playerName: 'usuario1', bet: 50 },
+                                right: null
+                            },
+                            houseEarnings: 150,
+                            active: false,
+                            createdAt: new Date().toISOString(),
+                            completedAt: new Date().toISOString()
                         }
                     }
                 };
@@ -836,7 +1151,32 @@
             }
             
             if (!localStorage.getItem('supportTickets')) {
-                localStorage.setItem('supportTickets', JSON.stringify([]));
+                localStorage.setItem('supportTickets', JSON.stringify([
+                    {
+                        id: 1,
+                        username: 'usuario1',
+                        subject: 'Problema con retiro',
+                        message: 'Solicité un retiro hace 3 días y aún no ha sido procesado.',
+                        status: 'pending',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        username: 'usuario2',
+                        subject: 'Consulta sobre depósito',
+                        message: 'Realicé un depósito pero no aparece reflejado en mi cuenta.',
+                        status: 'in-progress',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 3,
+                        username: 'usuario1',
+                        subject: 'Error en ruleta',
+                        message: 'La ruleta mostró que gané pero no recibí el premio.',
+                        status: 'resolved',
+                        createdAt: new Date().toISOString()
+                    }
+                ]));
             }
         }
         
@@ -856,6 +1196,21 @@
         function updateOnlineStatus(username, isOnline) {
             onlineUsers[username] = isOnline ? Date.now() : false;
             localStorage.setItem('onlineUsers', JSON.stringify(onlineUsers));
+        }
+
+        // Función para actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('es-ES', options);
         }
 
         // Login
@@ -897,6 +1252,9 @@
             document.getElementById('adminContainer').style.display = 'block';
             loadDashboard();
             setupNavigation();
+            updateDateTime();
+            // Actualizar cada segundo
+            setInterval(updateDateTime, 1000);
         }
 
         // Configurar navegación entre pestañas
@@ -935,6 +1293,18 @@
             document.getElementById('loadTransactionsBtn').addEventListener('click', loadTransactions);
             document.getElementById('loadRuletasBtn').addEventListener('click', loadRuletas);
             document.getElementById('filterTicketsBtn').addEventListener('click', loadSupportTickets);
+            
+            // Botón de modo oscuro
+            document.getElementById('themeToggle').addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                // Guardar preferencia
+                localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            });
+            
+            // Aplicar modo oscuro si estaba activado
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
         }
 
         // Cambiar entre pestañas
@@ -987,11 +1357,13 @@
             const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
             const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
             const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
             
             // Calcular estadísticas
             const totalUsers = Object.keys(users).length;
             const pendingWithdrawals = withdrawals.filter(w => w.status === 'pending').length;
             const pendingDeposits = deposits.filter(d => d.status === 'pending').length;
+            const pendingTickets = tickets.filter(t => t.status === 'pending').length;
             
             // Calcular usuarios en línea (últimos 5 minutos)
             const now = Date.now();
@@ -1024,6 +1396,7 @@
             document.getElementById('totalWins').textContent = totalWins + ' Bs';
             document.getElementById('totalLosses').textContent = totalLosses + ' Bs';
             document.getElementById('totalBalance').textContent = houseEarnings + ' Bs';
+            document.getElementById('pendingTickets').textContent = pendingTickets;
             
             // Cargar gráficos
             loadCharts();
@@ -1058,7 +1431,8 @@
                         data: Object.values(userCounts),
                         backgroundColor: 'rgba(52, 152, 219, 0.2)',
                         borderColor: 'rgba(52, 152, 219, 1)',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        tension: 0.3
                     }]
                 },
                 options: {
@@ -1091,10 +1465,10 @@
                         label: 'Transacciones por Tipo',
                         data: Object.values(transactionTypes),
                         backgroundColor: [
-                            'rgba(46, 204, 113, 0.2)',
-                            'rgba(231, 76, 60, 0.2)',
-                            'rgba(52, 152, 219, 0.2)',
-                            'rgba(155, 89, 182, 0.2)'
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(231, 76, 60, 0.7)',
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(155, 89, 182, 0.7)'
                         ],
                         borderColor: [
                             'rgba(46, 204, 113, 1)',
@@ -1131,7 +1505,7 @@
                     <td>${transaction.amount} Bs</td>
                     <td>${getStatusLabel(transaction.status)}</td>
                     <td>
-                        <button class="btn btn-primary">Ver</button>
+                        <button class="btn btn-info">Ver</button>
                     </td>
                 </tr>
             `).join('');
@@ -1226,13 +1600,28 @@
                                 <span class="badge badge-offline">Desconectado</span>
                             `}
                         </td>
-                        <td>
-                            <button class="btn btn-primary">Ver</button>
-                            <button class="btn btn-warning">Editar Saldo</button>
+                        <td class="action-buttons">
+                            <button class="btn btn-primary view-user-btn" data-user="${user.username}">Ver</button>
+                            <button class="btn btn-warning edit-balance-btn" data-user="${user.username}">Editar Saldo</button>
                         </td>
                     </tr>
                 `;
             }).join('');
+            
+            // Añadir eventos a los botones
+            document.querySelectorAll('.view-user-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.getAttribute('data-user');
+                    viewUserDetails(username);
+                });
+            });
+            
+            document.querySelectorAll('.edit-balance-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.getAttribute('data-user');
+                    editUserBalance(username);
+                });
+            });
         }
         
         // Cargar retiros
@@ -1268,14 +1657,48 @@
                     <td>${w.account || w.cedula || '-'}</td>
                     <td>${new Date(w.date).toLocaleString()}</td>
                     <td>${getStatusLabel(w.status)}</td>
-                    <td>
+                    <td class="action-buttons">
                         ${w.status === 'pending' ? `
-                            <button class="btn btn-success">Aprobar</button>
-                            <button class="btn btn-danger">Rechazar</button>
+                            <button class="btn btn-success approve-btn" data-id="${w.id}">Aprobar</button>
+                            <button class="btn btn-danger reject-btn" data-id="${w.id}">Rechazar</button>
                         ` : 'N/A'}
                     </td>
                 </tr>
             `).join('');
+            
+            // Añadir eventos a los botones
+            document.querySelectorAll('.approve-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const withdrawalId = this.getAttribute('data-id');
+                    updateWithdrawalStatus(withdrawalId, 'approved');
+                });
+            });
+            
+            document.querySelectorAll('.reject-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const withdrawalId = this.getAttribute('data-id');
+                    updateWithdrawalStatus(withdrawalId, 'rejected');
+                });
+            });
+        }
+        
+        // Actualizar estado de retiro
+        function updateWithdrawalStatus(id, status) {
+            const withdrawals = JSON.parse(localStorage.getItem('withdrawals')) || [];
+            const withdrawal = withdrawals.find(w => w.id == id);
+            
+            if (withdrawal) {
+                withdrawal.status = status;
+                localStorage.setItem('withdrawals', JSON.stringify(withdrawals));
+                
+                // Actualizar vista
+                loadWithdrawals();
+                
+                // Actualizar dashboard
+                if (document.querySelector('.tab-content.active').id === 'dashboard') {
+                    loadDashboard();
+                }
+            }
         }
 
         // Cargar depósitos
@@ -1311,14 +1734,48 @@
                     <td>${d.bank || '-'}</td>
                     <td>${new Date(d.date).toLocaleString()}</td>
                     <td>${getStatusLabel(d.status)}</td>
-                    <td>
+                    <td class="action-buttons">
                         ${d.status === 'pending' ? `
-                            <button class="btn btn-success">Aprobar</button>
-                            <button class="btn btn-danger">Rechazar</button>
+                            <button class="btn btn-success approve-deposit-btn" data-id="${d.id}">Aprobar</button>
+                            <button class="btn btn-danger reject-deposit-btn" data-id="${d.id}">Rechazar</button>
                         ` : 'N/A'}
                     </td>
                 </tr>
             `).join('');
+            
+            // Añadir eventos a los botones
+            document.querySelectorAll('.approve-deposit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const depositId = this.getAttribute('data-id');
+                    updateDepositStatus(depositId, 'approved');
+                });
+            });
+            
+            document.querySelectorAll('.reject-deposit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const depositId = this.getAttribute('data-id');
+                    updateDepositStatus(depositId, 'rejected');
+                });
+            });
+        }
+        
+        // Actualizar estado de depósito
+        function updateDepositStatus(id, status) {
+            const deposits = JSON.parse(localStorage.getItem('deposits')) || [];
+            const deposit = deposits.find(d => d.id == id);
+            
+            if (deposit) {
+                deposit.status = status;
+                localStorage.setItem('deposits', JSON.stringify(deposits));
+                
+                // Actualizar vista
+                loadDeposits();
+                
+                // Actualizar dashboard
+                if (document.querySelector('.tab-content.active').id === 'dashboard') {
+                    loadDashboard();
+                }
+            }
         }
         
         // Cargar transacciones
@@ -1407,19 +1864,35 @@
                         ${r.winners?.right ? '50 Bs' : '-'}
                     </td>
                     <td>${r.active ? 'Activa' : 'Completada'}</td>
-                    <td>
+                    <td class="action-buttons">
                         ${!r.active ? `
-                            <button class="btn btn-primary">Ver Detalles</button>
+                            <button class="btn btn-primary view-ruleta-btn" data-id="${r.id}">Ver Detalles</button>
                         ` : `
-                            <button class="btn btn-danger">Forzar Cierre</button>
+                            <button class="btn btn-danger close-ruleta-btn" data-id="${r.id}">Forzar Cierre</button>
                         `}
                     </td>
                 </tr>
             `).join('');
+            
+            // Añadir eventos a los botones
+            document.querySelectorAll('.view-ruleta-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const ruletaId = this.getAttribute('data-id');
+                    viewRuletaDetails(ruletaId);
+                });
+            });
+            
+            document.querySelectorAll('.close-ruleta-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const ruletaId = this.getAttribute('data-id');
+                    closeRuleta(ruletaId);
+                });
+            });
         }
         
         // Función para cargar tickets de soporte
-        function loadSupportTickets(filter = 'all') {
+        function loadSupportTickets() {
+            const filter = document.getElementById('ticketFilter').value;
             const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
             let filteredTickets = tickets;
             
@@ -1456,9 +1929,105 @@
                     <div class="ticket-message">
                         ${ticket.message}
                     </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary update-ticket-btn" data-id="${ticket.id}">Actualizar Estado</button>
+                        <button class="btn btn-danger delete-ticket-btn" data-id="${ticket.id}">Eliminar</button>
+                    </div>
                 `;
                 ticketsList.appendChild(ticketElement);
             });
+            
+            // Añadir eventos a los botones
+            document.querySelectorAll('.update-ticket-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const ticketId = this.getAttribute('data-id');
+                    updateTicketStatus(ticketId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-ticket-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const ticketId = this.getAttribute('data-id');
+                    deleteTicket(ticketId);
+                });
+            });
+        }
+        
+        // Función para ver detalles de usuario
+        function viewUserDetails(username) {
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const user = users[username];
+            
+            if (user) {
+                alert(`Detalles de Usuario:\n\nUsuario: ${user.username}\nNombre: ${user.fullName}\nEmail: ${user.email}\nSaldo: ${user.balance} Bs\nGanancias: ${user.wins} Bs\nPérdidas: ${user.losses} Bs`);
+            }
+        }
+        
+        // Función para editar saldo de usuario
+        function editUserBalance(username) {
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const user = users[username];
+            
+            if (user) {
+                const newBalance = prompt(`Editar saldo para ${username} (actual: ${user.balance} Bs):`, user.balance);
+                
+                if (newBalance !== null && !isNaN(newBalance)) {
+                    user.balance = parseFloat(newBalance);
+                    localStorage.setItem('users', JSON.stringify(users));
+                    loadUsers();
+                }
+            }
+        }
+        
+        // Función para ver detalles de ruleta
+        function viewRuletaDetails(id) {
+            const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
+            const ruleta = ruletasData.ruletas[id];
+            
+            if (ruleta) {
+                alert(`Detalles de Ruleta #${id}:\n\nFecha: ${new Date(ruleta.createdAt).toLocaleString()}\nParticipantes: ${ruleta.sectors.filter(s => s !== null).length}\nGanancias de la casa: ${ruleta.houseEarnings} Bs`);
+            }
+        }
+        
+        // Función para cerrar ruleta
+        function closeRuleta(id) {
+            if (confirm(`¿Estás seguro de que deseas forzar el cierre de la ruleta #${id}?`)) {
+                const ruletasData = JSON.parse(localStorage.getItem('ruletasData')) || { ruletas: {} };
+                const ruleta = ruletasData.ruletas[id];
+                
+                if (ruleta) {
+                    ruleta.active = false;
+                    ruleta.completedAt = new Date().toISOString();
+                    localStorage.setItem('ruletasData', JSON.stringify(ruletasData));
+                    loadRuletas();
+                }
+            }
+        }
+        
+        // Función para actualizar estado de ticket
+        function updateTicketStatus(id) {
+            const tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
+            const ticket = tickets.find(t => t.id == id);
+            
+            if (ticket) {
+                const newStatus = prompt('Actualizar estado del ticket (pending, in-progress, resolved):', ticket.status);
+                
+                if (newStatus && ['pending', 'in-progress', 'resolved'].includes(newStatus)) {
+                    ticket.status = newStatus;
+                    localStorage.setItem('supportTickets', JSON.stringify(tickets));
+                    loadSupportTickets();
+                }
+            }
+        }
+        
+        // Función para eliminar ticket
+        function deleteTicket(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este ticket?')) {
+                let tickets = JSON.parse(localStorage.getItem('supportTickets')) || [];
+                tickets = tickets.filter(t => t.id != id);
+                localStorage.setItem('supportTickets', JSON.stringify(tickets));
+                loadSupportTickets();
+            }
         }
     </script>
 </body>
