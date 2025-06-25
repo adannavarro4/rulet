@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexión PHP con Base de Datos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        form {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Datos de la Base de Datos:</h1>
+    <ul id="datos-container"></ul>
+
+    <h2>Agregar Nuevo Usuario</h2>
+    <form id="user-form">
+        <input type="text" id="nombre" placeholder="Nombre" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <button type="submit">Guardar</button>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const datosContainer = document.getElementById('datos-container');
+            const userForm = document.getElementById('user-form');
+
+            // Función para cargar y mostrar los datos
+            function cargarDatos() {
+                fetch('http://localhost/backend/api.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la respuesta del servidor');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        datosContainer.innerHTML = '';
+                        data.forEach(item => {
+                            const li = document.createElement('li');
+                            // Ajusta según las columnas de tu tabla
+                            li.textContent = `${item.nombre} - ${item.email}`;
+                            datosContainer.appendChild(li);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar datos:', error);
+                        datosContainer.innerHTML = `<li>Error al cargar datos: ${error.message}</li>`;
+                    });
+            }
+
+            // Manejar envío del formulario
+            userForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const nuevoUsuario = {
+                    nombre: document.getElementById('nombre').value,
+                    email: document.getElementById('email').value
+                };
+
+                fetch('http://localhost/backend/api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(nuevoUsuario)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        cargarDatos(); // Recargar la lista
+                        userForm.reset(); // Limpiar el formulario
+                        alert('Usuario agregado con éxito!');
+                    } else {
+                        alert(`Error: ${result.error || 'No se pudo guardar'}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al enviar los datos');
+                });
+            });
+
+            // Cargar datos al iniciar
+            cargarDatos();
+        });
+    </script>
+</body>
+</html>
