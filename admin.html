@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Admin - Rulet</title>
     <style>
+        /* Tus estilos CSS se mantienen igual */
         :root {
             --primary: #2c3e50;
             --secondary: #3498db;
@@ -680,6 +681,18 @@
     </div>
 
     <script>
+        // Hacer las funciones globales para que estén disponibles desde los onclick
+        window.viewUser = viewUser;
+        window.editUserBalance = editUserBalance;
+        window.approveWithdrawal = approveWithdrawal;
+        window.rejectWithdrawal = rejectWithdrawal;
+        window.approveDeposit = approveDeposit;
+        window.rejectDeposit = rejectDeposit;
+        window.viewRuleta = viewRuleta;
+        window.closeRuleta = closeRuleta;
+        window.updateTicketStatus = updateTicketStatus;
+        window.deleteTicket = deleteTicket;
+
         // Datos de ejemplo en localStorage si no existen
         function initializeLocalStorage() {
             if (!localStorage.getItem('users')) {
