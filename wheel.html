@@ -31,7 +31,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
             margin: 0 auto;
             padding: 20px;
@@ -52,7 +52,7 @@
         .wheel-container {
             position: relative;
             width: 100%;
-            max-width: 500px;
+            max-width: 400px;
             margin: 0 auto 40px;
             perspective: 1000px;
         }
@@ -68,7 +68,7 @@
             z-index: -1;
         }
 
-        #wheel {
+        .wheel {
             width: 100%;
             height: auto;
             border-radius: 50%;
@@ -79,7 +79,7 @@
             z-index: 1;
         }
 
-        #wheel:hover {
+        .wheel:hover {
             transform: rotate(5deg);
         }
 
@@ -87,35 +87,35 @@
             position: absolute;
             width: 0;
             height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 40px solid var(--accent-color);
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid var(--accent-color);
             z-index: 10;
             filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
         }
 
-        #mainPointer {
-            top: -25px;
+        .mainPointer {
+            top: -20px;
             left: 50%;
             transform: translateX(-50%);
         }
 
-        #leftPointer {
-            top: -1px;
-            left: 120px;
+        .leftPointer {
+            top: 10px;
+            left: 90px;
             transform: rotate(-30deg);
         }
 
-        #rightPointer {
-            top: -1px;
-            right: 120px;
+        .rightPointer {
+            top: 10px;
+            right: 90px;
             transform: rotate(30deg);
         }
 
         .wheel-center {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             background: white;
             border-radius: 50%;
             top: 50%;
@@ -159,7 +159,7 @@
             margin: 20px 0;
         }
         
-        #messages {
+        .messages {
             padding: 15px;
             margin: 20px 0;
             border-radius: 5px;
@@ -180,7 +180,7 @@
             border: 1px solid #4f8a10;
         }
         
-        #currentBets {
+        .currentBets {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
@@ -218,7 +218,7 @@
             font-size: 1.1rem;
         }
         
-        #result {
+        .result {
             display: none;
             background-color: rgba(255, 255, 255, 0.95);
             padding: 25px;
@@ -228,7 +228,7 @@
             color: var(--dark-color);
         }
         
-        #result h2 {
+        .result h2 {
             color: var(--primary-color);
             margin-bottom: 20px;
             font-size: 1.5rem;
@@ -312,26 +312,58 @@
             transform: scale(1.05);
             box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
         }
+        
+        /* Contenedor para ambas ruletas */
+        .ruletas-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+        
+        .ruleta-section {
+            flex: 1;
+            min-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .ruleta-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
 
         /* Responsive */
-        @media (max-width: 600px) {
+        @media (max-width: 900px) {
+            .ruletas-container {
+                flex-direction: column;
+            }
+            
+            .ruleta-section {
+                min-width: 100%;
+            }
+            
             .wheel-container {
                 max-width: 300px;
             }
             
             .pointer {
-                border-left: 15px solid transparent;
-                border-right: 15px solid transparent;
-                border-top: 30px solid var(--accent-color);
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-top: 25px solid var(--accent-color);
             }
             
-            #leftPointer {
-                top: 40px;
+            .leftPointer {
+                top: 20px;
                 left: 70px;
             }
             
-            #rightPointer {
-                top: 40px;
+            .rightPointer {
+                top: 20px;
                 right: 70px;
             }
             
@@ -339,7 +371,7 @@
                 font-size: 2rem;
             }
             
-            #currentBets {
+            .currentBets {
                 grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
                 gap: 10px;
             }
@@ -357,35 +389,64 @@
 </head>
 <body>
     <div class="container">
+        <h1>Ruletas de 15 Espacios con 3 Premios</h1>
+        
         <div class="ruleta-selector">
-            <button id="normalRuleta" class="ruleta-btn active">Ruleta Normal (50 Bs)</button>
-            <button id="dobleRuleta" class="ruleta-btn">Ruleta Doble (100 Bs)</button>
+            <button id="ruleta150" class="ruleta-btn active">Ruleta 150 Bs</button>
+            <button id="ruleta300" class="ruleta-btn">Ruleta 300 Bs</button>
         </div>
         
-        <h1>Ruleta de 15 Espacios con 3 Premios</h1>
-        
-        <div class="wheel-container">
-            <div class="wheel-shadow"></div>
-            <div id="leftPointer" class="pointer"></div>
-            <div id="mainPointer" class="pointer"></div>
-            <div id="rightPointer" class="pointer"></div>
-            <div class="wheel-center"></div>
-            <canvas id="wheel" width="500" height="500"></canvas>
+        <div class="ruletas-container">
+            <!-- Ruleta de 150 Bs -->
+            <div class="ruleta-section" id="section150">
+                <div class="ruleta-title">Ruleta 150 Bs</div>
+                
+                <div class="wheel-container">
+                    <div class="wheel-shadow"></div>
+                    <div class="leftPointer pointer"></div>
+                    <div class="mainPointer pointer"></div>
+                    <div class="rightPointer pointer"></div>
+                    <div class="wheel-center"></div>
+                    <canvas id="wheel150" width="400" height="400" class="wheel"></canvas>
+                </div>
+                
+                <div class="bet-controls">
+                    <button id="betBtn150">Apostar 150 Bs</button>
+                    <div id="messages150" class="messages"></div>
+                </div>
+                
+                <div id="currentBets150" class="currentBets"></div>
+                
+                <div id="result150" class="result"></div>
+            </div>
+            
+            <!-- Ruleta de 300 Bs -->
+            <div class="ruleta-section" id="section300" style="display:none;">
+                <div class="ruleta-title">Ruleta 300 Bs</div>
+                
+                <div class="wheel-container">
+                    <div class="wheel-shadow"></div>
+                    <div class="leftPointer pointer"></div>
+                    <div class="mainPointer pointer"></div>
+                    <div class="rightPointer pointer"></div>
+                    <div class="wheel-center"></div>
+                    <canvas id="wheel300" width="400" height="400" class="wheel"></canvas>
+                </div>
+                
+                <div class="bet-controls">
+                    <button id="betBtn300">Apostar 300 Bs</button>
+                    <div id="messages300" class="messages"></div>
+                </div>
+                
+                <div id="currentBets300" class="currentBets"></div>
+                
+                <div id="result300" class="result"></div>
+            </div>
         </div>
-        
-        <div class="bet-controls">
-            <button id="betBtn">Apostar 50 Bs</button>
-            <div id="messages"></div>
-        </div>
-        
-        <div id="currentBets"></div>
-        
-        <div id="result"></div>
         
         <a href="dashboard.html" class="back-btn">Volver al Panel</a>
         
         <input type="hidden" id="playerName" />
-        <input type="hidden" id="ruletaType" value="normal" />
     </div>
 
     <script>
@@ -406,35 +467,95 @@
         
         if (!user) {
             // Crear usuario demo si no existe
-            user = { balance: 1000, wins: 0 };
+            user = { balance: 2000, wins: 0 };
             users[loggedUserName] = user;
             localStorage.setItem("users", JSON.stringify(users));
         }
         
-        // Función para verificar saldo según tipo de ruleta
-        function checkBalance() {
-            const ruletaType = document.getElementById("ruletaType").value;
-            const betAmount = ruletaType === "normal" ? 50 : 100;
+        // Variables globales para controlar las ruletas
+        let currentRuletaType = "150";
+        let rotationAngle150 = 0;
+        let rotationAngle300 = 0;
+        let selectedSector150 = null;
+        let selectedSector300 = null;
+        
+        // Inicializar las ruletas
+        function initRuleta(type) {
+            const canvas = document.getElementById(`wheel${type}`);
+            const ctx = canvas.getContext("2d");
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 20;
+            const numSectors = 15;
             
-            if (user.balance < betAmount) {
-                document.getElementById("betBtn").disabled = true;
-                document.getElementById("messages").textContent = `No tienes saldo suficiente para apostar. Necesitas ${betAmount} Bs. Por favor recarga tu cuenta.`;
-                document.getElementById("messages").style.display = "block";
-                document.getElementById("messages").className = "error";
+            // Manejar clic en la ruleta
+            canvas.addEventListener("click", function(event) {
+                const currentRuleta = getCurrentRuleta(type);
+                if (currentRuleta.spinning) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left - centerX;
+                const y = event.clientY - rect.top - centerY;
+                const distance = Math.sqrt(x * x + y * y);
+                
+                if (distance < radius) {
+                    const angle = Math.atan2(y, x);
+                    let rotationAngle = type === "150" ? rotationAngle150 : rotationAngle300;
+                    let normalizedAngle = (angle - rotationAngle + 2 * Math.PI) % (2 * Math.PI);
+                    let selectedSector = Math.floor(normalizedAngle / (2 * Math.PI / numSectors));
+                    
+                    // Verificar si el sector ya está ocupado
+                    if (currentRuleta.sectors[selectedSector]) {
+                        document.getElementById(`messages${type}`).textContent = "Este número ya está ocupado. Por favor, elige otro.";
+                        document.getElementById(`messages${type}`).style.display = "block";
+                        document.getElementById(`messages${type}`).className = "error";
+                        
+                        if (type === "150") {
+                            selectedSector150 = null;
+                        } else {
+                            selectedSector300 = null;
+                        }
+                    } else {
+                        document.getElementById(`messages${type}`).style.display = "none";
+                        
+                        if (type === "150") {
+                            selectedSector150 = selectedSector;
+                        } else {
+                            selectedSector300 = selectedSector;
+                        }
+                    }
+                    
+                    drawWheel(type);
+                }
+            });
+            
+            // Dibujar la ruleta inicialmente
+            drawWheel(type);
+            updateBetsDisplay(type);
+            checkBalance(type);
+        }
+        
+        // Función para verificar saldo según tipo de ruleta
+        function checkBalance(type) {
+            const betAmount = type === "150" ? 150 : 300;
+            const user = users[loggedUserName];
+            
+            if (!user || user.balance < betAmount) {
+                document.getElementById(`betBtn${type}`).disabled = true;
+                document.getElementById(`messages${type}`).textContent = `No tienes saldo suficiente para apostar. Necesitas ${betAmount} Bs. Por favor recarga tu cuenta.`;
+                document.getElementById(`messages${type}`).style.display = "block";
+                document.getElementById(`messages${type}`).className = "error";
                 return false;
             } else {
-                document.getElementById("betBtn").disabled = false;
-                document.getElementById("messages").style.display = "none";
+                document.getElementById(`betBtn${type}`).disabled = false;
+                document.getElementById(`messages${type}`).style.display = "none";
                 return true;
             }
         }
         
-        checkBalance();
-        
         // Obtener o inicializar datos de las ruletas en localStorage
-        function getRuletasData() {
-            const ruletaType = document.getElementById("ruletaType").value;
-            let data = localStorage.getItem(`ruletasData_${ruletaType}`);
+        function getRuletasData(type) {
+            let data = localStorage.getItem(`ruletasData_${type}`);
             if (!data) {
                 data = {
                     currentRuletaId: 1,
@@ -449,7 +570,7 @@
                         }
                     }
                 };
-                localStorage.setItem(`ruletasData_${ruletaType}`, JSON.stringify(data));
+                localStorage.setItem(`ruletasData_${type}`, JSON.stringify(data));
             } else {
                 data = JSON.parse(data);
             }
@@ -457,21 +578,20 @@
         }
         
         // Actualizar datos de las ruletas en localStorage
-        function updateRuletasData(data) {
-            const ruletaType = document.getElementById("ruletaType").value;
-            localStorage.setItem(`ruletasData_${ruletaType}`, JSON.stringify(data));
+        function updateRuletasData(data, type) {
+            localStorage.setItem(`ruletasData_${type}`, JSON.stringify(data));
         }
         
         // Función para verificar si la ruleta está llena (15 jugadores)
-        function isRuletaLlena(ruletaId) {
-            const ruletasData = getRuletasData();
+        function isRuletaLlena(ruletaId, type) {
+            const ruletasData = getRuletasData(type);
             const ruleta = ruletasData.ruletas[ruletaId];
             return ruleta.sectors.filter(sector => sector !== null).length >= 15;
         }
         
         // Función para crear una nueva ruleta automáticamente
-        function crearNuevaRuleta() {
-            const ruletasData = getRuletasData();
+        function crearNuevaRuleta(type) {
+            const ruletasData = getRuletasData(type);
             const newId = ruletasData.currentRuletaId + 1;
             
             ruletasData.ruletas[newId] = {
@@ -484,26 +604,26 @@
             };
             
             ruletasData.currentRuletaId = newId;
-            updateRuletasData(ruletasData);
+            updateRuletasData(ruletasData, type);
             
             // Mostrar mensaje de nueva ruleta creada
-            document.getElementById("messages").textContent = "¡Se ha creado una nueva ruleta automáticamente!";
-            document.getElementById("messages").style.display = "block";
-            document.getElementById("messages").className = "success";
+            document.getElementById(`messages${type}`).textContent = "¡Se ha creado una nueva ruleta automáticamente!";
+            document.getElementById(`messages${type}`).style.display = "block";
+            document.getElementById(`messages${type}`).className = "success";
             
             return newId;
         }
         
         // Función para obtener la ruleta activa actual
-        function getCurrentRuleta() {
-            const ruletasData = getRuletasData();
+        function getCurrentRuleta(type) {
+            const ruletasData = getRuletasData(type);
             return ruletasData.ruletas[ruletasData.currentRuletaId];
         }
         
         // Mostrar las apuestas actuales
-        function updateBetsDisplay() {
-            const currentRuleta = getCurrentRuleta();
-            const betsContainer = document.getElementById("currentBets");
+        function updateBetsDisplay(type) {
+            const currentRuleta = getCurrentRuleta(type);
+            const betsContainer = document.getElementById(`currentBets${type}`);
             betsContainer.innerHTML = "";
             
             currentRuleta.sectors.forEach((sector, index) => {
@@ -524,70 +644,44 @@
             }
         }
         
-        // Configuración inicial de la ruleta
-        const canvas = document.getElementById("wheel");
-        const ctx = canvas.getContext("2d");
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const radius = canvas.width / 2 - 20;
-        const numSectors = 15;
-        let rotationAngle = 0;
-        let selectedSector = null;
-        
-        // Manejar clic en la ruleta
-        canvas.addEventListener("click", function(event) {
-            const currentRuleta = getCurrentRuleta();
-            if (currentRuleta.spinning) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left - centerX;
-            const y = event.clientY - rect.top - centerY;
-            const distance = Math.sqrt(x * x + y * y);
-            
-            if (distance < radius) {
-                const angle = Math.atan2(y, x);
-                let normalizedAngle = (angle - rotationAngle + 2 * Math.PI) % (2 * Math.PI);
-                selectedSector = Math.floor(normalizedAngle / (2 * Math.PI / numSectors));
-                
-                // Verificar si el sector ya está ocupado
-                if (currentRuleta.sectors[selectedSector]) {
-                    document.getElementById("messages").textContent = "Este número ya está ocupado. Por favor, elige otro.";
-                    document.getElementById("messages").style.display = "block";
-                    document.getElementById("messages").className = "error";
-                    selectedSector = null;
-                } else {
-                    document.getElementById("messages").style.display = "none";
-                }
-                
-                drawWheel();
-            }
-        });
-        
         // Función para verificar si un jugador ya apostó
-        function hasPlayerBet(playerName, ruletaId) {
-            const ruletasData = getRuletasData();
+        function hasPlayerBet(playerName, ruletaId, type) {
+            const ruletasData = getRuletasData(type);
             const ruleta = ruletasData.ruletas[ruletaId];
             return ruleta.sectors.some(sector => sector && sector.playerName === playerName);
         }
         
         // Obtener sector desde un puntero (0=central, -1=izquierdo, 1=derecho)
-        function getSectorFromPointer(pointerOffset) {
+        function getSectorFromPointer(pointerOffset, type) {
+            // Obtener el ángulo de rotación actual
+            let rotationAngle = type === "150" ? rotationAngle150 : rotationAngle300;
+            
             // Ajustar el ángulo según el puntero seleccionado
             let angle = rotationAngle;
-            if (pointerOffset === -1) angle += (2 * Math.PI / numSectors) * 0.3; // Izquierda
-            if (pointerOffset === 1) angle -= (2 * Math.PI / numSectors) * 0.3; // Derecha
+            if (pointerOffset === -1) angle += (2 * Math.PI / 15) * 0.3; // Izquierda
+            if (pointerOffset === 1) angle -= (2 * Math.PI / 15) * 0.3; // Derecha
             
             // Normalizar el ángulo
             angle = (angle + 2 * Math.PI) % (2 * Math.PI);
             
             // Calcular sector
-            const sector = Math.floor(angle / (2 * Math.PI / numSectors));
-            return (numSectors - sector) % numSectors;
+            const sector = Math.floor(angle / (2 * Math.PI / 15));
+            return (15 - sector) % 15;
         }
         
         // Dibuja la ruleta con sus sectores
-        function drawWheel() {
-            const currentRuleta = getCurrentRuleta();
+        function drawWheel(type) {
+            const canvas = document.getElementById(`wheel${type}`);
+            const ctx = canvas.getContext("2d");
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 20;
+            const numSectors = 15;
+            
+            const currentRuleta = getCurrentRuleta(type);
+            const rotationAngle = type === "150" ? rotationAngle150 : rotationAngle300;
+            const selectedSector = type === "150" ? selectedSector150 : selectedSector300;
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const anglePerSector = (2 * Math.PI) / numSectors;
             
@@ -625,7 +719,7 @@
                 ctx.translate(textX, textY);
                 ctx.rotate(textAngle + Math.PI / 2);
                 ctx.fillStyle = "#fff";
-                ctx.font = "bold 22px Arial";
+                ctx.font = "bold 18px Arial";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.shadowColor = "rgba(0,0,0,0.5)";
@@ -641,7 +735,7 @@
                     ctx.translate(infoX, infoY);
                     ctx.rotate(textAngle + Math.PI / 2);
                     ctx.fillStyle = "#fff";
-                    ctx.font = "bold 12px Arial";
+                    ctx.font = "bold 10px Arial";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     ctx.shadowColor = "rgba(0,0,0,0.5)";
@@ -677,94 +771,102 @@
         }
         
         // Maneja el botón de apostar
-        document.getElementById("betBtn").addEventListener("click", () => {
-            const messagesDiv = document.getElementById("messages");
-            messagesDiv.style.display = "none";
-            
-            let ruletasData = getRuletasData();
-            let currentRuleta = getCurrentRuleta();
-            
-            // Verificar si la ruleta actual está llena (15 jugadores)
-            if (isRuletaLlena(currentRuleta.id)) {
-                // Crear nueva ruleta automáticamente
-                const newRuletaId = crearNuevaRuleta();
-                currentRuleta = ruletasData.ruletas[newRuletaId];
-            }
-            
-            if (currentRuleta.spinning) {
-                messagesDiv.textContent = "La ruleta está girando, no se pueden hacer más apuestas.";
+        function setupBetButton(type) {
+            document.getElementById(`betBtn${type}`).addEventListener("click", () => {
+                const messagesDiv = document.getElementById(`messages${type}`);
+                messagesDiv.style.display = "none";
+                
+                let ruletasData = getRuletasData(type);
+                let currentRuleta = getCurrentRuleta(type);
+                
+                // Verificar si la ruleta actual está llena (15 jugadores)
+                if (isRuletaLlena(currentRuleta.id, type)) {
+                    // Crear nueva ruleta automáticamente
+                    const newRuletaId = crearNuevaRuleta(type);
+                    currentRuleta = ruletasData.ruletas[newRuletaId];
+                }
+                
+                if (currentRuleta.spinning) {
+                    messagesDiv.textContent = "La ruleta está girando, no se pueden hacer más apuestas.";
+                    messagesDiv.style.display = "block";
+                    messagesDiv.className = "error";
+                    return;
+                }
+                
+                const selectedSector = type === "150" ? selectedSector150 : selectedSector300;
+                if (selectedSector === null) {
+                    messagesDiv.textContent = "Por favor, selecciona un número en la ruleta.";
+                    messagesDiv.style.display = "block";
+                    messagesDiv.className = "error";
+                    return;
+                }
+                
+                const playerName = loggedUserName;
+                const bet = type === "150" ? 150 : 300;
+                
+                if (hasPlayerBet(playerName, currentRuleta.id, type)) {
+                    messagesDiv.textContent = "Ya has apostado en esta ruleta. Solo se permite una apuesta por usuario por ruleta.";
+                    messagesDiv.style.display = "block";
+                    messagesDiv.className = "error";
+                    return;
+                }
+                
+                // Obtener datos del usuario
+                let users = JSON.parse(localStorage.getItem("users") || "{}");
+                if (!users[playerName] || users[playerName].balance < bet) {
+                    messagesDiv.textContent = `No tienes fondos suficientes en tu panel para esa apuesta de ${bet} Bs.`;
+                    messagesDiv.style.display = "block";
+                    messagesDiv.className = "error";
+                    return;
+                }
+                
+                // Actualizar balance del usuario
+                users[playerName].balance -= bet;
+                localStorage.setItem("users", JSON.stringify(users));
+                
+                // Registrar apuesta
+                currentRuleta.sectors[selectedSector] = { playerName, bet };
+                ruletasData.ruletas[currentRuleta.id] = currentRuleta;
+                updateRuletasData(ruletasData, type);
+                
+                messagesDiv.textContent = `Jugador ${playerName} eligió el número ${selectedSector + 1} con apuesta de ${bet} bolívares.`;
                 messagesDiv.style.display = "block";
-                messagesDiv.className = "error";
-                return;
-            }
-            
-            if (selectedSector === null) {
-                messagesDiv.textContent = "Por favor, selecciona un número en la ruleta.";
-                messagesDiv.style.display = "block";
-                messagesDiv.className = "error";
-                return;
-            }
-            
-            const playerName = loggedUserName;
-            const ruletaType = document.getElementById("ruletaType").value;
-            const bet = ruletaType === "normal" ? 50 : 100; // Apuesta según tipo de ruleta
-            
-            if (hasPlayerBet(playerName, currentRuleta.id)) {
-                messagesDiv.textContent = "Ya has apostado en esta ruleta. Solo se permite una apuesta por usuario por ruleta.";
-                messagesDiv.style.display = "block";
-                messagesDiv.className = "error";
-                return;
-            }
-            
-            // Obtener datos del usuario
-            let users = JSON.parse(localStorage.getItem("users") || "{}");
-            if (!users[playerName] || users[playerName].balance < bet) {
-                messagesDiv.textContent = `No tienes fondos suficientes en tu panel para esa apuesta de ${bet} Bs.`;
-                messagesDiv.style.display = "block";
-                messagesDiv.className = "error";
-                return;
-            }
-            
-            // Actualizar balance del usuario
-            users[playerName].balance -= bet;
-            localStorage.setItem("users", JSON.stringify(users));
-            
-            // Registrar apuesta
-            currentRuleta.sectors[selectedSector] = { playerName, bet };
-            ruletasData.ruletas[currentRuleta.id] = currentRuleta;
-            updateRuletasData(ruletasData);
-            
-            messagesDiv.textContent = `Jugador ${playerName} eligió el número ${selectedSector + 1} con apuesta de ${bet} bolívares.`;
-            messagesDiv.style.display = "block";
-            messagesDiv.className = "success";
-            
-            selectedSector = null;
-            drawWheel();
-            updateBetsDisplay();
-            
-            // Actualizar saldo del usuario
-            user = users[playerName];
-            checkBalance();
-            
-            // Iniciar el sorteo si todos los números están ocupados (15 jugadores)
-            if (currentRuleta.sectors.every(sector => sector !== null)) {
-                messagesDiv.textContent += " Todos los números han sido elegidos. Se inicia el sorteo...";
-                spinWheel(currentRuleta.id);
-            }
-        });
+                messagesDiv.className = "success";
+                
+                // Limpiar selección
+                if (type === "150") {
+                    selectedSector150 = null;
+                } else {
+                    selectedSector300 = null;
+                }
+                
+                drawWheel(type);
+                updateBetsDisplay(type);
+                
+                // Actualizar saldo del usuario
+                user = users[playerName];
+                checkBalance(type);
+                
+                // Iniciar el sorteo si todos los números están ocupados (15 jugadores)
+                if (currentRuleta.sectors.every(sector => sector !== null)) {
+                    messagesDiv.textContent += " Todos los números han sido elegidos. Se inicia el sorteo...";
+                    spinWheel(currentRuleta.id, type);
+                }
+            });
+        }
         
         // Función para girar la ruleta
-        function spinWheel(ruletaId) {
-            let ruletasData = getRuletasData();
+        function spinWheel(ruletaId, type) {
+            let ruletasData = getRuletasData(type);
             let currentRuleta = ruletasData.ruletas[ruletaId];
             currentRuleta.spinning = true;
             ruletasData.ruletas[ruletaId] = currentRuleta;
-            updateRuletasData(ruletasData);
+            updateRuletasData(ruletasData, type);
             
             // Deshabilitar botón de apuesta
-            document.getElementById("betBtn").disabled = true;
+            document.getElementById(`betBtn${type}`).disabled = true;
             
-            let initialRotation = rotationAngle;
+            let initialRotation = type === "150" ? rotationAngle150 : rotationAngle300;
             const extraRotation = (Math.random() * 3 + 3) * 2 * Math.PI;
             const duration = 4000;
             const startTime = performance.now();
@@ -773,41 +875,46 @@
                 const elapsed = time - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const easeOut = 1 - Math.pow(1 - progress, 3);
-                rotationAngle = initialRotation + extraRotation * easeOut;
-                drawWheel();
+                
+                if (type === "150") {
+                    rotationAngle150 = initialRotation + extraRotation * easeOut;
+                } else {
+                    rotationAngle300 = initialRotation + extraRotation * easeOut;
+                }
+                
+                drawWheel(type);
                 
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
                     // Determinar los 3 ganadores (izquierda, centro, derecha)
-                    const mainWinnerIndex = getSectorFromPointer(0);
-                    const leftWinnerIndex = getSectorFromPointer(-1);
-                    const rightWinnerIndex = getSectorFromPointer(1);
+                    const mainWinnerIndex = getSectorFromPointer(0, type);
+                    const leftWinnerIndex = getSectorFromPointer(-1, type);
+                    const rightWinnerIndex = getSectorFromPointer(1, type);
                     
                     const mainWinner = currentRuleta.sectors[mainWinnerIndex];
                     const leftWinner = currentRuleta.sectors[leftWinnerIndex];
                     const rightWinner = currentRuleta.sectors[rightWinnerIndex];
                     
                     // Calcular premios según el tipo de ruleta
-                    const ruletaType = document.getElementById("ruletaType").value;
                     let premioPrincipal, premioSecundario, totalApostado;
                     
-                    if (ruletaType === "normal") {
-                        totalApostado = 15 * 50; // 750 Bs
-                        premioPrincipal = Math.round(totalApostado * 0.70); // 70% = 525 Bs
-                        const restante = totalApostado - premioPrincipal; // 225 Bs
-                        premioSecundario = Math.round(restante * 0.59 / 2); // 59% del restante dividido entre 2 = 66 Bs cada uno
+                    if (type === "150") {
+                        totalApostado = 15 * 150; // 2250 Bs
+                        premioPrincipal = Math.round(totalApostado * 0.70); // 70% = 1575 Bs
+                        const restante = totalApostado - premioPrincipal; // 675 Bs
+                        premioSecundario = Math.round(restante * 0.59 / 2); // 59% del restante dividido entre 2 = 199 Bs cada uno
                     } else {
-                        totalApostado = 15 * 100; // 1500 Bs
-                        premioPrincipal = Math.round(totalApostado * 0.70); // 70% = 1050 Bs
-                        const restante = totalApostado - premioPrincipal; // 450 Bs
-                        premioSecundario = Math.round(restante * 0.59 / 2); // 59% del restante dividido entre 2 = 133 Bs cada uno
+                        totalApostado = 15 * 300; // 4500 Bs
+                        premioPrincipal = Math.round(totalApostado * 0.70); // 70% = 3150 Bs
+                        const restante = totalApostado - premioPrincipal; // 1350 Bs
+                        premioSecundario = Math.round(restante * 0.59 / 2); // 59% del restante dividido entre 2 = 398 Bs cada uno
                     }
                     
                     // Mostrar resultado
-                    const resultDiv = document.getElementById("result");
+                    const resultDiv = document.getElementById(`result${type}`);
                     resultDiv.innerHTML = `
-                        <h2>Resultado de la Ruleta ${ruletaType === "normal" ? "Normal" : "Doble"}</h2>
+                        <h2>Resultado de la Ruleta ${type} Bs</h2>
                         <p>Ganador principal: <span class="winner-highlight">${mainWinner.playerName}</span>, 
                         número <strong>${mainWinnerIndex + 1}</strong> - Premio: <strong>${premioPrincipal} Bs</strong></p>
                         <p>Ganador secundario izquierdo: <span class="secondary-winner">${leftWinner.playerName}</span>, 
@@ -853,60 +960,46 @@
                     currentRuleta.active = false; // Marcar como inactiva
                     
                     ruletasData.ruletas[ruletaId] = currentRuleta;
-                    updateRuletasData(ruletasData);
+                    updateRuletasData(ruletasData, type);
                     
                     // Crear nueva ruleta automáticamente si es la actual
                     if (ruletaId === ruletasData.currentRuletaId) {
-                        crearNuevaRuleta();
+                        crearNuevaRuleta(type);
                     }
                     
                     // Habilitar botón de apuesta
-                    document.getElementById("betBtn").disabled = false;
+                    document.getElementById(`betBtn${type}`).disabled = false;
                     
                     setTimeout(() => {
-                        document.getElementById("result").style.display = "none";
+                        document.getElementById(`result${type}`).style.display = "none";
                     }, 15000);
                 }
             }
             requestAnimationFrame(animate);
         }
         
-        // Cambiar entre ruleta normal y doble
-        document.getElementById("normalRuleta").addEventListener("click", function() {
-            document.getElementById("ruletaType").value = "normal";
-            document.getElementById("betBtn").textContent = "Apostar 50 Bs";
-            document.getElementById("normalRuleta").classList.add("active");
-            document.getElementById("dobleRuleta").classList.remove("active");
-            
-            // Recargar datos de la ruleta normal
-            selectedSector = null;
-            rotationAngle = 0;
-            drawWheel();
-            updateBetsDisplay();
-            checkBalance();
-            document.getElementById("messages").style.display = "none";
-            document.getElementById("result").style.display = "none";
+        // Cambiar entre ruleta de 150 y 300
+        document.getElementById("ruleta150").addEventListener("click", function() {
+            currentRuletaType = "150";
+            document.getElementById("section150").style.display = "block";
+            document.getElementById("section300").style.display = "none";
+            document.getElementById("ruleta150").classList.add("active");
+            document.getElementById("ruleta300").classList.remove("active");
         });
         
-        document.getElementById("dobleRuleta").addEventListener("click", function() {
-            document.getElementById("ruletaType").value = "doble";
-            document.getElementById("betBtn").textContent = "Apostar 100 Bs";
-            document.getElementById("dobleRuleta").classList.add("active");
-            document.getElementById("normalRuleta").classList.remove("active");
-            
-            // Recargar datos de la ruleta doble
-            selectedSector = null;
-            rotationAngle = 0;
-            drawWheel();
-            updateBetsDisplay();
-            checkBalance();
-            document.getElementById("messages").style.display = "none";
-            document.getElementById("result").style.display = "none";
+        document.getElementById("ruleta300").addEventListener("click", function() {
+            currentRuletaType = "300";
+            document.getElementById("section150").style.display = "none";
+            document.getElementById("section300").style.display = "block";
+            document.getElementById("ruleta300").classList.add("active");
+            document.getElementById("ruleta150").classList.remove("active");
         });
         
-        // Inicializar
-        drawWheel();
-        updateBetsDisplay();
+        // Inicializar ambas ruletas
+        initRuleta("150");
+        initRuleta("300");
+        setupBetButton("150");
+        setupBetButton("300");
     </script>
 </body>
 </html>
