@@ -292,6 +292,27 @@
             transform: translateY(-2px);
         }
 
+        /* Botones de selección de ruleta */
+        .ruleta-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .ruleta-btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .ruleta-btn.active {
+            background-color: var(--accent-color);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             .wheel-container {
@@ -326,11 +347,21 @@
             .player-bet {
                 padding: 10px;
             }
+            
+            .ruleta-selector {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="ruleta-selector">
+            <button id="normalRuleta" class="ruleta-btn active">Ruleta Normal (50 Bs)</button>
+            <button id="dobleRuleta" class="ruleta-btn">Ruleta Doble (100 Bs)</button>
+        </div>
+        
         <h1>Ruleta de 15 Espacios con 3 Premios</h1>
         
         <div class="wheel-container">
@@ -354,6 +385,7 @@
         <a href="dashboard.html" class="back-btn">Volver al Panel</a>
         
         <input type="hidden" id="playerName" />
+        <input type="hidden" id="ruletaType" value="normal" />
     </div>
 
     <script>
@@ -379,16 +411,30 @@
             localStorage.setItem("users", JSON.stringify(users));
         }
         
-        if (user.balance < 50) {
-            document.getElementById("betBtn").disabled = true;
-            document.getElementById("messages").textContent = "No tienes saldo suficiente para apostar. Por favor recarga tu cuenta.";
-            document.getElementById("messages").style.display = "block";
-            document.getElementById("messages").className = "error";
+        // Función para verificar saldo según tipo de ruleta
+        function checkBalance() {
+            const ruletaType = document.getElementById("ruletaType").value;
+            const betAmount = ruletaType === "normal" ? 50 : 100;
+            
+            if (user.balance < betAmount) {
+                document.getElementById("betBtn").disabled = true;
+                document.getElementById("messages").textContent = `No tienes saldo suficiente para apostar. Necesitas ${betAmount} Bs. Por favor recarga tu cuenta.`;
+                document.getElementById("messages").style.display = "block";
+                document.getElementById("messages").className = "error";
+                return false;
+            } else {
+                document.getElementById("betBtn").disabled = false;
+                document.getElementById("messages").style.display = "none";
+                return true;
+            }
         }
+        
+        checkBalance();
         
         // Obtener o inicializar datos de las ruletas en localStorage
         function getRuletasData() {
-            let data = localStorage.getItem("ruletasData");
+            const ruletaType = document.getElementById("ruletaType").value;
+            let data = localStorage.getItem(`ruletasData_${ruletaType}`);
             if (!data) {
                 data = {
                     currentRuletaId: 1,
@@ -403,7 +449,7 @@
                         }
                     }
                 };
-                localStorage.setItem("ruletasData", JSON.stringify(data));
+                localStorage.setItem(`ruletasData_${ruletaType}`, JSON.stringify(data));
             } else {
                 data = JSON.parse(data);
             }
@@ -412,7 +458,8 @@
         
         // Actualizar datos de las ruletas en localStorage
         function updateRuletasData(data) {
-            localStorage.setItem("ruletasData", JSON.stringify(data));
+            const ruletaType = document.getElementById("ruletaType").value;
+            localStorage.setItem(`ruletasData_${ruletaType}`, JSON.stringify(data));
         }
         
         // Función para verificar si la ruleta está llena (15 jugadores)
@@ -659,7 +706,8 @@
             }
             
             const playerName = loggedUserName;
-            const bet = 50; // Apuesta fija de 50 Bs
+            const ruletaType = document.getElementById("ruletaType").value;
+            const bet = ruletaType === "normal" ? 50 : 100; // Apuesta según tipo de ruleta
             
             if (hasPlayerBet(playerName, currentRuleta.id)) {
                 messagesDiv.textContent = "Ya has apostado en esta ruleta. Solo se permite una apuesta por usuario por ruleta.";
@@ -671,7 +719,7 @@
             // Obtener datos del usuario
             let users = JSON.parse(localStorage.getItem("users") || "{}");
             if (!users[playerName] || users[playerName].balance < bet) {
-                messagesDiv.textContent = "No tienes fondos suficientes en tu panel para esa apuesta.";
+                messagesDiv.textContent = `No tienes fondos suficientes en tu panel para esa apuesta de ${bet} Bs.`;
                 messagesDiv.style.display = "block";
                 messagesDiv.className = "error";
                 return;
@@ -693,6 +741,10 @@
             selectedSector = null;
             drawWheel();
             updateBetsDisplay();
+            
+            // Actualizar saldo del usuario
+            user = users[playerName];
+            checkBalance();
             
             // Iniciar el sorteo si todos los números están ocupados (15 jugadores)
             if (currentRuleta.sectors.every(sector => sector !== null)) {
@@ -736,14 +788,26 @@
                     const leftWinner = currentRuleta.sectors[leftWinnerIndex];
                     const rightWinner = currentRuleta.sectors[rightWinnerIndex];
                     
-                    // Calcular premios
-                    const premioPrincipal = 550; // 550 Bs para el ganador principal
-                    const premioSecundario = 50; // 50 Bs para cada ganador secundario
+                    // Calcular premios según el tipo de ruleta
+                    const ruletaType = document.getElementById("ruletaType").value;
+                    let premioPrincipal, premioSecundario, totalApostado;
+                    
+                    if (ruletaType === "normal") {
+                        totalApostado = 15 * 50; // 750 Bs
+                        premioPrincipal = Math.round(totalApostado * 0.70); // 70% = 525 Bs
+                        const restante = totalApostado - premioPrincipal; // 225 Bs
+                        premioSecundario = Math.round(restante * 0.59 / 2); // 59% del restante dividido entre 2 = 66 Bs cada uno
+                    } else {
+                        totalApostado = 15 * 100; // 1500 Bs
+                        premioPrincipal = Math.round(totalApostado * 0.70); // 70% = 1050 Bs
+                        const restante = totalApostado - premioPrincipal; // 450 Bs
+                        premioSecundario = Math.round(restante * 0.59 / 2); // 59% del restante dividido entre 2 = 133 Bs cada uno
+                    }
                     
                     // Mostrar resultado
                     const resultDiv = document.getElementById("result");
                     resultDiv.innerHTML = `
-                        <h2>Resultado de la Ruleta</h2>
+                        <h2>Resultado de la Ruleta ${ruletaType === "normal" ? "Normal" : "Doble"}</h2>
                         <p>Ganador principal: <span class="winner-highlight">${mainWinner.playerName}</span>, 
                         número <strong>${mainWinnerIndex + 1}</strong> - Premio: <strong>${premioPrincipal} Bs</strong></p>
                         <p>Ganador secundario izquierdo: <span class="secondary-winner">${leftWinner.playerName}</span>, 
@@ -775,8 +839,9 @@
                     
                     localStorage.setItem("users", JSON.stringify(users));
                     
-                    // Actualizar ganancias de la casa (100 Bs fijos)
-                    currentRuleta.houseEarnings += 100;
+                    // Actualizar ganancias de la casa
+                    const gananciasCasa = totalApostado - (premioPrincipal + premioSecundario * 2);
+                    currentRuleta.houseEarnings += gananciasCasa;
                     
                     // Actualizar datos de la ruleta
                     currentRuleta.winners = {
@@ -805,6 +870,39 @@
             }
             requestAnimationFrame(animate);
         }
+        
+        // Cambiar entre ruleta normal y doble
+        document.getElementById("normalRuleta").addEventListener("click", function() {
+            document.getElementById("ruletaType").value = "normal";
+            document.getElementById("betBtn").textContent = "Apostar 50 Bs";
+            document.getElementById("normalRuleta").classList.add("active");
+            document.getElementById("dobleRuleta").classList.remove("active");
+            
+            // Recargar datos de la ruleta normal
+            selectedSector = null;
+            rotationAngle = 0;
+            drawWheel();
+            updateBetsDisplay();
+            checkBalance();
+            document.getElementById("messages").style.display = "none";
+            document.getElementById("result").style.display = "none";
+        });
+        
+        document.getElementById("dobleRuleta").addEventListener("click", function() {
+            document.getElementById("ruletaType").value = "doble";
+            document.getElementById("betBtn").textContent = "Apostar 100 Bs";
+            document.getElementById("dobleRuleta").classList.add("active");
+            document.getElementById("normalRuleta").classList.remove("active");
+            
+            // Recargar datos de la ruleta doble
+            selectedSector = null;
+            rotationAngle = 0;
+            drawWheel();
+            updateBetsDisplay();
+            checkBalance();
+            document.getElementById("messages").style.display = "none";
+            document.getElementById("result").style.display = "none";
+        });
         
         // Inicializar
         drawWheel();
